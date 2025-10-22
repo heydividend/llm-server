@@ -1,0 +1,233 @@
+
+================================================================================
+[2025-10-22 05:58:08] Request ID: 727da7df
+================================================================================
+QUERY:
+Test connection
+
+METADATA:
+  - detected_tickers: []
+  - original_query: Test connection
+  - updated_query: Test connection
+  - use_web: False
+  - llm_provider: False
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-22 05:58:17] Request ID: 6ca9439f
+================================================================================
+QUERY:
+Dividend history of MSFT for the last 2 years using a bar chart
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Dividend history of MSFT for the last 2 years using a bar chart
+  - updated_query: Dividend history of #MSFT for the last 2 years using a bar chart
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-22 05:58:20] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: MSFT
+[TICKER_EXTRACTION] Detected tickers: MSFT (processed in 3.38ms)Dividend history of #MSFT for the last 2 years using a bar chart
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'MSFT' AND Payment_Date >= DATEADD(YEAR, -2, CAST(GETDATE() AS DATE)) ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: chatgpt
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-22 06:04:41] Request ID: b1fc2aa9
+================================================================================
+QUERY:
+Dividend history of MSFT for the last 2 years using a pie chart
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Dividend history of MSFT for the last 2 years using a pie chart
+  - updated_query: Dividend history of #MSFT for the last 2 years using a pie chart
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-22 06:04:43] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: MSFT
+[TICKER_EXTRACTION] Detected tickers: MSFT (processed in 5.012ms)Dividend history of #MSFT for the last 2 years using a pie chart
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'MSFT' AND Payment_Date >= DATEADD(YEAR, -2, CAST(GETDATE() AS DATE)) ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: chatgpt
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-22 06:05:24] Request ID: 0b8217be
+================================================================================
+QUERY:
+show plese
+
+METADATA:
+  - detected_tickers: []
+  - original_query: show plese
+  - updated_query: show plese
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-22 06:06:17] Request ID: 561dfc15
+================================================================================
+QUERY:
+Compare META, YMAG, MSFT, and XOMO for the last 5 years to see which has paid more dividends
+
+METADATA:
+  - detected_tickers: ['META', 'YMAG', 'MSFT', 'XOMO']
+  - original_query: Compare META, YMAG, MSFT, and XOMO for the last 5 years to see which has paid more dividends
+  - updated_query: Compare #META, #YMAG, #MSFT, and #XOMO for the last 5 years to see which has paid more dividends
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-22 06:06:18] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: META,YMAG,MSFT,XOMO
+[TICKER_EXTRACTION] Detected tickers: META, YMAG, MSFT, XOMO (processed in 6.793ms)Compare #META, #YMAG, #MSFT, and #XOMO for the last 5 years to see which has paid more dividends
+
+Generated SQL:
+SELECT Ticker, SUM(Dividend_Amount) AS Total_Dividends FROM dbo.vDividends WHERE Ticker IN ('META', 'YMAG', 'MSFT', 'XOMO') AND Payment_Date >= DATEADD(YEAR, -5, CAST(GETDATE() AS DATE)) GROUP BY Ticker ORDER BY Total_Dividends DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: chatgpt
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-22 06:27:48] Request ID: da572d9d
+================================================================================
+QUERY:
+Latest Dividend of MSFT
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Latest Dividend of MSFT
+  - updated_query: Latest Dividend of #MSFT
+  - use_web: False
+  - llm_provider: True
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-22 06:27:52] Request ID: 80218d2f
+================================================================================
+QUERY:
+Latest Dividend of MSFT
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Latest Dividend of MSFT
+  - updated_query: Latest Dividend of #MSFT
+  - use_web: False
+  - llm_provider: True
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-22 06:28:41] Request ID: 7a97b958
+================================================================================
+QUERY:
+Latest Dividend of MSFT
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Latest Dividend of MSFT
+  - updated_query: Latest Dividend of #MSFT
+  - use_web: False
+  - llm_provider: True
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-22 06:28:45] Request ID: cf0c23a5
+================================================================================
+QUERY:
+Latest Dividend of MSFT
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Latest Dividend of MSFT
+  - updated_query: Latest Dividend of #MSFT
+  - use_web: False
+  - llm_provider: True
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-22 06:29:09] Request ID: 517e02c7
+================================================================================
+QUERY:
+Latest Dividend of MSFT
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Latest Dividend of MSFT
+  - updated_query: Latest Dividend of #MSFT
+  - use_web: False
+  - llm_provider: True
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-22 06:29:13] Request ID: 7fabead4
+================================================================================
+QUERY:
+Latest Dividend of MSFT
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Latest Dividend of MSFT
+  - updated_query: Latest Dividend of #MSFT
+  - use_web: False
+  - llm_provider: fallback
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-22 06:29:16] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: MSFT
+[TICKER_EXTRACTION] Detected tickers: MSFT (processed in 1.109ms)Latest Dividend of #MSFT
+
+Generated SQL:
+SELECT TOP 1 Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'MSFT' ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: 
+  - use_web: False
+================================================================================

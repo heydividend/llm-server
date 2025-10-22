@@ -1,0 +1,30 @@
+
+================================================================================
+[2025-10-20 14:06:28] Request ID: 97bc6a9e
+================================================================================
+QUERY:
+Test connection
+
+METADATA:
+  - detected_tickers: []
+  - original_query: Test connection
+  - updated_query: Test connection
+  - use_web: False
+  - llm_provider: False
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-20 14:06:38] Request ID: 10960481
+================================================================================
+QUERY:
+Test connection
+
+METADATA:
+  - detected_tickers: []
+  - original_query: Test connection
+  - updated_query: Test connection
+  - use_web: False
+  - llm_provider: False
+  - stream: False
+================================================================================

@@ -1,0 +1,4 @@
+{"time": "2025-10-07T10:25:42", "question": "hi", "action": "chat", "sql": null, "plan_ms": 1053, "sql_ms": null, "answer_ms": 1602, "rows_streamed": null}
+{"time": "2025-10-07T10:25:54", "question": "what is your name", "action": "chat", "sql": null, "plan_ms": 2464, "sql_ms": null, "answer_ms": 599, "rows_streamed": null}
+{"time": "2025-10-07T10:27:14", "question": "TICKERS_HINT: MSFT\nLatest Dividend of MSFT", "action": "sql", "sql": "[planner_error] name 'SQL_ONLY' is not defined\nSQL_RAW=SELECT TOP 1 * FROM dbo.vDividends WHERE Ticker = 'MSFT' ORDER BY Payment_Date DESC", "plan_ms": 1273, "sql_ms": null, "answer_ms": null, "rows_streamed": null}
+{"time": "2025-10-07T10:33:12", "question": "TICKERS_HINT: MSFT\nLatest Dividend of MSFT", "action": "sql", "sql": "SELECT TOP 1 * FROM dbo.vDividends WHERE Ticker = 'MSFT' ORDER BY Payment_Date DESC", "plan_ms": 2020, "sql_ms": 56, "answer_ms": 6228, "rows_streamed": 1}
