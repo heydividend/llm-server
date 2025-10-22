@@ -1,0 +1,279 @@
+
+================================================================================
+[2025-10-21 06:14:30] Request ID: 0d93d88b
+================================================================================
+QUERY:
+Test connection
+
+METADATA:
+  - detected_tickers: []
+  - original_query: Test connection
+  - updated_query: Test connection
+  - use_web: False
+  - llm_provider: False
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-21 06:14:39] Request ID: 97b88d13
+================================================================================
+QUERY:
+hi
+
+METADATA:
+  - detected_tickers: []
+  - original_query: hi
+  - updated_query: hi
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-21 06:34:04] Request ID: b2f3f2e5
+================================================================================
+QUERY:
+Test connection
+
+METADATA:
+  - detected_tickers: []
+  - original_query: Test connection
+  - updated_query: Test connection
+  - use_web: False
+  - llm_provider: False
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-21 12:11:22] Request ID: a870eef0
+================================================================================
+QUERY:
+Test connection
+
+METADATA:
+  - detected_tickers: []
+  - original_query: Test connection
+  - updated_query: Test connection
+  - use_web: False
+  - llm_provider: False
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-21 12:42:57] Request ID: f504f0ed
+================================================================================
+QUERY:
+Test connection
+
+METADATA:
+  - detected_tickers: []
+  - original_query: Test connection
+  - updated_query: Test connection
+  - use_web: False
+  - llm_provider: False
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-21 12:43:07] Request ID: 1f970b9f
+================================================================================
+QUERY:
+Dividend history of MSFT for the last 2 years using a bar chart
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Dividend history of MSFT for the last 2 years using a bar chart
+  - updated_query: Dividend history of #MSFT for the last 2 years using a bar chart
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-21 12:43:39] Request ID: 91b1fb92
+================================================================================
+QUERY:
+Dividend history of MSFT for the last 2 years using a bar chart
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Dividend history of MSFT for the last 2 years using a bar chart
+  - updated_query: Dividend history of #MSFT for the last 2 years using a bar chart
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-21 12:43:58] Request ID: 1c4fb37a
+================================================================================
+QUERY:
+what is the dividend amount for COII?
+
+METADATA:
+  - detected_tickers: []
+  - original_query: what is the dividend amount for COII?
+  - updated_query: what is the dividend amount for COII?
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-21 12:44:01] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: COII
+what is the dividend amount for COII?
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'COII' ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: chatgpt
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-21 12:44:14] Request ID: 7f295f97
+================================================================================
+QUERY:
+what is the dividend amount for MSTY?
+
+METADATA:
+  - detected_tickers: ['MSTY']
+  - original_query: what is the dividend amount for MSTY?
+  - updated_query: what is the dividend amount for #MSTY?
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-21 12:44:15] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: MSTY
+[TICKER_EXTRACTION] Detected tickers: MSTY (processed in 1.19ms)what is the dividend amount for #MSTY?
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'MSTY' ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: chatgpt
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-21 12:44:54] Request ID: befb0959
+================================================================================
+QUERY:
+what dividends were declared today?
+
+METADATA:
+  - detected_tickers: []
+  - original_query: what dividends were declared today?
+  - updated_query: what dividends were declared today?
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-21 12:44:55] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+what dividends were declared today?
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Declaration_Date = CAST(GETDATE() AS DATE) ORDER BY Declaration_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: chatgpt
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-21 12:45:23] Request ID: acb25a8a
+================================================================================
+QUERY:
+how many dividends can you report on?
+
+METADATA:
+  - detected_tickers: []
+  - original_query: how many dividends can you report on?
+  - updated_query: how many dividends can you report on?
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-21 12:45:50] Request ID: 8ccc4448
+================================================================================
+QUERY:
+what's the dividend amount for PLTY
+
+METADATA:
+  - detected_tickers: ['PLTY']
+  - original_query: what's the dividend amount for PLTY
+  - updated_query: what's the dividend amount for #PLTY
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-21 12:45:52] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: PLTY
+[TICKER_EXTRACTION] Detected tickers: PLTY (processed in 1.702ms)what's the dividend amount for #PLTY
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'PLTY' ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: chatgpt
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-21 12:46:56] Request ID: c4c02781
+================================================================================
+QUERY:
+Compare META, YMAG, MSFT, and XOMO for the last 5 years to see which has paid more dividends
+
+METADATA:
+  - detected_tickers: ['META', 'YMAG', 'MSFT', 'XOMO']
+  - original_query: Compare META, YMAG, MSFT, and XOMO for the last 5 years to see which has paid more dividends
+  - updated_query: Compare #META, #YMAG, #MSFT, and #XOMO for the last 5 years to see which has paid more dividends
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-21 12:46:58] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: META,YMAG,MSFT,XOMO
+[TICKER_EXTRACTION] Detected tickers: META, YMAG, MSFT, XOMO (processed in 6.583ms)Compare #META, #YMAG, #MSFT, and #XOMO for the last 5 years to see which has paid more dividends
+
+Generated SQL:
+SELECT Ticker, SUM(Dividend_Amount) AS Total_Dividends FROM dbo.vDividends WHERE Ticker IN ('META', 'YMAG', 'MSFT', 'XOMO') AND Payment_Date >= DATEADD(YEAR, -5, CAST(GETDATE() AS DATE)) GROUP BY Ticker ORDER BY Total_Dividends DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: chatgpt
+  - use_web: False
+================================================================================

@@ -1,0 +1,124 @@
+ticker,name
+AAPL,Apple Inc
+MSFT,Microsoft Corporation
+GOOGL,Alphabet Inc
+AMZN,Amazon.com Inc
+META,Meta Platforms Inc
+TSLA,Tesla Inc
+NVDA,NVIDIA Corporation
+NFLX,Netflix Inc
+JPM,JP Morgan Chase & Co
+V,Visa Inc
+MA,Mastercard Inc
+ORCL,Oracle Corporation
+IBM,International Business Machines
+INTC,Intel Corporation
+AMD,Advanced Micro Devices
+PYPL,PayPal Holdings Inc
+DIS,Walt Disney Co
+PEP,PepsiCo Inc
+KO,Coca-Cola Co
+BA,Boeing Co
+ADBE,Adobe Inc
+CRM,Salesforce Inc
+SHOP,Shopify Inc
+SNOW,Snowflake Inc
+UBER,Uber Technologies Inc
+LYFT,Lyft Inc
+AVGO,Broadcom Inc
+ABBV,AbbVie Inc
+LLY,Eli Lilly and Company
+PFE,Pfizer Inc
+T,AT&T Inc
+VZ,Verizon Communications Inc
+BRK.B,Berkshire Hathaway Inc Class B
+NKE,Nike Inc
+CAT,Caterpillar Inc
+C,Citigroup Inc
+COST,Costco Wholesale Corporation
+WMT,Walmart Inc
+TGT,Target Corporation
+TSLY,YieldMax TSLA Option Income Strategy ETF
+APLY,YieldMax AAPL Option Income Strategy ETF
+NVDY,YieldMax NVDY Option Income Strategy ETF
+AMZY,YieldMax AMZN Option Income Strategy ETF
+GOOY,YieldMax GOOGL Option Income Strategy ETF
+FBY,YieldMax META Option Income Strategy ETF
+CONY,YieldMax COIN Option Income Strategy ETF
+NFLY,YieldMax NFLX Option Income Strategy ETF
+DISO,YieldMax DIS Option Income Strategy ETF
+MSFO,YieldMax MSFT Option Income Strategy ETF
+AMDY,YieldMax AMD Option Income Strategy ETF
+XOMO,YieldMax XOM Option Income Strategy ETF
+JPMO,YieldMax JPM Option Income Strategy ETF
+PYPY,YieldMax PYPL Option Income Strategy ETF
+SQY,YieldMax SQ Option Income Strategy ETF
+MRNY,YieldMax MRN Option Income Strategy ETF
+AIYY,YieldMax AI Option Income Strategy ETF
+OARK,YieldMax Innovation Option Income Strategy ETF
+YMAX,YieldMax Option Income Strategy ETF
+YMAG,YieldMax YMAG Option Income Strategy ETF
+MSTY,YieldMax MSFT Option Income Strategy ETF
+ULTY,YieldMax UL Option Income Strategy ETF
+YBIT,YieldMax Bitcoin Option Income Strategy ETF
+CRSH,YieldMax CRSH Option Income Strategy ETF
+GDXY,YieldMax Google & Disney Option Income Strategy ETF
+SNOY,YieldMax Snowflake Option Income Strategy ETF
+ABNY,YieldMax AbbVie Option Income Strategy ETF
+FIAT,YieldMax Ferrari Option Income Strategy ETF
+DIPS,YieldMax Disney & Pepsi Option Income Strategy ETF
+BABO,YieldMax Bank of America Option Income Strategy ETF
+YQQQ,YieldMax Invesco QQQ Option Income Strategy ETF
+TSMY,YieldMax TSMC Option Income Strategy ETF
+SMCY,YieldMax Super Micro Computer Option Income Strategy ETF
+PLTY,YieldMax Palantir Option Income Strategy ETF
+BIGY,YieldMax Big Tech Option Income Strategy ETF
+MARO,YieldMax Marvell Option Income Strategy ETF
+FIVY,YieldMax Fidelity Option Income Strategy ETF
+LFGY,YieldMax Lucid Option Income Strategy ETF
+GPTY,YieldMax Google & PayPal Option Income Strategy ETF
+CVNY,YieldMax Chevron Option Income Strategy ETF
+SDTY,YieldMax Semiconductors Option Income Strategy ETF
+QDTY,YieldMax Nasdaq 100 0DTE Covered Call Strategy ETF
+FEAT,YieldMax Feature Option Income Strategy ETF
+SOXY,YieldMax SOX Option Income Strategy ETF
+RDTY,YieldMax Russell 2000 0DTE Covered Call Strategy ETF
+WNTR,YieldMax Winter Option Income Strategy ETF
+CHPY,YieldMax Chipotle Option Income Strategy ETF
+RNTY,YieldMax Target 12 Real Estate Option Income ETF
+HOOY,YieldMax Robinhood Option Income Strategy ETF
+BRKC,YieldMax BRK.B Option Income Strategy ETF
+CHAT,Roundhill Generative AI & Technology ETF
+METV,Roundhill Ball Metaverse ETF
+MAGS,Roundhill Magnificent Seven ETF
+BETZ,Roundhill Sports Betting & iGaming ETF
+NERD,Roundhill Video Games ETF
+OZEM,Roundhill GLP-1 & Weight Loss ETF
+WEED,Roundhill Cannabis ETF
+MAGX,Roundhill Daily 2X Long Magnificent Seven ETF
+QDTE,Roundhill Innovation-100 0DTE Covered Call Strategy ETF
+XDTE,Roundhill S&P 500 0DTE Covered Call Strategy ETF
+RDTE,Roundhill Russell 2000 0DTE Covered Call Strategy ETF
+XPAY,Roundhill S&P 500 Target 20 Managed Distribution ETF
+YBTC,Roundhill Bitcoin Covered Call Strategy ETF
+YETH,Roundhill Ether Covered Call Strategy ETF
+UX,Roundhill Uranium ETF
+NVDW,Roundhill NVDA WeeklyPay ETF
+TSLW,Roundhill TSLA WeeklyPay ETF
+AAPW,Roundhill AAPL WeeklyPay ETF
+COIW,Roundhill COIN WeeklyPay ETF
+PLTW,Roundhill PLTR WeeklyPay ETF
+MAGY,Roundhill Magnificent Seven Covered Call ETF
+AMZW,Roundhill AMZN WeeklyPay ETF
+BRKW,Roundhill BRK.B WeeklyPay ETF
+HOOW,Roundhill HOOD WeeklyPay ETF
+METW,Roundhill META WeeklyPay ETF
+NFLW,Roundhill NFLX WeeklyPay ETF
+XDIV,Roundhill U.S. Large Cap Dividend ETF
+AMDW,Roundhill AMD WeeklyPay ETF
+AVGW,Roundhill AVGO WeeklyPay ETF
+GOOW,Roundhill GOOGL WeeklyPay ETF
+MSFW,Roundhill MSFT WeeklyPay ETF
+MSTW,Roundhill MSTR WeeklyPay ETF
+WPAY,Roundhill WeeklyPay Universe ETF
+MEME,Roundhill MEME ETF
