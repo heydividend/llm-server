@@ -171,7 +171,7 @@ PORT = os.getenv("SQLSERVER_PORT", "1433")
 DB   = os.getenv("SQLSERVER_DB")
 USER = os.getenv("SQLSERVER_USER")
 PWD  = os.getenv("SQLSERVER_PASSWORD")
-DRV  = os.getenv("ODBC_DRIVER", "ODBC Driver 18 for SQL Server")
+DRV  = os.getenv("ODBC_DRIVER", "FreeTDS")
 LOGIN_TIMEOUT = os.getenv("SQLSERVER_LOGIN_TIMEOUT", "10")
 CONN_TIMEOUT  = os.getenv("SQLSERVER_CONN_TIMEOUT", "20")
 
@@ -187,6 +187,7 @@ FAST_WEB_MAX_PAGES = int(os.getenv("FAST_WEB_MAX_PAGES", "5"))
 
 params = {
     "driver": DRV,
+    "TDS_Version": "7.3",
     "Encrypt": "yes",
     "TrustServerCertificate": "no",
     "LoginTimeout": LOGIN_TIMEOUT,
