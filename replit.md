@@ -59,24 +59,17 @@ The application uses pyodbc to connect to Azure SQL Server. Database views are c
 - Updated database configuration to use FreeTDS driver
 - Verified API is running successfully
 
-## Database Connection Setup
+## Database Connection
 
-The application is configured to use FreeTDS to connect to Azure SQL Server. To enable database connectivity:
+✅ **Successfully connected to Azure SQL Server**
+- FreeTDS ODBC driver configured with TDS Version 7.3
+- Database views created successfully on startup
+- All database operations are functional
 
-1. **Add Replit IP to Azure SQL Server Firewall**:
-   - Go to Azure Portal → Your SQL Server → Networking/Firewall
-   - Add a firewall rule to allow connections from Replit's server IP
-   - You can find the IP by running: `curl -s https://api.ipify.org`
-
-2. **Verify Connection**:
-   - Once firewall rules are updated, restart the workflow
-   - Check logs for successful database view creation
-
-**Current Status**: FreeTDS driver is properly configured. Connection fails due to Azure SQL Server firewall restrictions (expected in Replit environment).
+**Replit IP**: Run `curl -s https://api.ipify.org` to get the current IP (needed for Azure firewall rules)
 
 ## Known Issues
-- Database connectivity requires Azure SQL Server firewall configuration (see above)
-- Some LSP diagnostics present (type checking warnings) but don't affect runtime
+- Minor LSP diagnostics present (type checking warnings) that don't affect runtime functionality
 
 ## Development Notes
 - The app uses contextvars for per-request LLM selection (ChatGPT vs Llama)
