@@ -6,7 +6,7 @@ from app.config.settings import OFFICIAL_DOMAINS, LOW_PRIORITY_DOMAINS
 # Search Engine Credentials
 GOOGLE_CSE_KEY = os.getenv("GOOGLE_CSE_KEY", "").strip()
 GOOGLE_CSE_CX  = os.getenv("GOOGLE_CSE_CX", "").strip()
-BING_API_KEY   = "6806eeb1a92747c4acb3cd0d93c804c7"
+BING_API_KEY   = os.getenv("BING_API_KEY", "").strip()
 
 def calculate_domain_priority(url: str) -> int:
     domain = urlparse(url).netloc.lower()

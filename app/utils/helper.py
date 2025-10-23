@@ -179,7 +179,7 @@ CONN_TIMEOUT  = os.getenv("SQLSERVER_CONN_TIMEOUT", "20")
 # Enhanced web search credentials
 GOOGLE_CSE_KEY = os.getenv("GOOGLE_CSE_KEY", "").strip()
 GOOGLE_CSE_CX  = os.getenv("GOOGLE_CSE_CX", "").strip()
-BING_API_KEY   = "6806eeb1a92747c4acb3cd0d93c804c7"
+BING_API_KEY   = os.getenv("BING_API_KEY", "").strip()
 
 # Auto web fallback configuration
 AUTO_WEB_FALLBACK = os.getenv("AUTO_WEB_FALLBACK", "true").lower() in ("1","true","yes")
