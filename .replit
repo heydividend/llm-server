@@ -4,4 +4,36 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["arrow-cpp", "cacert", "cairo", "cargo", "chromedriver", "ffmpeg-full", "freefont_ttf", "freetype", "ghostscript", "glibcLocales", "go", "gobject-introspection", "gtk3", "lcms2", "libcxx", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libuv", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "qhull", "rustc", "tcl", "tk", "unixODBC", "which", "xcodebuild", "xdg-utils", "xsimd", "zlib"]
+packages = ["arrow-cpp", "cacert", "cairo", "cargo", "chromedriver", "ffmpeg-full", "freefont_ttf", "freetype", "ghostscript", "glibcLocales", "go", "gobject-introspection", "gtk3", "lcms2", "libcxx", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libuv", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "qhull", "rustc", "tcl", "tk", "unixODBC", "which", "xcodebuild", "xdg-utils", "xsimd", "zlib", "freetds"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "API Server"
+
+[[workflows.workflow]]
+name = "API Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "uvicorn main:app --host 0.0.0.0 --port 5000 --reload"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 39087
+externalPort = 3000
