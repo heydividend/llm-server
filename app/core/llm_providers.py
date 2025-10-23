@@ -15,18 +15,36 @@ OLLAMA_CHAT = f"{OLLAMA_BASE}/api/chat"
 OLLAMA_TAGS = f"{OLLAMA_BASE}/api/tags"
 OLLAMA_VERSION = f"{OLLAMA_BASE}/api/version"
 
-# OpenAI/Azure Clients
+# OpenAI/Azure Clients with timeout and retry configuration
+OAI_TIMEOUT = int(os.getenv("OPENAI_TIMEOUT", "60"))
+OAI_MAX_RETRIES = int(os.getenv("OPENAI_MAX_RETRIES", "3"))
+
+http_client = httpx.Client(
+    timeout=httpx.Timeout(OAI_TIMEOUT, connect=10.0),
+    limits=httpx.Limits(max_keepalive_connections=20, max_connections=100)
+)
+
 USE_AZURE = os.getenv("AZURE_OPENAI", "false").lower() in ("1","true","yes")
 if USE_AZURE:
     OAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")
     OAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
     OAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
     OAI_API_VER = os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
-    oai_client = AzureOpenAI(api_key=OAI_API_KEY, azure_endpoint=OAI_ENDPOINT, api_version=OAI_API_VER)
+    oai_client = AzureOpenAI(
+        api_key=OAI_API_KEY,
+        azure_endpoint=OAI_ENDPOINT,
+        api_version=OAI_API_VER,
+        http_client=http_client,
+        max_retries=OAI_MAX_RETRIES
+    )
     CHAT_MODEL = OAI_DEPLOYMENT
 else:
     OAI_API_KEY = os.getenv("OPENAI_API_KEY")
-    oai_client = OpenAI(api_key=OAI_API_KEY)
+    oai_client = OpenAI(
+        api_key=OAI_API_KEY,
+        http_client=http_client,
+        max_retries=OAI_MAX_RETRIES
+    )
     CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o")
 
 def set_active_llm(provider: str, model: str | None = None):

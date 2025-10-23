@@ -33,8 +33,10 @@ def open_engine():
         ENGINE_URL,
         fast_executemany=True,
         pool_pre_ping=True,
-        pool_size=8,
-        max_overflow=8,
+        pool_size=20,
+        max_overflow=20,
+        pool_recycle=3600,
+        pool_timeout=30,
     )
 
 # Initialize engine and create views
