@@ -32,9 +32,16 @@ Optional:
 - `OLLAMA_MODEL` - Model name for Ollama (default: llama3.1:8b)
 
 ## API Endpoints
-- `GET /` - Welcome message
+- `GET /` - Frontend chat interface (testing UI)
 - `GET /healthz` - Health check endpoint
 - `POST /v1/chat/completions` - Main chat completion endpoint (streaming responses)
+
+## Frontend
+A simple, clean chat interface is available at the root URL (`/`) for testing the API. Features:
+- Real-time streaming responses
+- Example queries for quick testing
+- Modern, responsive design
+- Located in `static/index.html`
 
 ## Key Features
 - **Query Classification**: Automatically routes queries to appropriate handlers (SQL, chat, web search, multipart)
@@ -57,7 +64,10 @@ The application uses pyodbc to connect to Azure SQL Server. Database views are c
 - Configured environment variables for database and OpenAI
 - Set up FastAPI workflow on port 5000
 - Updated database configuration to use FreeTDS driver
-- Verified API is running successfully
+- Fixed Azure SQL Server hostname issue (was truncated)
+- Successfully connected to Azure SQL Server database
+- Created simple frontend testing interface with streaming support
+- Verified API is running successfully with database connectivity
 
 ## Database Connection
 
