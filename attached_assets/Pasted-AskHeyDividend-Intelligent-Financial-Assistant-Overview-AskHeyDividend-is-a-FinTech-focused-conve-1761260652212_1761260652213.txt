@@ -1,0 +1,237 @@
+AskHeyDividend — Intelligent Financial Assistant
+ Overview
+AskHeyDividend is a FinTech-focused conversational AI platform that provides intelligent, dynamic, and context-aware responses about finance — including dividends, prices, tickers, and company insights.
+At its core, the system uses a fine-tuned LLaMA model, designed specifically for financial and market-related language.
+ It combines real-time SQL data access, Azure AI services, and an intelligent fallback model to ensure accuracy and reliability.
+AskHeyDividend seamlessly handles both text and file-based queries, integrating deeply with Azure services and external APIs.
+
+⚙️ System Architecture
+AskHeyDividend follows a modular, scalable architecture with clearly defined layers and Azure resource mappings.
+Core Flow
+The user sends a query through the Next.js frontend.
+
+
+The query reaches the FastAPI server through Azure Front Door (ai-vm).
+
+
+The backend classifies and routes queries based on intent:
+
+
+General queries → handled directly by the fine-tuned LLaMA model.
+
+
+Financial/data queries → translated into SQL queries and executed on the Azure SQL Database.
+
+
+Out-of-domain or WEB: prefixed queries → trigger a web search.
+
+
+File/image uploads → sent to a Node.js module for parsing and extraction.
+
+
+The system generates a summarized response and streams it back to the frontend in real-time.
+
+
+
+💻 Frontend
+Tech Stack: Next.js + TypeScript
+
+
+Deployment: Azure Static Web Apps (llm-ui)
+
+
+GitHub Repository: llm-ui
+
+
+Features:
+
+
+Conversational UI for text and document queries
+
+
+File and image upload support
+
+
+Real-time response streaming (Server-Sent Events / WebSockets)
+
+
+Hero Charts for visualizing:
+
+
+Dividend histories
+
+
+Stock and ETF trends
+
+
+Performance metrics
+
+
+
+🧩 Backend (FastAPI Orchestrator)
+Tech Stack: Python (FastAPI, AsyncIO)
+
+
+Deployment: Azure VM (llm-training-vm)
+
+
+GitHub Repository: llm-server
+
+
+Role: Central orchestrator managing:
+
+
+Query classification
+
+
+Model communication
+
+
+SQL generation and execution
+
+
+File handling and data parsing coordination
+
+
+
+🔍 Query Classification Layer
+A Python-based layer that classifies every incoming query into:
+Conversational
+
+
+General knowledge
+
+
+Data-driven
+
+
+Web search
+
+
+It also includes a ticker extraction module that detects company names and stock symbols using regex and fuzzy mapping — ensuring queries are linked to the correct ticker when generating SQL.
+
+🦙 AI Model Flow
+Primary Model: Fine-tuned LLaMA (Meta), optimized for financial and market data understanding.
+
+
+Fallback Model: GPT, for ensuring reliability when LLaMA outputs are incomplete or invalid.
+
+
+Flow:
+Query received → Model detects intent & context
+
+
+Generates SQL for live financial data retrieval
+
+
+Executes SQL on Azure SQL Database
+
+
+Summarizes structured results into natural, human-readable output
+
+
+
+📊 Dynamic Data Handling
+SQL Server: hey-dividend-sql-server
+
+
+Database: HeyDividend-Main-DB
+
+
+Platform: Azure SQL Database
+
+
+The model dynamically generates and executes SQL statements to retrieve:
+Dividends
+
+
+Prices
+
+
+Ticker info
+
+
+Portfolio data
+
+
+Results are transformed into natural summaries or sent to the frontend for visualizations.
+
+🌐 Web Search Integration
+When a query is outside model or database scope, AskHeyDividend triggers a web search using Google or Bing APIs.
+ The model then:
+Collects relevant information
+
+
+Summarizes results
+
+
+Returns a concise answer
+
+
+Users can explicitly request web search via:
+WEB: Meta latest dividend announcement
+
+
+🧾 File & Image Processing
+The system supports uploading PDFs, reports, spreadsheets, or screenshots for financial data extraction.
+Azure Resources Used:
+Azure AI Document Intelligence: heydividend-ai-document
+
+
+Azure AI Vision: heydividend-aiservice
+
+
+Flow:
+FastAPI server forwards uploads to a Node.js module (running on llm-training-vm).
+
+
+Module extracts structured data using:
+
+
+Document Intelligence for text/financial report parsing
+
+
+AI Vision for image-based data extraction
+
+
+Custom CSV/Excel parser for tabular content
+
+
+Parsed data is returned as JSON and integrated into the model context for precise responses.
+
+
+
+📋 Structured Logging & Analytics
+Log Type: Structured JSON logs
+
+
+Storage: Local file-based logging
+
+
+Includes:
+
+
+Timestamp
+
+
+Query & response metadata
+
+
+User/session context
+
+
+Error traces
+
+
+Logs can be visualized using:
+Grafana Loki
+
+
+ELK Stack (Elasticsearch, Logstash, Kibana)
+
+
+Custom file-based analytics tools
+
+
+This ensures full traceability and simplifies debugging or auditing.
+
