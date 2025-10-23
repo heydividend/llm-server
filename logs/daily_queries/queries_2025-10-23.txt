@@ -1,0 +1,32 @@
+
+================================================================================
+[2025-10-23 23:04:56] Request ID: 581bf17f
+================================================================================
+QUERY:
+Show me the latest price for AAPL
+
+METADATA:
+  - detected_tickers: ['AAPL']
+  - original_query: Show me the latest price for AAPL
+  - updated_query: Show me the latest price for #AAPL
+  - use_web: False
+  - llm_provider: fallback
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-23 23:04:58] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: AAPL
+[TICKER_EXTRACTION] Detected tickers: AAPL (processed in 10.921ms)Show me the latest price for #AAPL
+
+Generated SQL:
+SELECT TOP 1 Ticker, Price, Bid, Ask, Volume, Trade_Timestamp_UTC, Snapshot_Timestamp, Source FROM dbo.vPrices WHERE Ticker = 'AAPL' ORDER BY Trade_Timestamp_UTC DESC, Snapshot_Timestamp DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: 
+  - use_web: False
+================================================================================
