@@ -77,3 +77,34 @@ METADATA:
   - llm_provider: False
   - stream: False
 ================================================================================
+
+================================================================================
+[2025-10-23 23:45:22] Request ID: ca413b87
+================================================================================
+QUERY:
+What are the top dividend paying stocks?
+
+METADATA:
+  - detected_tickers: []
+  - original_query: What are the top dividend paying stocks?
+  - updated_query: What are the top dividend paying stocks?
+  - use_web: False
+  - llm_provider: fallback
+  - stream: True
+================================================================================
+
+================================================================================
+[2025-10-23 23:45:23] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+What are the top dividend paying stocks?
+
+Generated SQL:
+SELECT Ticker, SUM(Dividend_Amount) AS Total_Dividend FROM dbo.vDividends GROUP BY Ticker ORDER BY Total_Dividend DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: 
+  - use_web: False
+================================================================================

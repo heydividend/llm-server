@@ -1,12 +1,36 @@
 import os, requests
 from typing import Dict, Any, List
 from urllib.parse import urlparse
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from app.config.settings import OFFICIAL_DOMAINS, LOW_PRIORITY_DOMAINS
 
 # Search Engine Credentials
 GOOGLE_CSE_KEY = os.getenv("GOOGLE_CSE_KEY", "").strip()
 GOOGLE_CSE_CX  = os.getenv("GOOGLE_CSE_CX", "").strip()
 BING_API_KEY   = os.getenv("BING_API_KEY", "").strip()
+
+# Shared session with connection pooling and retry strategy
+_search_session = None
+
+def get_search_session():
+    global _search_session
+    if _search_session is None:
+        _search_session = requests.Session()
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=1,
+            status_forcelist=[429, 500, 502, 503, 504],
+            allowed_methods=["GET", "POST"]
+        )
+        adapter = HTTPAdapter(
+            max_retries=retry_strategy,
+            pool_connections=20,
+            pool_maxsize=20
+        )
+        _search_session.mount("http://", adapter)
+        _search_session.mount("https://", adapter)
+    return _search_session
 
 def calculate_domain_priority(url: str) -> int:
     domain = urlparse(url).netloc.lower()
@@ -39,7 +63,8 @@ def web_search_google_cse_enhanced(query: str, num: int = 12) -> List[Dict[str, 
         "fields": "items(title,link,snippet,displayLink,formattedUrl)"
     }
     try:
-        r = requests.get("https://www.googleapis.com/customsearch/v1", params=params, timeout=15)
+        session = get_search_session()
+        r = session.get("https://www.googleapis.com/customsearch/v1", params=params, timeout=15)
         if r.status_code != 200:
             return []
         items = (r.json() or {}).get("items", []) or []
@@ -65,7 +90,8 @@ def web_search_bing_enhanced(query: str, count: int = 12) -> List[Dict[str, Any]
     params = {"q": query, "count": min(max(count, 1), 15), "mkt": "en-US",
               "responseFilter": "Webpages", "textDecorations": False, "textFormat": "Raw"}
     try:
-        r = requests.get("https://api.bing.microsoft.com/v7.0/search", headers=headers, params=params, timeout=15)
+        session = get_search_session()
+        r = session.get("https://api.bing.microsoft.com/v7.0/search", headers=headers, params=params, timeout=15)
         if r.status_code != 200:
             return []
         values = (r.json().get("webPages") or {}).get("value", []) or []
