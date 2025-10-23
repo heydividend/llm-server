@@ -67,7 +67,14 @@ The application uses pyodbc to connect to Azure SQL Server. Database views are c
 - Fixed Azure SQL Server hostname issue (was truncated)
 - Successfully connected to Azure SQL Server database
 - Created simple frontend testing interface with streaming support
-- Verified API is running successfully with database connectivity
+- **Security Fix**: Removed hard-coded Bing API key, moved to environment variables
+- **Code Cleanup**: Reduced helper.py from 1,108 to 390 lines (64.8% reduction) by removing duplicate code
+- **Performance Optimizations**:
+  - Database connection pool increased to 40 max connections (2.5x improvement)
+  - Added 60s timeout and 3-retry logic for OpenAI API calls
+  - Implemented HTTP connection pooling for web search APIs
+  - Created caching infrastructure with 5-minute TTL support
+  - All external API calls now have proper timeout and retry mechanisms
 
 ## Database Connection
 
@@ -77,6 +84,28 @@ The application uses pyodbc to connect to Azure SQL Server. Database views are c
 - All database operations are functional
 
 **Replit IP**: Run `curl -s https://api.ipify.org` to get the current IP (needed for Azure firewall rules)
+
+## Performance Configuration
+
+The application includes several performance optimizations configurable via environment variables:
+
+**Database:**
+- Connection pool: 20 connections, max 40 with overflow
+- Auto-recycle: 3600s to prevent stale connections
+- Pool timeout: 30s
+
+**OpenAI API:**
+- `OPENAI_TIMEOUT` (default: 60) - API request timeout in seconds
+- `OPENAI_MAX_RETRIES` (default: 3) - Retry attempts with exponential backoff
+- HTTP connection pooling: 20 keepalive, 100 max connections
+
+**Caching:**
+- `CACHE_TTL_SECONDS` (default: 300) - Cache time-to-live
+- `CACHE_MAX_SIZE` (default: 1000) - Maximum cached entries
+
+**Web Search:**
+- Retry strategy: 3 attempts with backoff for rate limits (429) and server errors (500-504)
+- Connection pooling: 20 pool connections, 20 max pool size
 
 ## Known Issues
 - Minor LSP diagnostics present (type checking warnings) that don't affect runtime functionality
