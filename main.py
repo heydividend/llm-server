@@ -4,6 +4,8 @@ import uuid
 import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from app.routes import chat as ai_routes
 
@@ -42,6 +44,10 @@ class TimingMiddleware(BaseHTTPMiddleware):
 # Add middleware and routes
 app.add_middleware(TimingMiddleware)
 app.include_router(ai_routes.router, prefix="/v1/chat", tags=["AI"])
+
+# Mount static files
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/healthz")
 def healthz():
     return {"ok": True}
@@ -49,4 +55,4 @@ def healthz():
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the AI Service API ---"}
+    return FileResponse("static/index.html")
