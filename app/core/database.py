@@ -19,6 +19,7 @@ CONN_TIMEOUT  = os.getenv("SQLSERVER_CONN_TIMEOUT", "20")
 
 params = {
     "driver": DRV,
+    "TDS_Version": "7.3",
     "Encrypt": "yes",
     "TrustServerCertificate": "no",
     "LoginTimeout": LOGIN_TIMEOUT,
