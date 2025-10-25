@@ -93,15 +93,14 @@ Query the AI with retirement income goals:
 
 **Technical Implementation:**
 - Service Layer: `app/services/passive_income_planner.py` - financial calculations and database queries
-- Graph Generation: `app/utils/graph_generator.py` - Plotly + Kaleido for PNG charts (base64 encoded)
+- Chart Rendering: Highcharts (client-side JavaScript) - professional financial charts
 - Database Schema: `app/config/portfolio_schema.py` - portfolio/watchlist storage
 - API Endpoint: `POST /v1/portfolio/save` - persist portfolios with metadata
-- Frontend: Enhanced markdown/HTML rendering with image and table support
+- Frontend: Enhanced markdown/HTML rendering with Highcharts integration
 
 **Dependencies:**
-- `plotly` - Interactive chart generation
-- `kaleido` - Static image export for charts
 - `pandas` - Data manipulation for financial calculations
+- Highcharts (CDN) - Client-side chart rendering (no server dependencies)
 
 ## Recent Changes (Oct 25, 2025)
 - **Infrastructure Setup** (Oct 23):
@@ -127,12 +126,13 @@ Query the AI with retirement income goals:
   - Built complete portfolio planning system with AI-powered recommendations
   - Created database schema: user_profiles, portfolio_groups, portfolio_positions tables
   - Implemented PassiveIncomePlanService with financial calculations (capital needs, dividend projections, sector diversification)
-  - Added graph generation utilities (Plotly + Kaleido) for 3 chart types
+  - Switched to Highcharts for professional client-side financial chart rendering
+  - Implemented 3 interactive charts: pie (allocation), line (income projection), column (sector breakdown)
   - Updated planner to detect passive income requests and route to dedicated handler
   - Created POST /v1/portfolio/save endpoint for portfolio persistence
-  - Enhanced frontend with markdown/HTML rendering, image display, and table formatting
+  - Enhanced frontend with markdown/HTML rendering, Highcharts integration, image display, and table formatting
   - Added "Build passive income portfolio" example query button
-  - Installed plotly, kaleido, pandas packages
+  - Removed Plotly/Kaleido server-side dependencies for improved performance
   - All changes architect-reviewed and approved ✅
 
 ## Database Connection
