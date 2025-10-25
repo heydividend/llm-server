@@ -90,7 +90,6 @@ orjson==3.11.3
 pandas==2.3.2
 peft==0.10.0
 pillow==11.0.0
-plotly==6.3.0
 propcache==0.3.2
 protobuf==6.32.0
 pyarrow==21.0.0
@@ -153,6 +152,4 @@ watchfiles==1.1.0
 websockets==15.0.1
 xxhash==3.5.0
 yarl==1.20.1
-kaleido
 pandas
-plotly
