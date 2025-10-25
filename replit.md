@@ -38,11 +38,14 @@ Optional:
 - `POST /v1/portfolio/save` - Save generated portfolio or watchlist to database
 
 ## Frontend
-A simple, clean chat interface is available at the root URL (`/`) for testing the API. Features:
+A professional, financial-grade chat interface is available at the root URL (`/`) for testing the API. Features:
 - Real-time streaming responses with markdown/HTML rendering
 - Example queries for quick testing (including passive income portfolio builder)
 - Support for displaying charts and tables
-- Modern, responsive design with purple gradient theme
+- Modern, responsive design with dark blue (#1a1d29) professional theme
+- **New Chat button**: Clear conversation and start fresh (with confirmation)
+- **Global Print button**: Export entire conversation to PDF with professional formatting
+- **Per-message Save button**: Export individual responses as PDF with branding
 - Located in `static/index.html`
 
 ## Key Features
@@ -134,6 +137,11 @@ Query the AI with retirement income goals:
   - Enhanced frontend with markdown/HTML rendering, Highcharts integration, image display, and table formatting
   - Added "Build passive income portfolio" example query button
   - Removed Plotly/Kaleido server-side dependencies for improved performance
+  - **Fixed critical income parser bug**: Two-stage regex parsing correctly extracts dollar amounts ($100,000 vs $107)
+  - **Added U.S. markets filter**: Country = 'United States' filter in SQL and system prompt
+  - **Mock data fallback**: 20-stock realistic U.S. dividend portfolio when database returns empty
+  - **Professional UI controls**: New Chat button (with confirmation), global Print button, per-message Save as PDF
+  - **Enhanced PDF export**: Professional print CSS with branding, disclaimers, proper table formatting
   - All changes architect-reviewed and approved ✅
 
 ## Database Connection
