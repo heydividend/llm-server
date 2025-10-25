@@ -1,0 +1,15 @@
+
+================================================================================
+[2025-10-25 16:15:52] Request ID: fe84666e
+================================================================================
+QUERY:
+I want to build a passive income portfolio to replace my $300,000 income in 5 years
+
+METADATA:
+  - detected_tickers: []
+  - original_query: I want to build a passive income portfolio to replace my $300,000 income in 5 years
+  - updated_query: I want to build a passive income portfolio to replace my $300,000 income in 5 years
+  - use_web: False
+  - llm_provider: fallback
+  - stream: False
+================================================================================
