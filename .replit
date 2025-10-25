@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["arrow-cpp", "cacert", "cairo", "cargo", "chromedriver", "ffmpeg-full", "freefont_ttf", "freetype", "ghostscript", "glibcLocales", "go", "gobject-introspection", "gtk3", "lcms2", "libcxx", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libuv", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "qhull", "rustc", "tcl", "tk", "unixODBC", "which", "xcodebuild", "xdg-utils", "xsimd", "zlib", "freetds"]
+packages = ["arrow-cpp", "cacert", "cairo", "cargo", "chromedriver", "ffmpeg-full", "freefont_ttf", "freetds", "freetype", "ghostscript", "glibcLocales", "go", "gobject-introspection", "gtk3", "lcms2", "libcxx", "libiconv", "libimagequant", "libjpeg", "libjpeg_turbo", "libpng", "libtiff", "libuv", "libwebp", "libxcrypt", "openjpeg", "openssl", "pkg-config", "qhull", "rustc", "tcl", "tk", "unixODBC", "which", "xcodebuild", "xdg-utils", "xsimd", "zlib"]
 
 [workflows]
 runButton = "Project"
