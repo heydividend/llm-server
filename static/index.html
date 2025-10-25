@@ -15,21 +15,23 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            margin: 0;
         }
 
         .chat-container {
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e1e4e8;
             width: 100%;
-            max-width: 900px;
+            max-width: 1000px;
             height: 90vh;
             display: flex;
             flex-direction: column;
@@ -37,22 +39,24 @@
         }
 
         .chat-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #1a1d29;
             color: white;
-            padding: 20px;
-            text-align: center;
-            border-radius: 16px 16px 0 0;
+            padding: 18px 24px;
+            border-bottom: 1px solid #2d3142;
         }
 
         .chat-header h1 {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
+            letter-spacing: -0.5px;
+            margin: 0;
         }
 
         .chat-header p {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-top: 5px;
+            font-size: 13px;
+            opacity: 0.7;
+            margin: 4px 0 0 0;
+            font-weight: 400;
         }
 
         .chat-messages {
@@ -94,32 +98,107 @@
         .message-content table {
             border-collapse: collapse;
             width: 100%;
-            margin: 10px 0;
+            margin: 16px 0;
+            font-size: 13px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .message-content th,
         .message-content td {
-            border: 1px solid #ddd;
-            padding: 8px;
+            border: 1px solid #d0d7de;
+            padding: 10px 12px;
             text-align: left;
         }
 
         .message-content th {
-            background: #f0f0f0;
+            background: #f6f8fa;
             font-weight: 600;
+            color: #24292f;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        .message-content td {
+            background: white;
+        }
+
+        .message-content tr:hover td {
+            background: #f6f8fa;
+        }
+
+        .message-content h1 {
+            font-size: 22px;
+            font-weight: 600;
+            margin: 20px 0 12px 0;
+            color: #1a1d29;
+            letter-spacing: -0.5px;
+            border-bottom: 2px solid #e1e4e8;
+            padding-bottom: 8px;
+        }
+
+        .message-content h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 18px 0 10px 0;
+            color: #1a1d29;
+            letter-spacing: -0.3px;
+        }
+
+        .message-content h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 14px 0 8px 0;
+            color: #24292f;
+        }
+
+        .message-content ul, .message-content ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .message-content li {
+            margin: 4px 0;
+            line-height: 1.6;
+        }
+
+        .message-content hr {
+            border: none;
+            border-top: 1px solid #ddd;
+            margin: 16px 0;
+        }
+
+        .message-content strong {
+            font-weight: 600;
+            color: #1a1d29;
+        }
+
+        .message-content em {
+            font-style: italic;
+        }
+
+        .message-content code {
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, Consolas, monospace;
+            font-size: 12px;
+            color: #cf222e;
         }
 
         .message.user .message-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #2d5bff;
             color: white;
-            border-radius: 12px 12px 4px 12px;
+            border-radius: 8px 8px 2px 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .message.assistant .message-content {
             background: white;
-            color: #333;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px 12px 12px 4px;
+            color: #24292f;
+            border: 1px solid #d0d7de;
+            border-radius: 8px 8px 8px 2px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .chat-input-container {
@@ -150,19 +229,18 @@
 
         .send-button {
             padding: 12px 28px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #2d5bff;
             color: white;
             border: none;
-            border-radius: 24px;
-            font-size: 15px;
-            font-weight: 600;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: background 0.2s;
         }
 
         .send-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            background: #1e4ad9;
         }
 
         .send-button:disabled {
@@ -224,9 +302,29 @@
         }
 
         .example-query:hover {
-            background: #667eea;
+            background: #2d5bff;
             color: white;
-            border-color: #667eea;
+            border-color: #2d5bff;
+        }
+
+        .data-disclaimer {
+            font-size: 11px;
+            color: #57606a;
+            padding: 8px 12px;
+            background: #f6f8fa;
+            border-left: 3px solid #0969da;
+            margin: 12px 0;
+            border-radius: 4px;
+        }
+
+        .financial-warning {
+            font-size: 11px;
+            color: #9a6700;
+            padding: 8px 12px;
+            background: #fff8c5;
+            border-left: 3px solid #d4a72c;
+            margin: 12px 0;
+            border-radius: 4px;
         }
 
         .chart-container {
@@ -250,7 +348,17 @@
         <div class="chat-messages" id="chatMessages">
             <div class="message assistant">
                 <div class="message-content">
-                    Hello! I'm your financial AI assistant. Ask me about dividend stocks, stock prices, company information, or any financial market questions.
+                    <strong>Welcome to AskHeyDividend</strong><br><br>
+                    I provide AI-powered financial analysis using real-time market data and historical trends. I can help you with:
+                    <ul style="margin: 8px 0;">
+                        <li>Dividend stock analysis and screening</li>
+                        <li>Stock price data and market trends</li>
+                        <li>Passive income portfolio planning</li>
+                        <li>Company fundamentals and sector insights</li>
+                    </ul>
+                    <div class="financial-warning">
+                        <strong>Disclaimer:</strong> This tool provides information for educational purposes only. It does not constitute financial advice. Always conduct your own research and consult with a qualified financial advisor before making investment decisions.
+                    </div>
                 </div>
             </div>
         </div>
@@ -309,9 +417,21 @@
             html = html.replace(/!\[([^\]]*)\]\(data:image\/([^;]+);base64,([^)]+)\)/g, 
                 '<img src="data:image/$2;base64,$3" alt="$1" />');
             
-            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            
             html = convertTables(html);
+            
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+            
+            html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+            
+            html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+            
+            html = html.replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>');
+            
+            html = html.replace(/---+/g, '<hr>');
             
             html = html.replace(/\n/g, '<br>');
             
