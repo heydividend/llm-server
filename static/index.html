@@ -62,7 +62,12 @@
             font-weight: 400;
         }
 
-        .print-button {
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .header-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
@@ -76,8 +81,17 @@
             transition: background 0.2s;
         }
 
-        .print-button:hover {
+        .header-btn:hover {
             background: rgba(255, 255, 255, 0.15);
+        }
+
+        .header-btn.new-chat {
+            background: rgba(45, 91, 255, 0.2);
+            border-color: rgba(45, 91, 255, 0.4);
+        }
+
+        .header-btn.new-chat:hover {
+            background: rgba(45, 91, 255, 0.3);
         }
 
         @media print {
@@ -96,7 +110,7 @@
 
             .chat-input-container,
             .example-queries,
-            .print-button {
+            .header-buttons {
                 display: none !important;
             }
 
@@ -406,13 +420,21 @@
                 <h1>AskHeyDividend</h1>
                 <p>Your AI-powered financial assistant for dividends, stocks & market insights</p>
             </div>
-            <button class="print-button" onclick="window.print()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-                    <rect x="6" y="14" width="12" height="8"></rect>
-                </svg>
-                Print
-            </button>
+            <div class="header-buttons">
+                <button class="header-btn new-chat" onclick="startNewChat()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    New Chat
+                </button>
+                <button class="header-btn" onclick="window.print()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                        <rect x="6" y="14" width="12" height="8"></rect>
+                    </svg>
+                    Save as PDF
+                </button>
+            </div>
         </div>
         
         <div class="chat-messages" id="chatMessages">
@@ -468,6 +490,12 @@
         function sendExampleQuery(query) {
             messageInput.value = query;
             sendMessage();
+        }
+
+        function startNewChat() {
+            if (confirm('Start a new chat? This will clear the current conversation.')) {
+                location.reload();
+            }
         }
 
         function formatMarkdown(text) {
