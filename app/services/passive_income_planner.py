@@ -114,7 +114,9 @@ class PassiveIncomePlanService:
         Returns:
             List of stocks with ticker, sector, dividend info, and current price
         """
-        query = text("""
+        sector_placeholders = ','.join([f"'{sector}'" for sector in cls.SECTORS])
+        
+        query = text(f"""
             WITH LatestDividends AS (
                 SELECT 
                     Ticker,
@@ -154,7 +156,7 @@ class PassiveIncomePlanService:
             FROM dbo.vTickers t
             INNER JOIN AnnualDividends ad ON t.Ticker = ad.Ticker
             INNER JOIN LatestPrices p ON t.Ticker = p.Ticker AND p.rn = 1
-            WHERE t.Sector IN (:sectors)
+            WHERE t.Sector IN ({sector_placeholders})
                 AND p.Price > 0
                 AND ad.annual_dividend > 0
                 AND (ad.annual_dividend / NULLIF(p.Price, 0)) > 0.02
@@ -165,7 +167,7 @@ class PassiveIncomePlanService:
             with engine.connect() as conn:
                 result = conn.execute(
                     query,
-                    {"limit": limit, "sectors": tuple(cls.SECTORS)}
+                    {"limit": limit}
                 )
                 rows = result.fetchall()
                 

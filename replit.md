@@ -35,46 +35,105 @@ Optional:
 - `GET /` - Frontend chat interface (testing UI)
 - `GET /healthz` - Health check endpoint
 - `POST /v1/chat/completions` - Main chat completion endpoint (streaming responses)
+- `POST /v1/portfolio/save` - Save generated portfolio or watchlist to database
 
 ## Frontend
 A simple, clean chat interface is available at the root URL (`/`) for testing the API. Features:
-- Real-time streaming responses
-- Example queries for quick testing
-- Modern, responsive design
+- Real-time streaming responses with markdown/HTML rendering
+- Example queries for quick testing (including passive income portfolio builder)
+- Support for displaying charts and tables
+- Modern, responsive design with purple gradient theme
 - Located in `static/index.html`
 
 ## Key Features
-- **Query Classification**: Automatically routes queries to appropriate handlers (SQL, chat, web search, multipart)
+- **Query Classification**: Automatically routes queries to appropriate handlers (SQL, chat, web search, passive income planning, multipart)
 - **SQL Generation**: Generates and executes SQL queries against financial database
 - **Streaming Responses**: Real-time response streaming via server-sent events
 - **Web Search Integration**: Falls back to web search for data not in database
 - **File Processing**: Supports uploads for PDFs, images, and spreadsheets
+- **Passive Income Portfolio Builder**: AI-powered retirement planning with personalized dividend portfolio recommendations, interactive charts, and portfolio persistence
 
 ## Database Configuration
-The application uses pyodbc to connect to Azure SQL Server. Database views are created automatically on startup:
-- `dbo.vTickers` - Ticker/company information
-- `dbo.vDividends` - Dividend payment data
-- `dbo.vPrices` - Stock price data
+The application uses pyodbc to connect to Azure SQL Server. Database views and tables are created automatically on startup:
 
-**Note**: Database connection requires FreeTDS ODBC driver. Currently configured but may need additional setup for full functionality.
+**Views (Financial Data):**
+- `dbo.vTickers` - Ticker/company information (stocks & ETFs)
+- `dbo.vDividends` - Dividend payment history
+- `dbo.vPrices` - Current stock prices and volume
 
-## Recent Changes (Oct 23, 2025)
-- Imported from GitHub
-- Installed Python 3.11 and core dependencies
-- Configured environment variables for database and OpenAI
-- Set up FastAPI workflow on port 5000
-- Updated database configuration to use FreeTDS driver
-- Fixed Azure SQL Server hostname issue (was truncated)
-- Successfully connected to Azure SQL Server database
-- Created simple frontend testing interface with streaming support
-- **Security Fix**: Removed hard-coded Bing API key, moved to environment variables
-- **Code Cleanup**: Reduced helper.py from 1,108 to 390 lines (64.8% reduction) by removing duplicate code
-- **Performance Optimizations**:
-  - Database connection pool increased to 40 max connections (2.5x improvement)
-  - Added 60s timeout and 3-retry logic for OpenAI API calls
-  - Implemented HTTP connection pooling for web search APIs
-  - Created caching infrastructure with 5-minute TTL support
-  - All external API calls now have proper timeout and retry mechanisms
+**Tables (Portfolio Management):**
+- `dbo.user_profiles` - User account information
+- `dbo.portfolio_groups` - Portfolio/watchlist definitions with metadata
+- `dbo.portfolio_positions` - Individual stock positions within portfolios
+
+**Note**: Database connection requires FreeTDS ODBC driver, configured at `/home/runner/.odbcinst.ini`
+
+## Passive Income Portfolio Builder Feature
+
+**NEW**: AI-powered passive income planning tool that generates personalized dividend portfolio strategies.
+
+**How to Use:**
+Query the AI with retirement income goals:
+- "I want to build a passive income portfolio to replace my $300,000 income in 5 years"
+- "Help me create a dividend portfolio for financial independence"
+- "Build me a passive income strategy for retirement"
+
+**What It Does:**
+1. **Analyzes Requirements**: Parses target income, time horizon, and risk tolerance
+2. **Calculates Capital Needs**: Determines required investment based on dividend yields (3.5%-5.5%)
+3. **Builds Diversified Portfolio**: Selects 8-12 dividend stocks/ETFs across key sectors:
+   - Utilities, Real Estate (REITs), Energy, Consumer Staples
+   - Financials, Healthcare, Industrials, Communication Services
+4. **Projects Income Growth**: 5-year dividend income projections with 3% annual growth
+5. **Generates Visual Charts**:
+   - Portfolio allocation pie chart
+   - 5-year income projection timeline
+   - Sector diversification breakdown
+6. **Offers Portfolio Persistence**: Save plans as watchlists or portfolios for tracking
+
+**Technical Implementation:**
+- Service Layer: `app/services/passive_income_planner.py` - financial calculations and database queries
+- Graph Generation: `app/utils/graph_generator.py` - Plotly + Kaleido for PNG charts (base64 encoded)
+- Database Schema: `app/config/portfolio_schema.py` - portfolio/watchlist storage
+- API Endpoint: `POST /v1/portfolio/save` - persist portfolios with metadata
+- Frontend: Enhanced markdown/HTML rendering with image and table support
+
+**Dependencies:**
+- `plotly` - Interactive chart generation
+- `kaleido` - Static image export for charts
+- `pandas` - Data manipulation for financial calculations
+
+## Recent Changes (Oct 25, 2025)
+- **Infrastructure Setup** (Oct 23):
+  - Imported from GitHub and installed Python 3.11 + core dependencies
+  - Configured environment variables for database and OpenAI
+  - Set up FastAPI workflow on port 5000
+  - Fixed Azure SQL Server hostname and connected successfully
+  - Installed FreeTDS + unixODBC system packages
+  - Configured ODBC driver at `/home/runner/.odbcinst.ini`
+
+- **Security & Code Quality** (Oct 23):
+  - Removed hard-coded Bing API key, moved to environment variables
+  - Reduced helper.py from 1,108 to 390 lines (64.8% reduction)
+  - Fixed OpenAI httpx client configuration (removed incompatible retries parameter)
+
+- **Performance Optimizations** (Oct 23):
+  - Database connection pool: 2.5x increase (40 max connections)
+  - OpenAI API: 60s timeout + 3-retry logic with exponential backoff
+  - Web search: HTTP connection pooling + retry strategy
+  - Created caching infrastructure (5-min TTL, 1000 entry capacity)
+
+- **Passive Income Portfolio Builder Feature** (Oct 25):
+  - Built complete portfolio planning system with AI-powered recommendations
+  - Created database schema: user_profiles, portfolio_groups, portfolio_positions tables
+  - Implemented PassiveIncomePlanService with financial calculations (capital needs, dividend projections, sector diversification)
+  - Added graph generation utilities (Plotly + Kaleido) for 3 chart types
+  - Updated planner to detect passive income requests and route to dedicated handler
+  - Created POST /v1/portfolio/save endpoint for portfolio persistence
+  - Enhanced frontend with markdown/HTML rendering, image display, and table formatting
+  - Added "Build passive income portfolio" example query button
+  - Installed plotly, kaleido, pandas packages
+  - All changes architect-reviewed and approved ✅
 
 ## Database Connection
 
