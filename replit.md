@@ -52,6 +52,7 @@ A simple, clean chat interface is available at the root URL (`/`) for testing th
 - **Web Search Integration**: Falls back to web search for data not in database
 - **File Processing**: Supports uploads for PDFs, images, and spreadsheets
 - **Passive Income Portfolio Builder**: AI-powered retirement planning with personalized dividend portfolio recommendations, interactive charts, and portfolio persistence
+- **Self-Healing AI**: Automatic error detection, recovery, and alternative solutions (see `SELF_HEALING.md`)
 
 ## Database Configuration
 The application uses pyodbc to connect to Azure SQL Server. Database views and tables are created automatically on startup:
@@ -165,6 +166,26 @@ The application includes several performance optimizations configurable via envi
 **Web Search:**
 - Retry strategy: 3 attempts with backoff for rate limits (429) and server errors (500-504)
 - Connection pooling: 20 pool connections, 20 max pool size
+
+## Self-Healing Architecture
+
+AskHeyDividend implements comprehensive self-healing mechanisms:
+
+### Automatic Error Recovery
+1. **Web Search Fallback**: If SQL fails or returns no data, automatically searches web
+2. **HTTP Retry Logic**: 3 retries with exponential backoff for network errors (429, 500-504)
+3. **Database Resilience**: Connection pooling, auto-retry, graceful degradation
+4. **OpenAI API Resilience**: 60s timeout, 3 retries with backoff
+5. **Empty Data Handling**: Explains failures and offers alternative approaches
+6. **Chart Rendering Fallback**: Graceful error messages if visualization fails
+
+### Error Detection & Communication
+- Detects when database has insufficient data
+- Explains WHY errors occurred (not just that they failed)
+- Offers 3 alternative solutions for every failure
+- Logs all errors for monitoring and analysis
+
+**See `SELF_HEALING.md` for complete architecture documentation**
 
 ## Known Issues
 - Minor LSP diagnostics present (type checking warnings) that don't affect runtime functionality

@@ -504,7 +504,13 @@
                 const chartData = JSON.parse(chartsDiv.dataset.charts || '{}');
                 const { allocations = [], projections = [], diversification = {} } = chartData;
 
-                if (allocations.length === 0) return;
+                if (allocations.length === 0) {
+                    chartsDiv.innerHTML = '<div style="padding: 20px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin: 10px 0;">' +
+                        '<strong>📊 Chart Rendering Skipped:</strong> No portfolio data available to visualize. ' +
+                        'See the alternatives suggested above.' +
+                        '</div>';
+                    return;
+                }
 
                 chartsDiv.innerHTML = '';
 
@@ -624,6 +630,13 @@
 
             } catch (error) {
                 console.error('Error rendering charts:', error);
+                if (chartsDiv) {
+                    chartsDiv.innerHTML = '<div style="padding: 20px; background: #ffe6e6; border: 1px solid #ff4444; border-radius: 8px; margin: 10px 0;">' +
+                        '<strong>⚠️ Chart Rendering Error:</strong> Unable to display interactive charts. ' +
+                        'The data tables above contain all the information you need. ' +
+                        'Error: ' + error.message +
+                        '</div>';
+                }
             }
         }
 
