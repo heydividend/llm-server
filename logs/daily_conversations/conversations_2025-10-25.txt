@@ -648,3 +648,271 @@ Would you like me to try one of these alternative approaches?
 --------------------------------------------------------------------------------
 
 ================================================================================
+
+================================================================================
+[2025-10-25 16:59:32] Request ID: 7183919e
+================================================================================
+
+QUERY:
+--------------------------------------------------------------------------------
+I want to build a passive income portfolio to replace my $200k income in 5 years
+--------------------------------------------------------------------------------
+
+METADATA:
+--------------------------------------------------------------------------------
+  - detected_tickers: []
+  - original_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - updated_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - stream: True
+  - use_web: False
+--------------------------------------------------------------------------------
+
+RESPONSE (Length: 2460 chars):
+--------------------------------------------------------------------------------
+
+# PASSIVE INCOME PORTFOLIO BUILDER
+
+Generating passive income plan for **$200,000** annual income over **5 years** with **moderate** risk tolerance...
+
+## 📊 Plan Summary
+
+- **Target Annual Income**: $200,000
+- **Required Capital**: $4,444,444
+- **Average Dividend Yield**: 4.50%
+- **Risk Tolerance**: Moderate
+- **Investment Horizon**: 5 years
+- **Number of Holdings**: 0
+
+## 🎯 Key Assumptions
+
+- **Expected Dividend Yield**: 4.50%
+- **Annual Dividend Growth**: 3.0%
+- **Risk Profile**: Moderate
+
+## ⚠️ Unable to Generate Portfolio
+
+I couldn't find sufficient dividend stock data in the database to create a portfolio plan. This could mean:
+
+1. **Database Empty**: The dividend data tables may not have recent information
+2. **No Suitable Stocks**: No stocks match the criteria (>2% yield, recent dividends)
+3. **Database Connection Issue**: Temporary connectivity problem
+
+**Self-Healing Alternatives:**
+
+- I can search the web for current dividend stock recommendations
+2. I can provide general passive income strategies based on market knowledge
+3. You can ask me about specific dividend stocks you're considering (e.g., 'Tell me about SCHD dividends')
+
+Would you like me to try one of these alternative approaches?
+
+## 📈 5-Year Income Projections
+
+| Year | Projected Annual Income |
+|------|-------------------------|
+| Year 1 | $0.00 |
+| Year 2 | $0.00 |
+| Year 3 | $0.00 |
+| Year 4 | $0.00 |
+| Year 5 | $0.00 |
+
+## 📊 Visual Charts
+
+<div id="portfolio-charts" data-charts='{"allocations": [], "projections": [{"year": 1, "projected_income": 0.0}, {"year": 2, "projected_income": 0.0}, {"year": 3, "projected_income": 0.0}, {"year": 4, "projected_income": 0.0}, {"year": 5, "projected_income": 0.0}], "diversification": {}}'></div>
+
+---
+
+### Next Steps
+
+**Save Portfolio**: Reply with a name to save this as a watchlist or portfolio for tracking.
+
+---
+
+**Investment Disclaimer**: This analysis is based on historical dividend data and conservative growth assumptions (3-5.5% yield, 3% annual growth). Past performance does not guarantee future results. This is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions. Markets are subject to risks including loss of principal.
+
+**Data Sources**: U.S. markets only - Historical dividend payments, current market prices, sector classifications from Azure SQL Database. Last updated: Real-time market data.
+
+--------------------------------------------------------------------------------
+
+================================================================================
+
+================================================================================
+[2025-10-25 17:00:41] Request ID: ec4bc9e2
+================================================================================
+
+QUERY:
+--------------------------------------------------------------------------------
+I want to build a passive income portfolio to replace my $200k income in 5 years
+--------------------------------------------------------------------------------
+
+METADATA:
+--------------------------------------------------------------------------------
+  - detected_tickers: []
+  - original_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - updated_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - stream: True
+  - use_web: False
+--------------------------------------------------------------------------------
+
+RESPONSE (Length: 2460 chars):
+--------------------------------------------------------------------------------
+
+# PASSIVE INCOME PORTFOLIO BUILDER
+
+Generating passive income plan for **$200,000** annual income over **5 years** with **moderate** risk tolerance...
+
+## 📊 Plan Summary
+
+- **Target Annual Income**: $200,000
+- **Required Capital**: $4,444,444
+- **Average Dividend Yield**: 4.50%
+- **Risk Tolerance**: Moderate
+- **Investment Horizon**: 5 years
+- **Number of Holdings**: 0
+
+## 🎯 Key Assumptions
+
+- **Expected Dividend Yield**: 4.50%
+- **Annual Dividend Growth**: 3.0%
+- **Risk Profile**: Moderate
+
+## ⚠️ Unable to Generate Portfolio
+
+I couldn't find sufficient dividend stock data in the database to create a portfolio plan. This could mean:
+
+1. **Database Empty**: The dividend data tables may not have recent information
+2. **No Suitable Stocks**: No stocks match the criteria (>2% yield, recent dividends)
+3. **Database Connection Issue**: Temporary connectivity problem
+
+**Self-Healing Alternatives:**
+
+- I can search the web for current dividend stock recommendations
+2. I can provide general passive income strategies based on market knowledge
+3. You can ask me about specific dividend stocks you're considering (e.g., 'Tell me about SCHD dividends')
+
+Would you like me to try one of these alternative approaches?
+
+## 📈 5-Year Income Projections
+
+| Year | Projected Annual Income |
+|------|-------------------------|
+| Year 1 | $0.00 |
+| Year 2 | $0.00 |
+| Year 3 | $0.00 |
+| Year 4 | $0.00 |
+| Year 5 | $0.00 |
+
+## 📊 Visual Charts
+
+<div id="portfolio-charts" data-charts='{"allocations": [], "projections": [{"year": 1, "projected_income": 0.0}, {"year": 2, "projected_income": 0.0}, {"year": 3, "projected_income": 0.0}, {"year": 4, "projected_income": 0.0}, {"year": 5, "projected_income": 0.0}], "diversification": {}}'></div>
+
+---
+
+### Next Steps
+
+**Save Portfolio**: Reply with a name to save this as a watchlist or portfolio for tracking.
+
+---
+
+**Investment Disclaimer**: This analysis is based on historical dividend data and conservative growth assumptions (3-5.5% yield, 3% annual growth). Past performance does not guarantee future results. This is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions. Markets are subject to risks including loss of principal.
+
+**Data Sources**: U.S. markets only - Historical dividend payments, current market prices, sector classifications from Azure SQL Database. Last updated: Real-time market data.
+
+--------------------------------------------------------------------------------
+
+================================================================================
+
+================================================================================
+[2025-10-25 17:04:11] Request ID: 25d5d99c
+================================================================================
+
+QUERY:
+--------------------------------------------------------------------------------
+I want to build a passive income portfolio to replace my $200k income in 5 years
+--------------------------------------------------------------------------------
+
+METADATA:
+--------------------------------------------------------------------------------
+  - detected_tickers: []
+  - original_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - updated_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - stream: True
+  - use_web: False
+--------------------------------------------------------------------------------
+
+RESPONSE (Length: 5063 chars):
+--------------------------------------------------------------------------------
+
+# PASSIVE INCOME PORTFOLIO BUILDER
+
+Generating passive income plan for **$200,000** annual income over **5 years** with **moderate** risk tolerance...
+
+## 📊 Plan Summary
+
+- **Target Annual Income**: $200,000
+- **Required Capital**: $4,444,444
+- **Average Dividend Yield**: 4.50%
+- **Risk Tolerance**: Moderate
+- **Investment Horizon**: 5 years
+- **Number of Holdings**: 8
+
+## 🎯 Key Assumptions
+
+- **Expected Dividend Yield**: 4.50%
+- **Annual Dividend Growth**: 3.0%
+- **Risk Profile**: Moderate
+
+## 💼 Portfolio Allocations
+
+| Ticker | Company | Sector | Shares | Price | Cost | Allocation | Yield |
+|--------|---------|--------|--------|-------|------|------------|-------|
+| VZ | Verizon Communicatio... | Communication Services | 11649.92 | $38.15 | $444,444 | 10.0% | 6.84% |
+| MO | Altria Group Inc | Consumer Staples | 9116.81 | $48.75 | $444,444 | 10.0% | 8.04% |
+| SO | Southern Company | Utilities | 5661.71 | $78.50 | $444,444 | 10.0% | 3.57% |
+| XOM | Exxon Mobil Corporat... | Energy | 3952.37 | $112.45 | $444,444 | 10.0% | 3.24% |
+| O | Realty Income Corpor... | Real Estate | 7824.73 | $56.80 | $444,444 | 10.0% | 5.39% |
+| JPM | JPMorgan Chase & Co | Financials | 2681.41 | $165.75 | $444,444 | 10.0% | 2.53% |
+| JNJ | Johnson & Johnson | Healthcare | 2797.01 | $158.90 | $444,444 | 10.0% | 3.00% |
+| MMM | 3M Company | Industrials | 4982.56 | $89.20 | $444,444 | 10.0% | 6.73% |
+
+## 📈 5-Year Income Projections
+
+| Year | Projected Annual Income |
+|------|-------------------------|
+| Year 1 | $174,798.32 |
+| Year 2 | $180,042.27 |
+| Year 3 | $185,443.54 |
+| Year 4 | $191,006.85 |
+| Year 5 | $196,737.05 |
+
+## 🌐 Sector Diversification
+
+| Sector | Allocation |
+|--------|------------|
+| Communication Services | 10.0% |
+| Consumer Staples | 10.0% |
+| Utilities | 10.0% |
+| Energy | 10.0% |
+| Real Estate | 10.0% |
+| Financials | 10.0% |
+| Healthcare | 10.0% |
+| Industrials | 10.0% |
+
+## 📊 Visual Charts
+
+<div id="portfolio-charts" data-charts='{"allocations": [{"ticker": "VZ", "company_name": "Verizon Communications Inc", "sector": "Communication Services", "security_type": "Stock", "shares": 11649.92, "price": 38.15, "cost": 444444.44, "allocation_pct": 10.0, "dividend_yield_pct": 6.84, "annual_dividend": 2.61}, {"ticker": "MO", "company_name": "Altria Group Inc", "sector": "Consumer Staples", "security_type": "Stock", "shares": 9116.81, "price": 48.75, "cost": 444444.44, "allocation_pct": 10.0, "dividend_yield_pct": 8.04, "annual_dividend": 3.92}, {"ticker": "SO", "company_name": "Southern Company", "sector": "Utilities", "security_type": "Stock", "shares": 5661.71, "price": 78.5, "cost": 444444.44, "allocation_pct": 10.0, "dividend_yield_pct": 3.57, "annual_dividend": 2.8}, {"ticker": "XOM", "company_name": "Exxon Mobil Corporation", "sector": "Energy", "security_type": "Stock", "shares": 3952.37, "price": 112.45, "cost": 444444.44, "allocation_pct": 10.0, "dividend_yield_pct": 3.24, "annual_dividend": 3.64}, {"ticker": "O", "company_name": "Realty Income Corporation", "sector": "Real Estate", "security_type": "Stock", "shares": 7824.73, "price": 56.8, "cost": 444444.44, "allocation_pct": 10.0, "dividend_yield_pct": 5.39, "annual_dividend": 3.06}, {"ticker": "JPM", "company_name": "JPMorgan Chase & Co", "sector": "Financials", "security_type": "Stock", "shares": 2681.41, "price": 165.75, "cost": 444444.44, "allocation_pct": 10.0, "dividend_yield_pct": 2.53, "annual_dividend": 4.2}, {"ticker": "JNJ", "company_name": "Johnson & Johnson", "sector": "Healthcare", "security_type": "Stock", "shares": 2797.01, "price": 158.9, "cost": 444444.44, "allocation_pct": 10.0, "dividend_yield_pct": 3.0, "annual_dividend": 4.76}, {"ticker": "MMM", "company_name": "3M Company", "sector": "Industrials", "security_type": "Stock", "shares": 4982.56, "price": 89.2, "cost": 444444.44, "allocation_pct": 10.0, "dividend_yield_pct": 6.73, "annual_dividend": 6.0}], "projections": [{"year": 1, "projected_income": 174798.32}, {"year": 2, "projected_income": 180042.27}, {"year": 3, "projected_income": 185443.54}, {"year": 4, "projected_income": 191006.85}, {"year": 5, "projected_income": 196737.05}], "diversification": {"Communication Services": 10.0, "Consumer Staples": 10.0, "Utilities": 10.0, "Energy": 10.0, "Real Estate": 10.0, "Financials": 10.0, "Healthcare": 10.0, "Industrials": 10.0}}'></div>
+
+---
+
+### Next Steps
+
+**Save Portfolio**: Reply with a name to save this as a watchlist or portfolio for tracking.
+
+---
+
+**Investment Disclaimer**: This analysis is based on historical dividend data and conservative growth assumptions (3-5.5% yield, 3% annual growth). Past performance does not guarantee future results. This is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions. Markets are subject to risks including loss of principal.
+
+**Data Sources**: U.S. markets only - Historical dividend payments, current market prices, sector classifications from Azure SQL Database. Last updated: Real-time market data.
+
+--------------------------------------------------------------------------------
+
+================================================================================
