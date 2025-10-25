@@ -390,3 +390,261 @@ Generating passive income plan for **$107** annual income over **5 years** with 
 --------------------------------------------------------------------------------
 
 ================================================================================
+
+================================================================================
+[2025-10-25 16:57:42] Request ID: 0ad1563c
+================================================================================
+
+QUERY:
+--------------------------------------------------------------------------------
+I would like to build a passive income portfolio and strategy that replace my $100,000 income in the next 5 years so I can retire on dividend passive income
+--------------------------------------------------------------------------------
+
+METADATA:
+--------------------------------------------------------------------------------
+  - detected_tickers: ['YMAX', 'TSLY', 'APLY', 'NVDY', 'AMZY', 'GOOY', 'FBY', 'CONY', 'NFLY', 'DISO', 'MSFO', 'AMDY', 'XOMO', 'JPMO', 'PYPY', 'SQY', 'MRNY', 'AIYY', 'OARK', 'YMAG', 'MSTY', 'ULTY', 'YBIT', 'CRSH', 'SNOY', 'ABNY', 'FIAT', 'TSMY', 'PLTY', 'MARO', 'FIVY', 'LFGY', 'CVNY', 'SDTY', 'FEAT', 'SOXY', 'WNTR', 'CHPY', 'HOOY', 'BRKC', 'YQQQ', 'BIGY', 'GDXY', 'DIPS', 'BABO', 'SMCY', 'GPTY', 'QDTY']
+  - original_query: I would like to build a passive income portfolio and strategy that replace my $100,000 income in the next 5 years so I can retire on dividend passive income
+  - updated_query: I would like to build a passive #GPTYcome in the next 5 years so I can retire on dividend passive income
+  - stream: True
+  - use_web: False
+--------------------------------------------------------------------------------
+
+RESPONSE (Length: 2460 chars):
+--------------------------------------------------------------------------------
+
+# PASSIVE INCOME PORTFOLIO BUILDER
+
+Generating passive income plan for **$100,000** annual income over **5 years** with **moderate** risk tolerance...
+
+## 📊 Plan Summary
+
+- **Target Annual Income**: $100,000
+- **Required Capital**: $2,222,222
+- **Average Dividend Yield**: 4.50%
+- **Risk Tolerance**: Moderate
+- **Investment Horizon**: 5 years
+- **Number of Holdings**: 0
+
+## 🎯 Key Assumptions
+
+- **Expected Dividend Yield**: 4.50%
+- **Annual Dividend Growth**: 3.0%
+- **Risk Profile**: Moderate
+
+## ⚠️ Unable to Generate Portfolio
+
+I couldn't find sufficient dividend stock data in the database to create a portfolio plan. This could mean:
+
+1. **Database Empty**: The dividend data tables may not have recent information
+2. **No Suitable Stocks**: No stocks match the criteria (>2% yield, recent dividends)
+3. **Database Connection Issue**: Temporary connectivity problem
+
+**Self-Healing Alternatives:**
+
+- I can search the web for current dividend stock recommendations
+2. I can provide general passive income strategies based on market knowledge
+3. You can ask me about specific dividend stocks you're considering (e.g., 'Tell me about SCHD dividends')
+
+Would you like me to try one of these alternative approaches?
+
+## 📈 5-Year Income Projections
+
+| Year | Projected Annual Income |
+|------|-------------------------|
+| Year 1 | $0.00 |
+| Year 2 | $0.00 |
+| Year 3 | $0.00 |
+| Year 4 | $0.00 |
+| Year 5 | $0.00 |
+
+## 📊 Visual Charts
+
+<div id="portfolio-charts" data-charts='{"allocations": [], "projections": [{"year": 1, "projected_income": 0.0}, {"year": 2, "projected_income": 0.0}, {"year": 3, "projected_income": 0.0}, {"year": 4, "projected_income": 0.0}, {"year": 5, "projected_income": 0.0}], "diversification": {}}'></div>
+
+---
+
+### Next Steps
+
+**Save Portfolio**: Reply with a name to save this as a watchlist or portfolio for tracking.
+
+---
+
+**Investment Disclaimer**: This analysis is based on historical dividend data and conservative growth assumptions (3-5.5% yield, 3% annual growth). Past performance does not guarantee future results. This is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions. Markets are subject to risks including loss of principal.
+
+**Data Sources**: U.S. markets only - Historical dividend payments, current market prices, sector classifications from Azure SQL Database. Last updated: Real-time market data.
+
+--------------------------------------------------------------------------------
+
+================================================================================
+
+================================================================================
+[2025-10-25 16:58:07] Request ID: fbe5e02e
+================================================================================
+
+QUERY:
+--------------------------------------------------------------------------------
+I would like to build a passive income portfolio and strategy that replace my $100,000 income in the next 5 years so I can retire on dividend passive income
+--------------------------------------------------------------------------------
+
+METADATA:
+--------------------------------------------------------------------------------
+  - detected_tickers: ['YMAX', 'TSLY', 'APLY', 'NVDY', 'AMZY', 'GOOY', 'FBY', 'CONY', 'NFLY', 'DISO', 'MSFO', 'AMDY', 'XOMO', 'JPMO', 'PYPY', 'SQY', 'MRNY', 'AIYY', 'OARK', 'YMAG', 'MSTY', 'ULTY', 'YBIT', 'CRSH', 'SNOY', 'ABNY', 'FIAT', 'TSMY', 'PLTY', 'MARO', 'FIVY', 'LFGY', 'CVNY', 'SDTY', 'FEAT', 'SOXY', 'WNTR', 'CHPY', 'HOOY', 'BRKC', 'YQQQ', 'BIGY', 'GDXY', 'DIPS', 'BABO', 'SMCY', 'GPTY', 'QDTY']
+  - original_query: I would like to build a passive income portfolio and strategy that replace my $100,000 income in the next 5 years so I can retire on dividend passive income
+  - updated_query: I would like to build a passive #GPTYcome in the next 5 years so I can retire on dividend passive income
+  - stream: True
+  - use_web: False
+--------------------------------------------------------------------------------
+
+RESPONSE (Length: 2460 chars):
+--------------------------------------------------------------------------------
+
+# PASSIVE INCOME PORTFOLIO BUILDER
+
+Generating passive income plan for **$100,000** annual income over **5 years** with **moderate** risk tolerance...
+
+## 📊 Plan Summary
+
+- **Target Annual Income**: $100,000
+- **Required Capital**: $2,222,222
+- **Average Dividend Yield**: 4.50%
+- **Risk Tolerance**: Moderate
+- **Investment Horizon**: 5 years
+- **Number of Holdings**: 0
+
+## 🎯 Key Assumptions
+
+- **Expected Dividend Yield**: 4.50%
+- **Annual Dividend Growth**: 3.0%
+- **Risk Profile**: Moderate
+
+## ⚠️ Unable to Generate Portfolio
+
+I couldn't find sufficient dividend stock data in the database to create a portfolio plan. This could mean:
+
+1. **Database Empty**: The dividend data tables may not have recent information
+2. **No Suitable Stocks**: No stocks match the criteria (>2% yield, recent dividends)
+3. **Database Connection Issue**: Temporary connectivity problem
+
+**Self-Healing Alternatives:**
+
+- I can search the web for current dividend stock recommendations
+2. I can provide general passive income strategies based on market knowledge
+3. You can ask me about specific dividend stocks you're considering (e.g., 'Tell me about SCHD dividends')
+
+Would you like me to try one of these alternative approaches?
+
+## 📈 5-Year Income Projections
+
+| Year | Projected Annual Income |
+|------|-------------------------|
+| Year 1 | $0.00 |
+| Year 2 | $0.00 |
+| Year 3 | $0.00 |
+| Year 4 | $0.00 |
+| Year 5 | $0.00 |
+
+## 📊 Visual Charts
+
+<div id="portfolio-charts" data-charts='{"allocations": [], "projections": [{"year": 1, "projected_income": 0.0}, {"year": 2, "projected_income": 0.0}, {"year": 3, "projected_income": 0.0}, {"year": 4, "projected_income": 0.0}, {"year": 5, "projected_income": 0.0}], "diversification": {}}'></div>
+
+---
+
+### Next Steps
+
+**Save Portfolio**: Reply with a name to save this as a watchlist or portfolio for tracking.
+
+---
+
+**Investment Disclaimer**: This analysis is based on historical dividend data and conservative growth assumptions (3-5.5% yield, 3% annual growth). Past performance does not guarantee future results. This is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions. Markets are subject to risks including loss of principal.
+
+**Data Sources**: U.S. markets only - Historical dividend payments, current market prices, sector classifications from Azure SQL Database. Last updated: Real-time market data.
+
+--------------------------------------------------------------------------------
+
+================================================================================
+
+================================================================================
+[2025-10-25 16:58:13] Request ID: f19e52e4
+================================================================================
+
+QUERY:
+--------------------------------------------------------------------------------
+I want to build a passive income portfolio to replace my $200k income in 5 years
+--------------------------------------------------------------------------------
+
+METADATA:
+--------------------------------------------------------------------------------
+  - detected_tickers: []
+  - original_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - updated_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - stream: True
+  - use_web: False
+--------------------------------------------------------------------------------
+
+RESPONSE (Length: 2460 chars):
+--------------------------------------------------------------------------------
+
+# PASSIVE INCOME PORTFOLIO BUILDER
+
+Generating passive income plan for **$200,000** annual income over **5 years** with **moderate** risk tolerance...
+
+## 📊 Plan Summary
+
+- **Target Annual Income**: $200,000
+- **Required Capital**: $4,444,444
+- **Average Dividend Yield**: 4.50%
+- **Risk Tolerance**: Moderate
+- **Investment Horizon**: 5 years
+- **Number of Holdings**: 0
+
+## 🎯 Key Assumptions
+
+- **Expected Dividend Yield**: 4.50%
+- **Annual Dividend Growth**: 3.0%
+- **Risk Profile**: Moderate
+
+## ⚠️ Unable to Generate Portfolio
+
+I couldn't find sufficient dividend stock data in the database to create a portfolio plan. This could mean:
+
+1. **Database Empty**: The dividend data tables may not have recent information
+2. **No Suitable Stocks**: No stocks match the criteria (>2% yield, recent dividends)
+3. **Database Connection Issue**: Temporary connectivity problem
+
+**Self-Healing Alternatives:**
+
+- I can search the web for current dividend stock recommendations
+2. I can provide general passive income strategies based on market knowledge
+3. You can ask me about specific dividend stocks you're considering (e.g., 'Tell me about SCHD dividends')
+
+Would you like me to try one of these alternative approaches?
+
+## 📈 5-Year Income Projections
+
+| Year | Projected Annual Income |
+|------|-------------------------|
+| Year 1 | $0.00 |
+| Year 2 | $0.00 |
+| Year 3 | $0.00 |
+| Year 4 | $0.00 |
+| Year 5 | $0.00 |
+
+## 📊 Visual Charts
+
+<div id="portfolio-charts" data-charts='{"allocations": [], "projections": [{"year": 1, "projected_income": 0.0}, {"year": 2, "projected_income": 0.0}, {"year": 3, "projected_income": 0.0}, {"year": 4, "projected_income": 0.0}, {"year": 5, "projected_income": 0.0}], "diversification": {}}'></div>
+
+---
+
+### Next Steps
+
+**Save Portfolio**: Reply with a name to save this as a watchlist or portfolio for tracking.
+
+---
+
+**Investment Disclaimer**: This analysis is based on historical dividend data and conservative growth assumptions (3-5.5% yield, 3% annual growth). Past performance does not guarantee future results. This is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions. Markets are subject to risks including loss of principal.
+
+**Data Sources**: U.S. markets only - Historical dividend payments, current market prices, sector classifications from Azure SQL Database. Last updated: Real-time market data.
+
+--------------------------------------------------------------------------------
+
+================================================================================
