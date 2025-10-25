@@ -110,7 +110,8 @@
 
             .chat-input-container,
             .example-queries,
-            .header-buttons {
+            .header-buttons,
+            .message-actions {
                 display: none !important;
             }
 
@@ -144,6 +145,7 @@
         .message {
             margin-bottom: 16px;
             display: flex;
+            flex-direction: column;
             animation: fadeIn 0.3s ease-in;
         }
 
@@ -153,7 +155,43 @@
         }
 
         .message.user {
+            align-items: flex-end;
+        }
+
+        .message.assistant {
+            align-items: flex-start;
+        }
+
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 85%;
+        }
+
+        .message-actions {
+            display: flex;
             justify-content: flex-end;
+            margin-top: 8px;
+            gap: 8px;
+        }
+
+        .message-action-btn {
+            background: #f6f8fa;
+            border: 1px solid #d0d7de;
+            color: #57606a;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s;
+        }
+
+        .message-action-btn:hover {
+            background: #e1e4e8;
+            color: #24292f;
         }
 
         .message-content {
@@ -161,6 +199,10 @@
             padding: 12px 16px;
             border-radius: 12px;
             line-height: 1.5;
+        }
+
+        .message-wrapper .message-content {
+            max-width: 100%;
         }
 
         .message-content img {
@@ -439,17 +481,28 @@
         
         <div class="chat-messages" id="chatMessages">
             <div class="message assistant">
-                <div class="message-content">
-                    <strong>Welcome to AskHeyDividend</strong><br><br>
-                    I provide AI-powered financial analysis using real-time market data and historical trends. I can help you with:
-                    <ul style="margin: 8px 0;">
-                        <li>Dividend stock analysis and screening</li>
-                        <li>Stock price data and market trends</li>
-                        <li>Passive income portfolio planning</li>
-                        <li>Company fundamentals and sector insights</li>
-                    </ul>
-                    <div class="financial-warning">
-                        <strong>Disclaimer:</strong> This tool provides information for educational purposes only. It does not constitute financial advice. Always conduct your own research and consult with a qualified financial advisor before making investment decisions.
+                <div class="message-wrapper">
+                    <div class="message-content">
+                        <strong>Welcome to AskHeyDividend</strong><br><br>
+                        I provide AI-powered financial analysis using real-time market data and historical trends. I can help you with:
+                        <ul style="margin: 8px 0;">
+                            <li>Dividend stock analysis and screening</li>
+                            <li>Stock price data and market trends</li>
+                            <li>Passive income portfolio planning</li>
+                            <li>Company fundamentals and sector insights</li>
+                        </ul>
+                        <div class="financial-warning">
+                            <strong>Disclaimer:</strong> This tool provides information for educational purposes only. It does not constitute financial advice. Always conduct your own research and consult with a qualified financial advisor before making investment decisions.
+                        </div>
+                    </div>
+                    <div class="message-actions">
+                        <button class="message-action-btn" onclick="saveMessageAsPDF(this)">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                <rect x="6" y="14" width="12" height="8"></rect>
+                            </svg>
+                            Save as PDF
+                        </button>
                     </div>
                 </div>
             </div>
@@ -601,10 +654,79 @@
         function addMessage(content, role) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${role}`;
-            messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            
+            if (role === 'assistant') {
+                messageDiv.innerHTML = `
+                    <div class="message-wrapper">
+                        <div class="message-content">${content}</div>
+                        <div class="message-actions">
+                            <button class="message-action-btn" onclick="saveMessageAsPDF(this)">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                                    <rect x="6" y="14" width="12" height="8"></rect>
+                                </svg>
+                                Save as PDF
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `<div class="message-content">${content}</div>`;
+            }
+            
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             return messageDiv;
+        }
+
+        function saveMessageAsPDF(button) {
+            const messageWrapper = button.closest('.message-wrapper');
+            const messageContent = messageWrapper.querySelector('.message-content');
+            
+            const printWindow = window.open('', '', 'width=800,height=600');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>AskHeyDividend - Export</title>
+                    <style>
+                        body {
+                            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            padding: 40px;
+                            max-width: 900px;
+                            margin: 0 auto;
+                            color: #24292f;
+                        }
+                        h1 { font-size: 22px; font-weight: 600; margin: 20px 0 12px 0; color: #1a1d29; border-bottom: 2px solid #e1e4e8; padding-bottom: 8px; }
+                        h2 { font-size: 18px; font-weight: 600; margin: 18px 0 10px 0; color: #1a1d29; }
+                        h3 { font-size: 16px; font-weight: 600; margin: 14px 0 8px 0; color: #24292f; }
+                        table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 13px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
+                        th, td { border: 1px solid #d0d7de; padding: 10px 12px; text-align: left; }
+                        th { background: #f6f8fa; font-weight: 600; color: #24292f; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+                        td { background: white; }
+                        strong { font-weight: 600; color: #1a1d29; }
+                        .financial-warning { font-size: 11px; color: #9a6700; padding: 8px 12px; background: #fff8c5; border-left: 3px solid #d4a72c; margin: 12px 0; border-radius: 4px; }
+                        .data-disclaimer { font-size: 11px; color: #57606a; padding: 8px 12px; background: #f6f8fa; border-left: 3px solid #0969da; margin: 12px 0; border-radius: 4px; }
+                        code { background: #f6f8fa; padding: 2px 6px; border-radius: 3px; font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 12px; color: #cf222e; }
+                        hr { border: none; border-top: 1px solid #d0d7de; margin: 16px 0; }
+                        img { max-width: 100%; height: auto; margin: 10px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #1a1d29; padding-bottom: 20px;">
+                        <h1 style="border: none; font-size: 28px; margin: 0;">AskHeyDividend</h1>
+                        <p style="color: #57606a; margin: 5px 0 0 0;">AI-Powered Financial Assistant</p>
+                        <p style="font-size: 11px; color: #57606a; margin: 5px 0 0 0;">Generated: ${new Date().toLocaleString()}</p>
+                    </div>
+                    ${messageContent.innerHTML}
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.focus();
+            setTimeout(() => {
+                printWindow.print();
+            }, 250);
         }
 
         function addTypingIndicator() {

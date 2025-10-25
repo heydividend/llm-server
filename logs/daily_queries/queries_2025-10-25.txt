@@ -193,3 +193,18 @@ METADATA:
   - llm_provider: fallback
   - stream: True
 ================================================================================
+
+================================================================================
+[2025-10-25 17:07:32] Request ID: a954fa2c
+================================================================================
+QUERY:
+I want to build a passive income portfolio to replace my $200k income in 5 years
+
+METADATA:
+  - detected_tickers: []
+  - original_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - updated_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - use_web: False
+  - llm_provider: fallback
+  - stream: True
+================================================================================
