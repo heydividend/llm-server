@@ -68,11 +68,6 @@ from app.utils.helpers import (
 
 from app.utils.metrics import compute_dividend_metrics
 from app.services.passive_income_planner import PassiveIncomePlanService
-from app.utils.graph_generator import (
-    generate_allocation_chart,
-    generate_income_projection_chart,
-    generate_sector_diversification_chart
-)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -301,19 +296,14 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                 yield "\n"
             
             yield "## 📊 Visual Charts\n\n"
-            yield "Generating portfolio visualization charts...\n\n"
             
-            allocation_chart = generate_allocation_chart(allocations)
-            if allocation_chart:
-                yield f"### Portfolio Allocation Chart\n![Allocation](data:image/png;base64,{allocation_chart})\n\n"
+            chart_data = {
+                "allocations": allocations,
+                "projections": projections,
+                "diversification": diversification
+            }
             
-            income_chart = generate_income_projection_chart(projections)
-            if income_chart:
-                yield f"### Income Projection Chart\n![Projections](data:image/png;base64,{income_chart})\n\n"
-            
-            sector_chart = generate_sector_diversification_chart(diversification)
-            if sector_chart:
-                yield f"### Sector Diversification Chart\n![Sectors](data:image/png;base64,{sector_chart})\n\n"
+            yield f'<div id="portfolio-charts" data-charts=\'{json.dumps(chart_data)}\'></div>\n\n'
             
             yield "---\n\n"
             yield "💡 **Would you like to save this as a watchlist or portfolio?** If so, please provide a name for it.\n\n"

@@ -145,7 +145,7 @@ class PassiveIncomePlanService:
                 FROM dbo.vPrices
                 WHERE Price > 0
             )
-            SELECT TOP :limit
+            SELECT TOP {limit}
                 t.Ticker,
                 t.Company_Name,
                 t.Sector,
@@ -165,10 +165,7 @@ class PassiveIncomePlanService:
         
         try:
             with engine.connect() as conn:
-                result = conn.execute(
-                    query,
-                    {"limit": limit}
-                )
+                result = conn.execute(query)
                 rows = result.fetchall()
                 
                 stocks = []

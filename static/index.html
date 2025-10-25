@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AskHeyDividend - Financial AI Assistant</title>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/modules/export-data.js"></script>
     <style>
         * {
             margin: 0;
@@ -224,6 +227,16 @@
             background: #667eea;
             color: white;
             border-color: #667eea;
+        }
+
+        .chart-container {
+            width: 100%;
+            margin: 20px 0;
+            min-height: 400px;
+        }
+
+        #portfolio-charts {
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -454,6 +467,8 @@
 
                 if (!fullContent) {
                     contentDiv.textContent = 'No response received. Please try again.';
+                } else {
+                    renderPortfolioCharts(contentDiv);
                 }
 
             } catch (error) {
@@ -463,6 +478,137 @@
                 isProcessing = false;
                 sendButton.disabled = false;
                 messageInput.focus();
+            }
+        }
+
+        function renderPortfolioCharts(container) {
+            const chartsDiv = container.querySelector('#portfolio-charts');
+            if (!chartsDiv) return;
+
+            try {
+                const chartData = JSON.parse(chartsDiv.dataset.charts || '{}');
+                const { allocations = [], projections = [], diversification = {} } = chartData;
+
+                if (allocations.length === 0) return;
+
+                chartsDiv.innerHTML = '';
+
+                const allocationContainer = document.createElement('div');
+                allocationContainer.className = 'chart-container';
+                allocationContainer.id = 'allocation-chart';
+                chartsDiv.appendChild(allocationContainer);
+
+                const projectionContainer = document.createElement('div');
+                projectionContainer.className = 'chart-container';
+                projectionContainer.id = 'projection-chart';
+                chartsDiv.appendChild(projectionContainer);
+
+                const sectorContainer = document.createElement('div');
+                sectorContainer.className = 'chart-container';
+                sectorContainer.id = 'sector-chart';
+                chartsDiv.appendChild(sectorContainer);
+
+                Highcharts.chart('allocation-chart', {
+                    chart: { type: 'pie' },
+                    title: { text: 'Portfolio Allocation by Ticker' },
+                    tooltip: {
+                        pointFormat: '<b>{point.percentage:.1f}%</b> (${point.cost:,.0f})'
+                    },
+                    plotOptions: {
+                        pie: {
+                            allowPointSelect: true,
+                            cursor: 'pointer',
+                            dataLabels: {
+                                enabled: true,
+                                format: '<b>{point.name}</b>: {point.percentage:.1f}%'
+                            }
+                        }
+                    },
+                    series: [{
+                        name: 'Allocation',
+                        colorByPoint: true,
+                        data: allocations.map(a => ({
+                            name: a.ticker,
+                            y: a.allocation_pct,
+                            cost: a.cost
+                        }))
+                    }]
+                });
+
+                if (projections.length > 0) {
+                    Highcharts.chart('projection-chart', {
+                        chart: { type: 'line' },
+                        title: { text: '5-Year Dividend Income Projection' },
+                        xAxis: {
+                            title: { text: 'Year' },
+                            categories: projections.map(p => `Year ${p.year}`)
+                        },
+                        yAxis: {
+                            title: { text: 'Projected Income ($)' },
+                            labels: {
+                                formatter: function() {
+                                    return '$' + Highcharts.numberFormat(this.value, 0, '.', ',');
+                                }
+                            }
+                        },
+                        tooltip: {
+                            formatter: function() {
+                                return '<b>' + this.x + '</b><br/>Income: $' + 
+                                       Highcharts.numberFormat(this.y, 2, '.', ',');
+                            }
+                        },
+                        plotOptions: {
+                            line: {
+                                dataLabels: { enabled: true },
+                                enableMouseTracking: true
+                            }
+                        },
+                        series: [{
+                            name: 'Projected Income',
+                            data: projections.map(p => p.projected_income),
+                            color: '#667eea'
+                        }]
+                    });
+                }
+
+                if (Object.keys(diversification).length > 0) {
+                    Highcharts.chart('sector-chart', {
+                        chart: { type: 'column' },
+                        title: { text: 'Sector Diversification' },
+                        xAxis: {
+                            categories: Object.keys(diversification),
+                            title: { text: 'Sector' }
+                        },
+                        yAxis: {
+                            min: 0,
+                            title: { text: 'Allocation (%)' },
+                            labels: {
+                                formatter: function() {
+                                    return this.value + '%';
+                                }
+                            }
+                        },
+                        tooltip: {
+                            pointFormat: '<b>{point.y:.1f}%</b> of portfolio'
+                        },
+                        plotOptions: {
+                            column: {
+                                dataLabels: {
+                                    enabled: true,
+                                    format: '{point.y:.1f}%'
+                                }
+                            }
+                        },
+                        series: [{
+                            name: 'Allocation',
+                            data: Object.values(diversification),
+                            color: '#764ba2'
+                        }]
+                    });
+                }
+
+            } catch (error) {
+                console.error('Error rendering charts:', error);
             }
         }
 
