@@ -43,20 +43,81 @@
             color: white;
             padding: 18px 24px;
             border-bottom: 1px solid #2d3142;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .chat-header h1 {
+        .chat-header-text h1 {
             font-size: 20px;
             font-weight: 600;
             letter-spacing: -0.5px;
             margin: 0;
         }
 
-        .chat-header p {
+        .chat-header-text p {
             font-size: 13px;
             opacity: 0.7;
             margin: 4px 0 0 0;
             font-weight: 400;
+        }
+
+        .print-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+
+        .print-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+
+            .chat-container {
+                max-width: 100%;
+                height: auto;
+                box-shadow: none;
+                border: none;
+            }
+
+            .chat-input-container,
+            .example-queries,
+            .print-button {
+                display: none !important;
+            }
+
+            .chat-header {
+                background: #1a1d29;
+                color: white;
+                padding: 16px;
+            }
+
+            .chat-messages {
+                overflow: visible;
+                height: auto;
+            }
+
+            .message {
+                page-break-inside: avoid;
+            }
+
+            .message-content table {
+                page-break-inside: avoid;
+            }
         }
 
         .chat-messages {
@@ -341,8 +402,17 @@
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>AskHeyDividend</h1>
-            <p>Your AI-powered financial assistant for dividends, stocks & market insights</p>
+            <div class="chat-header-text">
+                <h1>AskHeyDividend</h1>
+                <p>Your AI-powered financial assistant for dividends, stocks & market insights</p>
+            </div>
+            <button class="print-button" onclick="window.print()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                </svg>
+                Print
+            </button>
         </div>
         
         <div class="chat-messages" id="chatMessages">

@@ -235,6 +235,7 @@ Return STRICT one-line JSON: {{"action":"chat"|"sql"|"multipart"|"passive_income
 - Dialect: **SQL Server** (T-SQL). No LIMIT/OFFSET/INTERVAL. Use DATEADD for date math.
 - Read-only. Single SELECT or WITH-CTE that ends in a SELECT. No semicolons.
 - Use **only**: dbo.vDividends, dbo.vTickers, and dbo.vPrices.
+- **U.S. MARKETS ONLY**: ALWAYS filter vTickers queries with "WHERE Country = 'United States'" to show only U.S. stocks and ETFs.
 
 *** PRICE QUERY DEFAULTS (CRITICAL) ***
 Smart price query defaults to prevent data overload

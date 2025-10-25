@@ -156,7 +156,8 @@ class PassiveIncomePlanService:
             FROM dbo.vTickers t
             INNER JOIN AnnualDividends ad ON t.Ticker = ad.Ticker
             INNER JOIN LatestPrices p ON t.Ticker = p.Ticker AND p.rn = 1
-            WHERE t.Sector IN ({sector_placeholders})
+            WHERE t.Country = 'United States'
+                AND t.Sector IN ({sector_placeholders})
                 AND p.Price > 0
                 AND ad.annual_dividend > 0
                 AND (ad.annual_dividend / NULLIF(p.Price, 0)) > 0.02

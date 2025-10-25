@@ -211,14 +211,18 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
             risk_tolerance = "moderate"
             
             q_lower = question.lower()
-            income_match = re.search(r'\$?\s*(\d+[\d,]*(?:\.\d+)?)\s*k?(?:\s*(?:per|a|annually|yearly|year))?', q_lower)
-            if income_match:
-                amt_str = income_match.group(1).replace(',', '')
+            
+            dollar_match = re.search(r'\$\s*([\d,]+(?:\.\d+)?)\s*k?\b', question)
+            if dollar_match:
+                amt_str = dollar_match.group(1).replace(',', '')
                 amt = float(amt_str)
-                if 'k' in income_match.group(0).lower():
+                if 'k' in dollar_match.group(0).lower():
                     amt *= 1000
-                if amt > 100:
-                    target_income = amt
+                target_income = amt
+            else:
+                k_match = re.search(r'(\d+(?:\.\d+)?)\s*k\b', q_lower)
+                if k_match:
+                    target_income = float(k_match.group(1)) * 1000
             
             year_match = re.search(r'(\d+)\s*(?:year|yr)', q_lower)
             if year_match:
@@ -317,7 +321,7 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
             yield "**Save Portfolio**: Reply with a name to save this as a watchlist or portfolio for tracking.\n\n"
             yield "---\n\n"
             yield "**Investment Disclaimer**: This analysis is based on historical dividend data and conservative growth assumptions (3-5.5% yield, 3% annual growth). Past performance does not guarantee future results. This is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions. Markets are subject to risks including loss of principal.\n\n"
-            yield "**Data Sources**: Historical dividend payments, current market prices, sector classifications from Azure SQL Database. Last updated: Real-time market data.\n"
+            yield "**Data Sources**: U.S. markets only - Historical dividend payments, current market prices, sector classifications from Azure SQL Database. Last updated: Real-time market data.\n"
         
         req_id = f"chatcmpl-{int(time.time() * 1000)}"
         return openai_sse_wrap(gen_passive_income(), req_id)
