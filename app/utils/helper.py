@@ -313,8 +313,11 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
             yield f'<div id="portfolio-charts" data-charts=\'{json.dumps(chart_data)}\'></div>\n\n'
             
             yield "---\n\n"
-            yield "💡 **Would you like to save this as a watchlist or portfolio?** If so, please provide a name for it.\n\n"
-            yield "_Note: This plan is based on historical dividend data and conservative growth assumptions. Actual results may vary. Please consult a financial advisor before making investment decisions._\n"
+            yield "### Next Steps\n\n"
+            yield "**Save Portfolio**: Reply with a name to save this as a watchlist or portfolio for tracking.\n\n"
+            yield "---\n\n"
+            yield "**Investment Disclaimer**: This analysis is based on historical dividend data and conservative growth assumptions (3-5.5% yield, 3% annual growth). Past performance does not guarantee future results. This is for informational purposes only and does not constitute financial advice. Please consult a qualified financial advisor before making any investment decisions. Markets are subject to risks including loss of principal.\n\n"
+            yield "**Data Sources**: Historical dividend payments, current market prices, sector classifications from Azure SQL Database. Last updated: Real-time market data.\n"
         
         req_id = f"chatcmpl-{int(time.time() * 1000)}"
         return openai_sse_wrap(gen_passive_income(), req_id)
