@@ -295,6 +295,17 @@
         function formatMarkdown(text) {
             let html = text;
             
+            const htmlBlockPattern = /(<div[^>]*>.*?<\/div>)/gs;
+            const htmlBlocks = [];
+            let blockIndex = 0;
+            
+            html = html.replace(htmlBlockPattern, (match) => {
+                const placeholder = `___HTML_BLOCK_${blockIndex}___`;
+                htmlBlocks.push(match);
+                blockIndex++;
+                return placeholder;
+            });
+            
             html = html.replace(/!\[([^\]]*)\]\(data:image\/([^;]+);base64,([^)]+)\)/g, 
                 '<img src="data:image/$2;base64,$3" alt="$1" />');
             
@@ -303,6 +314,10 @@
             html = convertTables(html);
             
             html = html.replace(/\n/g, '<br>');
+            
+            for (let i = 0; i < htmlBlocks.length; i++) {
+                html = html.replace(`___HTML_BLOCK_${i}___`, htmlBlocks[i]);
+            }
             
             return html;
         }
