@@ -6,6 +6,7 @@ from typing import List, Iterable, Tuple, Any
 from app.config.settings import (
     SQL_ONLY, DANGEROUS, SEMICOLON, ALLOWED_TB, CREATE_VIEWS_SQL
 )
+from app.config.portfolio_schema import CREATE_PORTFOLIO_TABLES_SQL
 
 # Database Configuration
 HOST = os.getenv("SQLSERVER_HOST")
@@ -47,6 +48,14 @@ try:
             conn.exec_driver_sql(stmt)
 except Exception as e:
     print(f"[warn] ensure_views failed: {e}")
+
+# Create portfolio tables
+try:
+    with engine.begin() as conn:
+        for stmt in [s.strip() for s in CREATE_PORTFOLIO_TABLES_SQL.split(";") if s.strip()]:
+            conn.exec_driver_sql(stmt)
+except Exception as e:
+    print(f"[warn] ensure_portfolio_tables failed: {e}")
 
 def normalize_sql_server(sql: str) -> str:
     s = sql

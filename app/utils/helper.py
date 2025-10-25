@@ -67,6 +67,12 @@ from app.utils.helpers import (
 )
 
 from app.utils.metrics import compute_dividend_metrics
+from app.services.passive_income_planner import PassiveIncomePlanService
+from app.utils.graph_generator import (
+    generate_allocation_chart,
+    generate_income_projection_chart,
+    generate_sector_diversification_chart
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -200,6 +206,121 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
         "answer_ms": None,
         "rows_streamed": None,
     }
+
+    if plan.get("action") == "passive_income_plan":
+        def gen_passive_income():
+            yield "\n# PASSIVE INCOME PORTFOLIO BUILDER\n\n"
+            
+            target_income = 100000.0
+            years = 5
+            risk_tolerance = "moderate"
+            
+            q_lower = question.lower()
+            income_match = re.search(r'\$?\s*(\d+[\d,]*(?:\.\d+)?)\s*k?(?:\s*(?:per|a|annually|yearly|year))?', q_lower)
+            if income_match:
+                amt_str = income_match.group(1).replace(',', '')
+                amt = float(amt_str)
+                if 'k' in income_match.group(0).lower():
+                    amt *= 1000
+                if amt > 100:
+                    target_income = amt
+            
+            year_match = re.search(r'(\d+)\s*(?:year|yr)', q_lower)
+            if year_match:
+                years = int(year_match.group(1))
+                years = max(1, min(years, 30))
+            
+            if any(word in q_lower for word in ['conservative', 'safe', 'low risk']):
+                risk_tolerance = 'conservative'
+            elif any(word in q_lower for word in ['aggressive', 'high risk', 'growth']):
+                risk_tolerance = 'aggressive'
+            
+            yield f"Generating passive income plan for **${target_income:,.0f}** annual income over **{years} years** with **{risk_tolerance}** risk tolerance...\n\n"
+            
+            plan_result = PassiveIncomePlanService.generate_plan(
+                target_annual_income=target_income,
+                years=years,
+                risk_tolerance=risk_tolerance
+            )
+            
+            if not plan_result.get("success"):
+                yield f"⚠️ Error generating plan: {plan_result.get('error', 'Unknown error')}\n"
+                return
+            
+            summary = plan_result.get("summary", {})
+            assumptions = plan_result.get("assumptions", {})
+            allocations = plan_result.get("allocations", [])
+            projections = plan_result.get("projections", [])
+            diversification = plan_result.get("diversification", {})
+            
+            yield "## 📊 Plan Summary\n\n"
+            yield f"- **Target Annual Income**: ${summary.get('target_annual_income', 0):,.0f}\n"
+            yield f"- **Required Capital**: ${summary.get('required_capital', 0):,.0f}\n"
+            yield f"- **Average Dividend Yield**: {summary.get('avg_dividend_yield', 0):.2f}%\n"
+            yield f"- **Risk Tolerance**: {summary.get('risk_tolerance', 'moderate').title()}\n"
+            yield f"- **Investment Horizon**: {summary.get('years', 5)} years\n"
+            yield f"- **Number of Holdings**: {summary.get('num_holdings', 0)}\n\n"
+            
+            yield "## 🎯 Key Assumptions\n\n"
+            yield f"- **Expected Dividend Yield**: {assumptions.get('dividend_yield', 'N/A')}\n"
+            yield f"- **Annual Dividend Growth**: {assumptions.get('annual_dividend_growth', 'N/A')}\n"
+            yield f"- **Risk Profile**: {assumptions.get('risk_profile', 'moderate').title()}\n\n"
+            
+            if allocations:
+                yield "## 💼 Portfolio Allocations\n\n"
+                yield "| Ticker | Company | Sector | Shares | Price | Cost | Allocation | Yield |\n"
+                yield "|--------|---------|--------|--------|-------|------|------------|-------|\n"
+                for alloc in allocations:
+                    ticker = alloc.get('ticker', 'N/A')
+                    company = (alloc.get('company_name', '')[:20] + '...') if len(alloc.get('company_name', '')) > 20 else alloc.get('company_name', 'N/A')
+                    sector = alloc.get('sector', 'Other')
+                    shares = alloc.get('shares', 0)
+                    price = alloc.get('price', 0)
+                    cost = alloc.get('cost', 0)
+                    allocation_pct = alloc.get('allocation_pct', 0)
+                    div_yield = alloc.get('dividend_yield_pct', 0)
+                    yield f"| {ticker} | {company} | {sector} | {shares:.2f} | ${price:.2f} | ${cost:,.0f} | {allocation_pct:.1f}% | {div_yield:.2f}% |\n"
+                yield "\n"
+            
+            if projections:
+                yield "## 📈 5-Year Income Projections\n\n"
+                yield "| Year | Projected Annual Income |\n"
+                yield "|------|-------------------------|\n"
+                for proj in projections:
+                    year = proj.get('year', 0)
+                    income = proj.get('projected_income', 0)
+                    yield f"| Year {year} | ${income:,.2f} |\n"
+                yield "\n"
+            
+            if diversification:
+                yield "## 🌐 Sector Diversification\n\n"
+                yield "| Sector | Allocation |\n"
+                yield "|--------|------------|\n"
+                for sector, pct in diversification.items():
+                    yield f"| {sector} | {pct:.1f}% |\n"
+                yield "\n"
+            
+            yield "## 📊 Visual Charts\n\n"
+            yield "Generating portfolio visualization charts...\n\n"
+            
+            allocation_chart = generate_allocation_chart(allocations)
+            if allocation_chart:
+                yield f"### Portfolio Allocation Chart\n![Allocation](data:image/png;base64,{allocation_chart})\n\n"
+            
+            income_chart = generate_income_projection_chart(projections)
+            if income_chart:
+                yield f"### Income Projection Chart\n![Projections](data:image/png;base64,{income_chart})\n\n"
+            
+            sector_chart = generate_sector_diversification_chart(diversification)
+            if sector_chart:
+                yield f"### Sector Diversification Chart\n![Sectors](data:image/png;base64,{sector_chart})\n\n"
+            
+            yield "---\n\n"
+            yield "💡 **Would you like to save this as a watchlist or portfolio?** If so, please provide a name for it.\n\n"
+            yield "_Note: This plan is based on historical dividend data and conservative growth assumptions. Actual results may vary. Please consult a financial advisor before making investment decisions._\n"
+        
+        req_id = f"chatcmpl-{int(time.time() * 1000)}"
+        return openai_sse_wrap(gen_passive_income(), req_id)
 
     if plan.get("action") == "chat":
         if AUTO_WEB_FALLBACK and should_route_to_web(question, parsed_tickers):
