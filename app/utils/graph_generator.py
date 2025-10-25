@@ -6,11 +6,23 @@ Generates base64-encoded PNG charts for portfolio visualization.
 import base64
 import io
 import logging
+import os
 from typing import List, Dict
 import plotly.graph_objects as go
 import plotly.express as px
 
 logger = logging.getLogger(__name__)
+
+import subprocess
+try:
+    chromium_path = subprocess.check_output(
+        ['which', 'chromium-browser'], 
+        stderr=subprocess.DEVNULL
+    ).decode().strip()
+    if chromium_path:
+        os.environ.setdefault('CHROME_PATH', chromium_path)
+except Exception:
+    pass
 
 
 def generate_allocation_chart(allocations: List[Dict]) -> str:
