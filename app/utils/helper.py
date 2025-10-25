@@ -276,6 +276,13 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                     div_yield = alloc.get('dividend_yield_pct', 0)
                     yield f"| {ticker} | {company} | {sector} | {shares:.2f} | ${price:.2f} | ${cost:,.0f} | {allocation_pct:.1f}% | {div_yield:.2f}% |\n"
                 yield "\n"
+            else:
+                yield "## ⚠️ Unable to Generate Portfolio\n\n"
+                yield "I couldn't find sufficient dividend stock data in the database to create a portfolio plan. This could mean:\n\n"
+                yield "1. **Database Empty**: The dividend data tables may not have recent information\n2. **No Suitable Stocks**: No stocks match the criteria (>2% yield, recent dividends)\n3. **Database Connection Issue**: Temporary connectivity problem\n\n"
+                yield "**Self-Healing Alternatives:**\n\n"
+                yield "- I can search the web for current dividend stock recommendations\n2. I can provide general passive income strategies based on market knowledge\n3. You can ask me about specific dividend stocks you're considering (e.g., 'Tell me about SCHD dividends')\n\n"
+                yield "Would you like me to try one of these alternative approaches?\n\n"
             
             if projections:
                 yield "## 📈 5-Year Income Projections\n\n"
