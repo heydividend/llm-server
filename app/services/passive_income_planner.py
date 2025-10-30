@@ -118,47 +118,54 @@ class PassiveIncomePlanService:
         sector_placeholders = ','.join([f"'{sector}'" for sector in cls.SECTORS])
         
         query = text(f"""
-            WITH LatestDividends AS (
+            WITH HighQualityDividends AS (
                 SELECT 
                     Ticker,
                     AdjDividend_Amount,
                     Payment_Date,
+                    Confidence_Score,
+                    Data_Source,
                     ROW_NUMBER() OVER (PARTITION BY Ticker ORDER BY Payment_Date DESC) AS rn
-                FROM dbo.vDividends
+                FROM dbo.vDividendsEnhanced
                 WHERE Payment_Date >= DATEADD(year, -1, CAST(GETDATE() AS DATE))
                     AND AdjDividend_Amount > 0
+                    AND Confidence_Score >= 0.7
             ),
             AnnualDividends AS (
                 SELECT 
                     Ticker,
-                    SUM(AdjDividend_Amount) AS annual_dividend
-                FROM dbo.vDividends
+                    SUM(AdjDividend_Amount) AS annual_dividend,
+                    MAX(Confidence_Score) AS max_confidence,
+                    MAX(Data_Source) AS primary_source
+                FROM dbo.vDividendsEnhanced
                 WHERE Payment_Date >= DATEADD(year, -1, CAST(GETDATE() AS DATE))
                     AND AdjDividend_Amount > 0
+                    AND Confidence_Score >= 0.7
                 GROUP BY Ticker
             ),
             LatestPrices AS (
                 SELECT 
                     Ticker,
                     Price,
-                    ROW_NUMBER() OVER (PARTITION BY Ticker ORDER BY 
-                        COALESCE(Trade_Timestamp_UTC, Snapshot_Timestamp) DESC) AS rn
-                FROM dbo.vPrices
+                    Market_Cap,
+                    ROW_NUMBER() OVER (PARTITION BY Ticker ORDER BY Last_Updated DESC) AS rn
+                FROM dbo.vQuotesEnhanced
                 WHERE Price > 0
             )
             SELECT TOP {limit}
-                t.Ticker,
-                t.Company_Name,
-                t.Sector,
-                t.Security_Type,
+                s.Ticker,
+                s.Company_Name,
+                s.Sector,
+                'Stock' AS Security_Type,
                 ad.annual_dividend,
                 p.Price,
-                (ad.annual_dividend / NULLIF(p.Price, 0) * 100) AS dividend_yield_pct
-            FROM dbo.vTickers t
-            INNER JOIN AnnualDividends ad ON t.Ticker = ad.Ticker
-            INNER JOIN LatestPrices p ON t.Ticker = p.Ticker AND p.rn = 1
-            WHERE t.Country = 'United States'
-                AND t.Sector IN ({sector_placeholders})
+                (ad.annual_dividend / NULLIF(p.Price, 0) * 100) AS dividend_yield_pct,
+                ad.max_confidence AS confidence_score,
+                ad.primary_source AS data_source
+            FROM dbo.vSecurities s
+            INNER JOIN AnnualDividends ad ON s.Ticker = ad.Ticker
+            INNER JOIN LatestPrices p ON s.Ticker = p.Ticker AND p.rn = 1
+            WHERE s.Sector IN ({sector_placeholders})
                 AND p.Price > 0
                 AND ad.annual_dividend > 0
                 AND (ad.annual_dividend / NULLIF(p.Price, 0)) > 0.02
