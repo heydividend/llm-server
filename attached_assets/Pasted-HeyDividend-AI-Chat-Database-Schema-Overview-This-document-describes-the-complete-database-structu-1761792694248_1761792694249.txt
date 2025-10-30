@@ -1,0 +1,419 @@
+HeyDividend AI Chat Database Schema
+
+Overview
+
+This document describes the complete database structure used by Harvey-1o AI assistant in the HeyDividend application. The AI queries these tables to answer user questions about dividends, stock prices, and financial data.
+
+Database: Azure SQL Server
+
+All tables are stored in Azure SQL Server and accessed via the connection configured in server/azure-db.ts.
+
+Primary Data Tables
+
+1. Canonical_Dividends - Aggregated Dividend Data
+
+Purpose: Unified, curated, high-confidence dividend data from all sources (updated hourly)
+
+Columns:
+
+symbol_id (INT, FK to Securities.id) - Foreign key to Securities table
+ex_date (DATE) - Ex-dividend date
+pay_date (DATE) - Payment date
+record_date (DATE) - Record date
+declaration_date (DATE) - Declaration date
+amount (DECIMAL) - Dividend amount in dollars
+currency (VARCHAR) - Currency code
+dividend_type (VARCHAR) - Type of dividend
+frequency (INT) - Annual frequency (12=monthly, 4=quarterly, 52=weekly)
+confidence_score (DECIMAL) - Data confidence score (0-1)
+data_quality_score (DECIMAL) - Data quality score (0-1)
+created_at (DATETIME2) - Record creation timestamp
+Important Notes:
+
+Does NOT have a ticker column - Must JOIN with Securities table to get ticker symbol
+Data flows from multiple sources: social media, FMP, Alpha Vantage, distribution_schedules
+Updated hourly via canonical aggregation system
+Primary source for historical dividend data
+Example Query:
+
+SELECT s.symbol, cd.amount, cd.ex_date, cd.pay_date
+FROM Canonical_Dividends cd
+INNER JOIN Securities s ON cd.symbol_id = s.id
+WHERE s.symbol = 'AAPL'
+ORDER BY cd.ex_date DESC
+
+2. Securities - Master Symbol/Company Lookup
+
+Purpose: Central registry of all stocks and ETFs
+
+Columns:
+
+id (INT, PK) - Unique identifier
+symbol (VARCHAR) - Stock ticker symbol (e.g., 'AAPL', 'MSFT')
+companyName (VARCHAR) - Company or fund name
+exchange (VARCHAR) - Exchange code
+sector (VARCHAR) - Business sector
+industry (VARCHAR) - Industry classification
+marketCap (BIGINT) - Market capitalization
+Important Notes:
+
+REQUIRED for all Canonical_Dividends queries - provides the ticker symbol
+Canonical_Dividends.symbol_id → Securities.id
+Example Query:
+
+SELECT id, symbol, companyName, sector, industry
+FROM Securities
+WHERE symbol = 'MSFT'
+
+3. distribution_schedules - ETF Distribution Schedules
+
+Purpose: Scraped distribution data from 22+ ETF providers (updated every 2 hours)
+
+Columns:
+
+id (INT, PK) - Unique identifier
+etf_symbol (VARCHAR) - ETF ticker symbol
+schedule_type (VARCHAR) - Schedule type
+group_id (VARCHAR) - Group identifier
+declaration_date (DATE) - Declaration date
+ex_date (DATE) - Ex-dividend date
+record_date (DATE) - Record date
+payment_date (DATE) - Payment date
+distribution_number (INT) - Distribution number
+amount (DECIMAL) - Distribution amount in dollars
+sponsor_name (VARCHAR) - ETF provider name
+last_updated (DATETIME2) - Last update timestamp
+is_confirmed (BIT) - Confirmation flag
+source_type (VARCHAR) - Source type
+confidence_score (DECIMAL) - Data confidence score
+source_url (VARCHAR) - Source URL
+image_url (VARCHAR) - Image URL
+Coverage:
+
+2,000+ ETFs from 22 providers
+YieldMax (28 ETFs): TSLY, MSTY, NVDY, CONY, etc.
+Roundhill (37+ ETFs): QDTE, XDTE, NVDW, TSLW, MAGS
+Kurv (9 ETFs): KGLD, KQQQ, AAPY, TSLP, AMZP
+Defiance (50 ETFs): QQQY, IWMY, SPYT, MSTX, QTUM
+ProShares (161 ETFs): ISPY, IQQQ, ITWO
+GraniteShares (55 ETFs): NVYY, TSYY, TQQY, YSPY
+Important Notes:
+
+FRESHEST dividend data source - updated every 2 hours
+Includes all 4 dividend dates (declaration, ex-date, record, payment)
+Automatically included in AI queries via union strategy
+Example Query:
+
+SELECT etf_symbol, amount, ex_date, payment_date, sponsor_name
+FROM distribution_schedules
+WHERE etf_symbol = 'TSLY'
+ORDER BY ex_date DESC
+
+4. SocialMediaMentions - Real-time Dividend Announcements
+
+Purpose: Real-time Twitter/X dividend announcements (monitored every 2 minutes)
+
+Columns:
+
+ticker_symbol (VARCHAR) - Stock ticker symbol
+extracted_dividend_amount (DECIMAL) - Extracted dividend amount
+mention_text (NVARCHAR) - Full tweet text
+mentioned_at (DATETIME2) - Tweet timestamp
+author_username (VARCHAR) - Twitter username
+platform (VARCHAR) - Platform name (Twitter/X)
+extracted_dates (NVARCHAR) - JSON with extracted dates
+confidence_score (DECIMAL) - Extraction confidence score
+Important Notes:
+
+Captures dividend announcements before they appear in official sources
+Data automatically migrated to Canonical_Dividends hourly
+Used for real-time detection of new dividend declarations
+Example Query:
+
+SELECT ticker_symbol, extracted_dividend_amount, mentioned_at, mention_text
+FROM SocialMediaMentions
+WHERE ticker_symbol = 'AAPL'
+  AND mentioned_at >= CAST(GETDATE() AS DATE)
+ORDER BY mentioned_at DESC
+
+Supporting Data Tables
+
+5. fmp_quotes - Real-time Stock Quotes
+
+Purpose: Current stock prices from Financial Modeling Prep API
+
+Columns:
+
+symbol (VARCHAR) - Stock ticker symbol
+price (DECIMAL) - Current price
+change (DECIMAL) - Price change (dollars)
+change_percent (DECIMAL) - Price change (percentage)
+volume (BIGINT) - Trading volume
+market_cap (BIGINT) - Market capitalization
+pe_ratio (DECIMAL) - Price-to-earnings ratio
+eps (DECIMAL) - Earnings per share
+last_updated (DATETIME2) - Last update timestamp
+Example Query:
+
+SELECT symbol, price, change_percent, volume
+FROM fmp_quotes
+WHERE symbol = 'AAPL'
+
+6. fmp_profiles - Company/ETF Profiles
+
+Purpose: Fundamental company information
+
+Columns:
+
+symbol (VARCHAR) - Stock ticker symbol
+company_name (VARCHAR) - Company name
+sector (VARCHAR) - Business sector
+industry (VARCHAR) - Industry classification
+market_cap (BIGINT) - Market capitalization
+description (NVARCHAR) - Company description
+ceo (VARCHAR) - CEO name
+employees (INT) - Employee count
+website (VARCHAR) - Company website
+ipo_date (DATE) - IPO date
+Example Query:
+
+SELECT symbol, company_name, sector, industry, description
+FROM fmp_profiles
+WHERE symbol = 'MSFT'
+
+7. fmp_dividends - FMP Dividend Data
+
+Purpose: Historical dividend data from Financial Modeling Prep
+
+Columns:
+
+symbol (VARCHAR) - Stock ticker symbol
+ex_date (DATE) - Ex-dividend date
+pay_date (DATE) - Payment date
+record_date (DATE) - Record date
+amount (DECIMAL) - Dividend amount
+currency (VARCHAR) - Currency code
+last_updated (DATETIME2) - Last update timestamp
+Important Notes:
+
+Data flows into Canonical_Dividends during aggregation
+Backup source when Canonical_Dividends doesn't have data
+Example Query:
+
+SELECT symbol, amount, ex_date, pay_date
+FROM fmp_dividends
+WHERE symbol = 'JNJ'
+ORDER BY ex_date DESC
+
+Machine Learning Tables
+
+8. ml_dividend_growth_predictions - ML Growth Forecasts
+
+Purpose: Machine learning predictions for dividend growth
+
+Columns:
+
+symbol (VARCHAR) - Stock ticker symbol
+predicted_growth_rate (DECIMAL) - Predicted annual growth rate
+confidence_score (DECIMAL) - Prediction confidence
+prediction_date (DATETIME2) - When prediction was made
+model_version (VARCHAR) - ML model version
+Example Query:
+
+SELECT symbol, predicted_growth_rate, confidence_score
+FROM ml_dividend_growth_predictions
+WHERE symbol = 'AAPL'
+ORDER BY prediction_date DESC
+
+9. ml_dividend_cut_predictions - ML Cut Risk Scores
+
+Purpose: Machine learning predictions for dividend cut risk
+
+Columns:
+
+symbol (VARCHAR) - Stock ticker symbol
+cut_risk_score (DECIMAL) - Cut risk score (0-1)
+risk_factors (NVARCHAR) - JSON with risk factors
+confidence_score (DECIMAL) - Prediction confidence
+prediction_date (DATETIME2) - When prediction was made
+Example Query:
+
+SELECT symbol, cut_risk_score, risk_factors
+FROM ml_dividend_cut_predictions
+WHERE symbol = 'AAPL'
+ORDER BY prediction_date DESC
+
+AI Usage Tracking Table
+
+10. ai_usage_tracking - AI Query Limits
+
+Purpose: Track daily AI and database query usage per user
+
+Columns:
+
+user_id (VARCHAR) - User identifier
+query_date (DATE) - Query date
+ai_queries_count (INT) - AI queries count
+db_queries_count (INT) - Database queries count
+subscription_tier (VARCHAR) - User subscription tier
+Daily Limits by Tier:
+
+Free: 9999 AI queries, 9999 DB queries
+Trial: 50 AI queries, 20 DB queries
+Essentials: 200 AI queries, 100 DB queries
+Investor Pro: Unlimited (-1)
+How the AI Uses These Tables
+
+Query Strategy
+
+The AI uses a three-layer fallback strategy for dividend data:
+
+Primary: Canonical_Dividends (via JOIN with Securities)
+Fallback 1: distribution_schedules (ETF-specific data)
+Fallback 2: SocialMediaMentions (real-time announcements)
+Union Query Pattern
+
+For comprehensive dividend queries, the system automatically performs a UNION across all three sources:
+
+WITH all_sources AS (
+  -- Source 1: Canonical_Dividends
+  SELECT 
+    s.symbol,
+    cd.amount,
+    cd.ex_date,
+    cd.pay_date,
+    'canonical' as source
+  FROM Canonical_Dividends cd
+  INNER JOIN Securities s ON cd.symbol_id = s.id
+  WHERE s.symbol = 'AAPL'
+  
+  UNION ALL
+  
+  -- Source 2: distribution_schedules
+  SELECT 
+    etf_symbol as symbol,
+    amount,
+    ex_date,
+    payment_date as pay_date,
+    'distribution' as source
+  FROM distribution_schedules
+  WHERE etf_symbol = 'AAPL'
+  
+  UNION ALL
+  
+  -- Source 3: SocialMediaMentions
+  SELECT 
+    ticker_symbol as symbol,
+    extracted_dividend_amount as amount,
+    JSON_VALUE(extracted_dates, '$.ex_date') as ex_date,
+    JSON_VALUE(extracted_dates, '$.payment_date') as pay_date,
+    'social' as source
+  FROM SocialMediaMentions
+  WHERE ticker_symbol = 'AAPL'
+)
+SELECT DISTINCT symbol, amount, ex_date, pay_date
+FROM all_sources
+WHERE amount IS NOT NULL
+ORDER BY ex_date DESC
+
+Critical JOIN Requirement
+
+IMPORTANT: Canonical_Dividends does NOT have a ticker column. Always JOIN with Securities:
+
+-- ❌ WRONG - Will fail
+SELECT symbol, amount FROM Canonical_Dividends WHERE symbol = 'AAPL'
+-- ✅ CORRECT - Must JOIN
+SELECT s.symbol, cd.amount 
+FROM Canonical_Dividends cd
+INNER JOIN Securities s ON cd.symbol_id = s.id
+WHERE s.symbol = 'AAPL'
+
+AI Query Classification
+
+The AI classifies queries into these types:
+
+database_query - Specific financial data requests (dividend amounts, dates, yields)
+ml_prediction - ML predictions (sustainability, cut risk, forecasts)
+general_qa - Conceptual questions about dividends
+article_analysis - URL analysis (press releases)
+portfolio_analysis - Portfolio evaluation
+portfolio_action - Adding securities to portfolio
+web_search - Real-time market news
+file_analysis - Document/image uploads
+Configuration Location
+
+The database schema and query logic is configured in:
+
+server/services/SQLGeneratorService.ts - Schema context and SQL generation
+server/services/AskHeyDividendService.ts - AI query processing
+server/azure-db.ts - Azure SQL connection
+Example Common Queries
+
+Get dividend history for a stock
+
+SELECT s.symbol, cd.amount, cd.ex_date, cd.pay_date
+FROM Canonical_Dividends cd
+INNER JOIN Securities s ON cd.symbol_id = s.id
+WHERE s.symbol = 'AAPL'
+ORDER BY cd.ex_date DESC
+
+Get current price and dividend yield
+
+SELECT 
+  s.symbol,
+  q.price,
+  cd.amount,
+  (cd.amount * 4 / NULLIF(q.price, 0) * 100) AS annual_yield_pct
+FROM Securities s
+INNER JOIN fmp_quotes q ON s.symbol = q.symbol
+INNER JOIN (
+  SELECT symbol_id, amount
+  FROM Canonical_Dividends
+  WHERE ex_date = (SELECT MAX(ex_date) FROM Canonical_Dividends WHERE symbol_id = Canonical_Dividends.symbol_id)
+) cd ON s.id = cd.symbol_id
+WHERE s.symbol = 'JNJ'
+
+Find high-yield stocks in a sector
+
+WITH LatestDividends AS (
+  SELECT 
+    symbol_id,
+    amount * frequency AS annual_dividend
+  FROM Canonical_Dividends
+  WHERE ex_date >= DATEADD(YEAR, -1, GETDATE())
+  GROUP BY symbol_id, frequency, amount
+)
+SELECT TOP 10
+  s.symbol,
+  s.companyName,
+  q.price,
+  ld.annual_dividend,
+  (ld.annual_dividend / NULLIF(q.price, 0) * 100) AS yield_pct
+FROM Securities s
+INNER JOIN LatestDividends ld ON s.id = ld.symbol_id
+INNER JOIN fmp_quotes q ON s.symbol = q.symbol
+WHERE s.sector = 'Utilities'
+  AND q.price > 0
+ORDER BY yield_pct DESC
+
+Data Flow Diagram
+
+External APIs (Twitter, FMP, Alpha Vantage)
+           ↓
+   SocialMediaMentions (real-time)
+   distribution_schedules (2 hours)
+   fmp_dividends (daily)
+           ↓
+   Canonical_Dividends ← Hourly Aggregation
+           ↓
+   Harvey-1o AI Chat (SELECT queries only)
+           ↓
+   User Chat Responses
+
+Safety & Permissions
+
+AI queries are READ-ONLY - Only SELECT queries allowed
+No writes/updates/deletes via AI
+Maximum 1000 rows per query (TOP 1000)
+Parameterized queries prevent SQL injection
+Daily limits enforced per subscription tier
