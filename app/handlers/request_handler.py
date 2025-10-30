@@ -11,7 +11,9 @@ from app.utils.helpers import (
     user_wants_cap, parse_last_n_years, extract_ticker_list, 
     should_route_to_web, is_greeting_only, openai_sse_wrap, write_runlog,
     is_ml_query, detect_ml_query_type, format_ml_payout_rating, format_ml_cut_risk,
-    format_ml_yield_forecast, format_ml_anomaly, format_ml_comprehensive, has_finance_intent
+    format_ml_yield_forecast, format_ml_anomaly, format_ml_comprehensive, has_finance_intent,
+    format_ml_payout_rating_single, format_ml_cut_risk_single, format_ml_yield_forecast_single,
+    format_ml_anomaly_single, format_ml_comprehensive_single
 )
 from app.utils.metrics import compute_dividend_metrics
 from app.config.settings import (
@@ -33,7 +35,7 @@ def handle_web_request(question: str, as_stream: bool = True, max_pages: int = 8
 
 def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str = "payout_rating"):
     """
-    Handle ML prediction requests.
+    Handle ML prediction requests with progressive streaming.
     
     Args:
         question: User's question
@@ -41,7 +43,7 @@ def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str 
         query_type: Type of ML query (payout_rating, cut_risk, yield_forecast, anomaly, comprehensive)
     
     Returns:
-        Generator yielding formatted ML response
+        Generator yielding formatted ML response progressively (header -> per-ticker results -> footer)
     """
     from app.services.ml_api_client import get_ml_client
     
@@ -58,32 +60,72 @@ def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str 
             ml_client = get_ml_client()
             
             if query_type == "payout_rating":
+                yield "## 📊 Dividend Payout Rating\n\n"
                 response = ml_client.get_payout_rating(parsed_tickers)
-                formatted = format_ml_payout_rating(response.get("data", []))
+                data = response.get("data", [])
+                
+                if not data:
+                    yield "No payout rating data available.\n"
+                else:
+                    for item in data:
+                        yield format_ml_payout_rating_single(item)
             
             elif query_type == "cut_risk":
+                yield "## ⚠️ Dividend Cut Risk Analysis\n\n"
                 response = ml_client.get_cut_risk(parsed_tickers, include_earnings=True)
-                formatted = format_ml_cut_risk(response.get("data", []))
+                data = response.get("data", [])
+                
+                if not data:
+                    yield "No cut risk data available.\n"
+                else:
+                    for item in data:
+                        yield format_ml_cut_risk_single(item)
             
             elif query_type == "yield_forecast":
+                yield "## 📈 Dividend Growth Forecast\n\n"
                 response = ml_client.get_yield_forecast(parsed_tickers)
-                formatted = format_ml_yield_forecast(response.get("data", []))
+                data = response.get("data", [])
+                
+                if not data:
+                    yield "No yield forecast data available.\n"
+                else:
+                    for item in data:
+                        yield format_ml_yield_forecast_single(item)
             
             elif query_type == "anomaly":
+                yield "## 🔍 Dividend Anomaly Detection\n\n"
                 response = ml_client.check_anomalies(parsed_tickers)
-                formatted = format_ml_anomaly(response.get("data", []))
+                data = response.get("data", [])
+                
+                if not data:
+                    yield "No anomaly data available.\n"
+                else:
+                    for item in data:
+                        yield format_ml_anomaly_single(item)
             
             elif query_type == "comprehensive":
+                yield "## 🎯 Comprehensive ML Score\n\n"
                 response = ml_client.get_comprehensive_score(parsed_tickers)
-                formatted = format_ml_comprehensive(response.get("data", []))
+                data = response.get("data", [])
+                
+                if not data:
+                    yield "No comprehensive score data available.\n"
+                else:
+                    for item in data:
+                        yield format_ml_comprehensive_single(item)
             
             else:
+                yield "## 📊 Dividend Payout Rating\n\n"
                 response = ml_client.get_payout_rating(parsed_tickers)
-                formatted = format_ml_payout_rating(response.get("data", []))
+                data = response.get("data", [])
+                
+                if not data:
+                    yield "No payout rating data available.\n"
+                else:
+                    for item in data:
+                        yield format_ml_payout_rating_single(item)
             
-            yield formatted
-            
-            yield "\n\n---\n*ML predictions powered by HeyDividend's Internal ML API*"
+            yield "\n---\n*ML predictions powered by HeyDividend's Internal ML API*"
             
         except Exception as e:
             logger.error(f"ML API error: {e}")
