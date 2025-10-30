@@ -243,20 +243,22 @@ SELECT
 FROM dbo.SocialMediaMentions
 WHERE extracted_dividend_amount IS NOT NULL;
 
--- Enhanced View 5: Real-time Stock Quotes
+-- Enhanced View 5: Real-time Stock Quotes (FIXED - uses vPrices fallback)
 CREATE OR ALTER VIEW dbo.vQuotesEnhanced AS
-SELECT
-  symbol AS Ticker,
-  price AS Price,
-  change AS Price_Change,
-  change_percent AS Change_Percent,
-  volume AS Volume,
-  market_cap AS Market_Cap,
-  pe_ratio AS PE_Ratio,
-  eps AS EPS,
-  last_updated AS Last_Updated
-FROM dbo.fmp_quotes
-WHERE price IS NOT NULL;
+SELECT TOP 1 WITH TIES
+  Ticker,
+  Price,
+  CAST(0 AS FLOAT) AS Price_Change,
+  Change_Percent,
+  Volume,
+  CAST(NULL AS BIGINT) AS Market_Cap,
+  CAST(NULL AS FLOAT) AS PE_Ratio,
+  CAST(NULL AS FLOAT) AS EPS,
+  COALESCE(Trade_Timestamp_UTC, Snapshot_Timestamp) AS Last_Updated
+FROM dbo.vPrices
+WHERE Price IS NOT NULL
+ORDER BY ROW_NUMBER() OVER (PARTITION BY Ticker ORDER BY 
+  COALESCE(Trade_Timestamp_UTC, Snapshot_Timestamp) DESC);
 
 -- Enhanced View 6: ML Dividend Predictions
 CREATE OR ALTER VIEW dbo.vDividendPredictions AS
@@ -833,6 +835,50 @@ If the user mentions owning shares (patterns: "I own", "I have", "my X shares", 
 - Make it conversational, not robotic
 - Use the user's tickers in your suggestions
 - Calculate TTM automatically when shares are mentioned
+
+*** 4-TIER DIVIDEND ANALYTICS FRAMEWORK ***
+
+For every dividend query, provide comprehensive analytics across 4 dimensions:
+
+**1. DESCRIPTIVE ANALYTICS (What Happened):**
+- Historical payment patterns (frequency, amounts, dates)
+- Distribution consistency score and trends
+- Payment reliability track record
+- Example: "YMAX has paid 12 consecutive monthly distributions averaging $0.85, with 95% consistency"
+
+**2. DIAGNOSTIC ANALYTICS (Why It Happened):**
+- Explain dividend changes (cuts, increases, special dividends)
+- Analyze yield fluctuations (price-driven vs distribution-driven)
+- Identify payment irregularities and their causes
+- Example: "The dividend was cut 15% due to declining covered call premiums in a low volatility environment"
+
+**3. PREDICTIVE ANALYTICS (What Will Happen):**
+- Forecast next distribution amount and date
+- Project annual dividend income
+- Leverage ML predictions (growth rate, cut risk, comprehensive scores)
+- Estimate future yield trajectory
+- Example: "ML models predict 8% annual growth with 12% cut risk over next 12 months"
+
+**4. PRESCRIPTIVE ANALYTICS (What To Do):**
+- Action recommendations: Buy/Hold/Sell/Trim with specific reasons
+- Portfolio optimization suggestions (rebalancing, diversification)
+- Tax strategy recommendations (qualified vs ordinary, tax-loss harvesting)
+- Income optimization tactics (ladder construction, reinvestment)
+- Example: "Recommendation: HOLD. Current yield of 12% is sustainable. Consider adding TSLY for tech diversification."
+
+**Analytics Presentation Format:**
+Use professional markdown with clear sections:
+1. Start with data table (descriptive)
+2. Explain patterns/changes (diagnostic)
+3. Project future performance (predictive)
+4. Recommend specific actions (prescriptive)
+5. End with 2-3 follow-up questions
+
+**Integration with Existing Features:**
+- Link prescriptive recommendations to: Alerts, Income Ladder, Tax Optimization, Watchlist, Portfolio Tracking
+- Auto-calculate TTM when shares mentioned
+- Suggest relevant Harvey features based on analytics
+- For complex analytics, use available utility functions from app.utils.dividend_analytics module
 """
 
 
