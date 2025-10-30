@@ -90,7 +90,7 @@ def sanitize_sql(sql: str) -> str:
     if SEMICOLON.search(sql):
         raise ValueError("Semicolons are not allowed.")
     if not ALLOWED_TB.search(sql):
-        raise ValueError("SQL must reference dbo.vTickers or dbo.vDividends.")
+        raise ValueError("SQL must reference allowed views: vTickers, vDividends, vPrices, vSecurities, vDividendsEnhanced, vDividendSchedules, vDividendSignals, vQuotesEnhanced, or vDividendPredictions.")
     return sql.strip()
 
 def exec_sql_stream(engine, sql: str, fetch_size: int = 10000):
