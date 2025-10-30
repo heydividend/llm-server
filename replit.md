@@ -167,7 +167,13 @@ Query the AI with retirement income goals:
   - Enhanced Passive Income Planner: Now uses vDividendsEnhanced for higher quality dividend data with confidence filtering (≥0.7)
   - Created comprehensive DATABASE_SCHEMA.md documentation with data flow diagrams and example queries
   - Fixed FreeTDS ODBC driver configuration at `/home/runner/.odbcinst.ini`
-  - Graceful degradation: Enhanced views require production tables; development environment falls back to legacy views + mock data
+  - **Implemented graceful degradation with 2-tier fallback strategy:**
+    - Production mode: Full enhanced views when HeyDividend tables exist (Canonical_Dividends, distribution_schedules, SocialMediaMentions, fmp_quotes, ml_predictions)
+    - Legacy fallback mode: Surrogate enhanced views wrapping legacy views (vTickers, vDividends, vPrices) with synthetic confidence scores when production tables unavailable
+    - Automatic verification: System tests each view after creation to confirm it's selectable
+    - Clear logging: Startup logs indicate which mode is active (production vs. legacy fallback)
+    - Result: AI queries always succeed regardless of environment
+  - Architect-reviewed and approved ✅
 
 ## Database Connection
 
