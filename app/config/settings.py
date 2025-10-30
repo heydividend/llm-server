@@ -99,6 +99,7 @@ Query Strategy:
 
 
 # ---------- Ensure views (idempotent) ----------
+# Production enhanced views (require HeyDividend production tables)
 CREATE_ENHANCED_VIEWS_SQL = """
 -- Enhanced View 1: Master Securities Lookup
 CREATE OR ALTER VIEW dbo.vSecurities AS
@@ -268,6 +269,100 @@ FROM dbo.ml_dividend_growth_predictions g
 FULL OUTER JOIN dbo.ml_dividend_cut_predictions c ON g.symbol = c.symbol 
   AND CAST(g.prediction_date AS DATE) = CAST(c.prediction_date AS DATE)
 WHERE g.predicted_growth_rate IS NOT NULL OR c.cut_risk_score IS NOT NULL;
+"""
+
+# Fallback enhanced views (wrap legacy views when production tables don't exist)
+CREATE_ENHANCED_VIEWS_FALLBACK_SQL = """
+-- Enhanced View 1: Master Securities Lookup (Fallback - wraps vTickers)
+CREATE OR ALTER VIEW dbo.vSecurities AS
+SELECT
+  Ticker_ID AS Symbol_ID,
+  Ticker AS Ticker,
+  Company_Name AS Company_Name,
+  Exchange AS Exchange,
+  Sector AS Sector,
+  Industry AS Industry,
+  NULL AS Market_Cap
+FROM dbo.vTickers;
+
+-- Enhanced View 2: Multi-Source Dividend Data (Fallback - wraps vDividends with synthetic columns)
+CREATE OR ALTER VIEW dbo.vDividendsEnhanced AS
+SELECT
+  Ticker,
+  Dividend_Amount,
+  AdjDividend_Amount,
+  Dividend_Type,
+  Currency,
+  Distribution_Frequency,
+  Declaration_Date,
+  Ex_Dividend_Date,
+  Record_Date,
+  Payment_Date,
+  CAST(1.0 AS DECIMAL(5,2)) AS Confidence_Score,
+  CAST(1.0 AS DECIMAL(5,2)) AS Data_Quality_Score,
+  Created_At,
+  'Legacy' AS Data_Source,
+  3 AS Priority
+FROM dbo.vDividends;
+
+-- Enhanced View 3: ETF Distribution Schedules (Fallback - returns no data)
+CREATE OR ALTER VIEW dbo.vDividendSchedules AS
+SELECT
+  CAST(NULL AS VARCHAR(10)) AS Ticker,
+  CAST(NULL AS DECIMAL(18,6)) AS Distribution_Amount,
+  CAST(NULL AS DATE) AS Ex_Date,
+  CAST(NULL AS DATE) AS Payment_Date,
+  CAST(NULL AS DATE) AS Declaration_Date,
+  CAST(NULL AS DATE) AS Record_Date,
+  CAST(NULL AS VARCHAR(100)) AS Sponsor,
+  CAST(NULL AS VARCHAR(50)) AS Schedule_Type,
+  CAST(NULL AS DECIMAL(5,2)) AS Confidence_Score,
+  CAST(NULL AS BIT) AS Is_Confirmed,
+  CAST(NULL AS DATETIME) AS Last_Updated,
+  CAST(NULL AS VARCHAR(500)) AS Source_URL
+WHERE 1 = 0;
+
+-- Enhanced View 4: Real-time Social Media Dividend Signals (Fallback - returns no data)
+CREATE OR ALTER VIEW dbo.vDividendSignals AS
+SELECT
+  CAST(NULL AS VARCHAR(10)) AS Ticker,
+  CAST(NULL AS DECIMAL(18,6)) AS Dividend_Amount,
+  CAST(NULL AS NVARCHAR(MAX)) AS Tweet_Text,
+  CAST(NULL AS DATETIME) AS Mentioned_At,
+  CAST(NULL AS VARCHAR(100)) AS Twitter_Username,
+  CAST(NULL AS VARCHAR(50)) AS Platform,
+  CAST(NULL AS NVARCHAR(MAX)) AS Extracted_Dates_JSON,
+  CAST(NULL AS DECIMAL(5,2)) AS Confidence_Score,
+  CAST(NULL AS DATE) AS Ex_Date,
+  CAST(NULL AS DATE) AS Payment_Date
+WHERE 1 = 0;
+
+-- Enhanced View 5: Real-time Stock Quotes (Fallback - wraps vPrices with synthetic columns)
+CREATE OR ALTER VIEW dbo.vQuotesEnhanced AS
+SELECT
+  Ticker,
+  Price,
+  CAST(0.0 AS DECIMAL(18,2)) AS Price_Change,
+  Change_Percent,
+  Volume,
+  CAST(NULL AS DECIMAL(18,2)) AS Market_Cap,
+  CAST(NULL AS DECIMAL(10,2)) AS PE_Ratio,
+  CAST(NULL AS DECIMAL(10,2)) AS EPS,
+  COALESCE(Trade_Timestamp_UTC, Snapshot_Timestamp, Created_At) AS Last_Updated
+FROM dbo.vPrices;
+
+-- Enhanced View 6: ML Dividend Predictions (Fallback - returns no data)
+CREATE OR ALTER VIEW dbo.vDividendPredictions AS
+SELECT
+  CAST(NULL AS VARCHAR(10)) AS Ticker,
+  CAST(NULL AS DECIMAL(10,4)) AS Growth_Rate_Prediction,
+  CAST(NULL AS DECIMAL(5,2)) AS Growth_Confidence,
+  CAST(NULL AS DECIMAL(5,2)) AS Cut_Risk_Score,
+  CAST(NULL AS DECIMAL(5,2)) AS Cut_Risk_Confidence,
+  CAST(NULL AS NVARCHAR(MAX)) AS Risk_Factors_JSON,
+  CAST(NULL AS DATE) AS Prediction_Date,
+  CAST(NULL AS VARCHAR(50)) AS Growth_Model_Version
+WHERE 1 = 0;
 """
 
 CREATE_VIEWS_SQL = """

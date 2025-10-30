@@ -4,7 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from typing import List, Iterable, Tuple, Any
 from app.config.settings import (
-    SQL_ONLY, DANGEROUS, SEMICOLON, ALLOWED_TB, CREATE_VIEWS_SQL, CREATE_ENHANCED_VIEWS_SQL
+    SQL_ONLY, DANGEROUS, SEMICOLON, ALLOWED_TB, CREATE_VIEWS_SQL, 
+    CREATE_ENHANCED_VIEWS_SQL, CREATE_ENHANCED_VIEWS_FALLBACK_SQL
 )
 from app.config.portfolio_schema import CREATE_PORTFOLIO_TABLES_SQL
 
@@ -49,14 +50,79 @@ try:
 except Exception as e:
     print(f"[warn] ensure_views failed: {e}")
 
-# Create enhanced views (integration with HeyDividend database tables)
-try:
-    with engine.begin() as conn:
-        for stmt in [s.strip() for s in CREATE_ENHANCED_VIEWS_SQL.split(";") if s.strip()]:
-            conn.exec_driver_sql(stmt)
-    print("[info] Enhanced views created successfully (vSecurities, vDividendsEnhanced, vDividendSchedules, vDividendSignals, vQuotesEnhanced, vDividendPredictions)")
-except Exception as e:
-    print(f"[warn] ensure_enhanced_views failed: {e}")
+def ensure_enhanced_views():
+    """
+    Create enhanced views with graceful degradation.
+    
+    Strategy:
+    1. Try to create production enhanced views (requires HeyDividend production tables)
+    2. If that fails, create fallback views that wrap legacy views
+    3. Verify each view is selectable after creation
+    4. Log clear messages about which views were created
+    """
+    enhanced_views = [
+        'vSecurities', 'vDividendsEnhanced', 'vDividendSchedules', 
+        'vDividendSignals', 'vQuotesEnhanced', 'vDividendPredictions'
+    ]
+    
+    # Try production enhanced views first
+    try:
+        with engine.begin() as conn:
+            for stmt in [s.strip() for s in CREATE_ENHANCED_VIEWS_SQL.split(";") if s.strip()]:
+                conn.exec_driver_sql(stmt)
+        
+        # Verify all views are selectable
+        verification_failed = []
+        with engine.connect() as conn:
+            for view_name in enhanced_views:
+                try:
+                    conn.exec_driver_sql(f"SELECT TOP 1 * FROM dbo.{view_name}")
+                except Exception as e:
+                    verification_failed.append(view_name)
+        
+        if verification_failed:
+            raise Exception(f"Views not selectable: {', '.join(verification_failed)}")
+        
+        print("[info] ✓ Enhanced views created successfully (production mode)")
+        print(f"[info]   Views: {', '.join(enhanced_views)}")
+        print("[info]   Data source: HeyDividend production tables (Canonical_Dividends, distribution_schedules, etc.)")
+        return True
+        
+    except Exception as prod_error:
+        print(f"[warn] Production enhanced views failed: {prod_error}")
+        print("[info] Attempting fallback to legacy view wrappers...")
+        
+        # Fall back to legacy view wrappers
+        try:
+            with engine.begin() as conn:
+                for stmt in [s.strip() for s in CREATE_ENHANCED_VIEWS_FALLBACK_SQL.split(";") if s.strip()]:
+                    conn.exec_driver_sql(stmt)
+            
+            # Verify fallback views are selectable
+            verification_failed = []
+            with engine.connect() as conn:
+                for view_name in enhanced_views:
+                    try:
+                        conn.exec_driver_sql(f"SELECT TOP 1 * FROM dbo.{view_name}")
+                    except Exception as e:
+                        verification_failed.append(view_name)
+            
+            if verification_failed:
+                print(f"[warn] Some fallback views not selectable: {', '.join(verification_failed)}")
+            
+            print("[info] ✓ Enhanced views created successfully (legacy fallback mode)")
+            print(f"[info]   Views: {', '.join(enhanced_views)}")
+            print("[info]   Data source: Legacy views (vTickers, vDividends, vPrices) with synthetic confidence scores")
+            print("[info]   Note: vDividendSchedules, vDividendSignals, and vDividendPredictions return no data in fallback mode")
+            return True
+            
+        except Exception as fallback_error:
+            print(f"[error] Enhanced views fallback also failed: {fallback_error}")
+            print("[warn] AI queries may fail when referencing enhanced views")
+            return False
+
+# Create enhanced views with graceful degradation
+ensure_enhanced_views()
 
 # Create portfolio tables
 try:

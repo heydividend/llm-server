@@ -60,7 +60,15 @@ A professional, financial-grade chat interface is available at the root URL (`/`
 ## Database Configuration
 The application uses pyodbc to connect to Azure SQL Server. Database views and tables are created automatically on startup:
 
-**Views (Financial Data):**
+**Enhanced Views (HeyDividend Integration - Production Ready):**
+- `dbo.vSecurities` - Master security lookup from HeyDividend Securities table
+- `dbo.vDividendsEnhanced` - Multi-source dividend data with confidence scores (Canonical → ETF Schedules → Social Media)
+- `dbo.vDividendSchedules` - ETF distribution calendars from 22 providers (2-hour updates)
+- `dbo.vDividendSignals` - Real-time social media dividend announcements (2-minute updates)
+- `dbo.vQuotesEnhanced` - Real-time stock quotes from Financial Modeling Prep API
+- `dbo.vDividendPredictions` - ML dividend growth and cut risk forecasts
+
+**Legacy Views (Backward Compatibility):**
 - `dbo.vTickers` - Ticker/company information (stocks & ETFs)
 - `dbo.vDividends` - Dividend payment history
 - `dbo.vPrices` - Current stock prices and volume
@@ -70,7 +78,10 @@ The application uses pyodbc to connect to Azure SQL Server. Database views and t
 - `dbo.portfolio_groups` - Portfolio/watchlist definitions with metadata
 - `dbo.portfolio_positions` - Individual stock positions within portfolios
 
-**Note**: Database connection requires FreeTDS ODBC driver, configured at `/home/runner/.odbcinst.ini`
+**Note**: 
+- Database connection requires FreeTDS ODBC driver, configured at `/home/runner/.odbcinst.ini`
+- Enhanced views require HeyDividend production database tables (Canonical_Dividends, distribution_schedules, SocialMediaMentions, fmp_quotes, ml_predictions)
+- In development environment without production tables, enhanced views gracefully degrade to legacy views and mock data
 
 ## Passive Income Portfolio Builder Feature
 
@@ -106,7 +117,7 @@ Query the AI with retirement income goals:
 - `pandas` - Data manipulation for financial calculations
 - Highcharts (CDN) - Client-side chart rendering (no server dependencies)
 
-## Recent Changes (Oct 25, 2025)
+## Recent Changes
 - **Infrastructure Setup** (Oct 23):
   - Imported from GitHub and installed Python 3.11 + core dependencies
   - Configured environment variables for database and OpenAI
@@ -143,6 +154,20 @@ Query the AI with retirement income goals:
   - **Professional UI controls**: New Chat button (with confirmation), global Print button, per-message Save as PDF
   - **Enhanced PDF export**: Professional print CSS with branding, disclaimers, proper table formatting
   - All changes architect-reviewed and approved ✅
+
+- **Enhanced Database Views Integration** (Oct 30):
+  - Created 6 enhanced SQL views exposing richer HeyDividend production database tables:
+    - `vSecurities` - Master security lookup from Securities table
+    - `vDividendsEnhanced` - Multi-source dividend data with 3-layer fallback (Canonical → ETF Schedules → Social Media)
+    - `vDividendSchedules` - 2,000+ ETF distributions from 22 providers (2-hour refresh)
+    - `vDividendSignals` - Real-time social media dividend announcements (2-minute updates)
+    - `vQuotesEnhanced` - Real-time stock quotes from Financial Modeling Prep API
+    - `vDividendPredictions` - ML dividend growth and cut risk forecasts
+  - Updated AI configuration: SCHEMA_DOC with enhanced view docs, ALLOWED_TB regex whitelist, error messages
+  - Enhanced Passive Income Planner: Now uses vDividendsEnhanced for higher quality dividend data with confidence filtering (≥0.7)
+  - Created comprehensive DATABASE_SCHEMA.md documentation with data flow diagrams and example queries
+  - Fixed FreeTDS ODBC driver configuration at `/home/runner/.odbcinst.ini`
+  - Graceful degradation: Enhanced views require production tables; development environment falls back to legacy views + mock data
 
 ## Database Connection
 
