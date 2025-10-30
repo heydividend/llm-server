@@ -1,5 +1,9 @@
 import time, datetime as dt
 from typing import Dict, Any, List, Iterable
+import logging
+import re
+import pandas as pd
+from sqlalchemy.exc import OperationalError
 from app.core.llm_providers import oai_plan, oai_stream, set_active_llm, get_active_llm
 from app.core.database import engine, sanitize_sql, exec_sql_stream
 from app.web_search.enhanced_search import perform_enhanced_web_search
@@ -14,8 +18,6 @@ from app.config.settings import (
     PLANNER_SYSTEM_DEFAULT, ANSWER_SYSTEM_DEFAULT, 
     AUTO_WEB_FALLBACK, FAST_WEB_MAX_PAGES
 )
-import logging
-import re
 
 logger = logging.getLogger("ai_controller")
 

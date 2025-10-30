@@ -6,6 +6,10 @@ DEFAULT_TZ   = ZoneInfo("Asia/Karachi")
 TODAY        = dt.datetime.now(DEFAULT_TZ).date()
 TODAY_ISO    = TODAY.isoformat()  # e.g., '2025-10-08'
 
+# Web search fallback configuration
+AUTO_WEB_FALLBACK = os.getenv("AUTO_WEB_FALLBACK", "true").lower() in ("1", "true", "yes")
+FAST_WEB_MAX_PAGES = int(os.getenv("FAST_WEB_MAX_PAGES", "5"))
+
 
 OFFICIAL_DOMAINS = {
   

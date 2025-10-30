@@ -31,6 +31,7 @@ from typing import Dict, Any, List, Iterable
 import orjson
 import pandas as pd
 from dotenv import load_dotenv
+from sqlalchemy.exc import OperationalError
 
 from app.config.settings import (
     PLANNER_SYSTEM_DEFAULT,
@@ -383,7 +384,6 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
 
     sql_open_t0 = time.time()
     try:
-        from sqlalchemy.exc import OperationalError
         columns, rows_iter = exec_sql_stream(engine, sql)
     except OperationalError:
         time.sleep(0.4)
