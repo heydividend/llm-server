@@ -1,0 +1,32 @@
+
+================================================================================
+[2025-10-30 03:40:27] Request ID: 4b611852
+================================================================================
+QUERY:
+test
+
+METADATA:
+  - detected_tickers: ['TSLA']
+  - original_query: test
+  - updated_query: #TSLA
+  - use_web: False
+  - llm_provider: fallback
+  - stream: False
+================================================================================
+
+================================================================================
+[2025-10-30 03:40:30] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: TSLA
+[TICKER_EXTRACTION] Detected tickers: TSLA (processed in 8.837ms)#TSLA
+
+Generated SQL:
+SELECT TOP 1 Ticker, Price, Bid, Ask, Volume, Trade_Timestamp_UTC, Snapshot_Timestamp, Source FROM dbo.vPrices WHERE Ticker = 'TSLA' ORDER BY Trade_Timestamp_UTC DESC, Snapshot_Timestamp DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: 
+  - use_web: False
+================================================================================
