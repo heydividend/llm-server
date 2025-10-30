@@ -24,6 +24,7 @@ from app.utils.conversational_prompts import (
 from app.utils.ttm_calculator import (
     calculate_ttm_distributions, format_ttm_result, format_ttm_summary
 )
+from app.utils import dividend_analytics
 from app.config.settings import (
     PLANNER_SYSTEM_DEFAULT, ANSWER_SYSTEM_DEFAULT, 
     AUTO_WEB_FALLBACK, FAST_WEB_MAX_PAGES
@@ -293,20 +294,30 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
         
         if is_dividend_query and cnt > 0:
             # Use professional markdown formatting for dividend queries
-            formatter = ProfessionalMarkdownFormatter()
-            
-            # Convert rows to list of dictionaries for the formatter
-            dividend_data = []
-            for row in rows_buffer:
-                row_dict = {}
-                for i, col in enumerate(columns):
-                    row_dict[col] = row[i]
-                dividend_data.append(row_dict)
-            
-            # Format the professional dividend table
-            formatted_table = formatter.format_dividend_table(dividend_data)
-            yield formatted_table + "\n\n"
-            yield f"(total rows: {cnt})\n"
+            try:
+                formatter = ProfessionalMarkdownFormatter()
+                
+                # Convert rows to list of dictionaries for the formatter
+                dividend_data = []
+                for row in rows_buffer:
+                    row_dict = {}
+                    for i, col in enumerate(columns):
+                        row_dict[col] = row[i]
+                    dividend_data.append(row_dict)
+                
+                # Format the professional dividend table
+                formatted_table = formatter.format_dividend_table(dividend_data)
+                yield formatted_table + "\n\n"
+                yield f"(total rows: {cnt})\n"
+            except Exception as e:
+                logger.error(f"Error formatting dividend table with professional formatter: {e}")
+                # Fallback to ASCII table on error
+                yield "│ " + " │ ".join(columns) + " │\n"
+                yield "─" * min(180, 4 * len(columns) + 8) + "\n"
+                for r in rows_buffer:
+                    cells = ["(null)" if (v is None or (isinstance(v, float) and pd.isna(v))) else str(v) for v in r]
+                    yield "│ " + " │ ".join(cells) + " │\n"
+                yield f"(total rows: {cnt})\n"
         else:
             # Use current streaming format for non-dividend queries
             yield "│ " + " │ ".join(columns) + " │\n"
@@ -316,7 +327,108 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                 yield "│ " + " │ ".join(cells) + " │\n"
             yield f"(total rows streamed: {cnt})\n"
 
-        # b0) zero-row safeguard → web fallback
+        # b0) Share ownership detection and TTM calculation (before zero-row check)
+        ownership_info = detect_share_ownership(question)
+        if ownership_info and cnt > 0 and is_dividend_query:
+            try:
+                ticker = ownership_info['ticker']
+                shares = ownership_info['shares']
+                
+                # Convert rows_buffer to list of dicts for TTM calculator
+                distributions = []
+                for row in rows_buffer:
+                    row_dict = {}
+                    for i, col in enumerate(columns):
+                        row_dict[col] = row[i]
+                    distributions.append(row_dict)
+                
+                ttm_result = calculate_ttm_distributions(shares, ticker, distributions)
+                ttm_message = format_ttm_result(ttm_result)
+                yield "\n\n" + ttm_message + "\n\n"
+            except Exception as e:
+                logger.warning(f"Error calculating TTM for {ticker}: {e}")
+
+        # b1) 4-Tier Dividend Analytics (after data table, before ANSWER)
+        if is_dividend_query and cnt > 0:
+            try:
+                # Convert rows_buffer to list of dicts for analytics
+                distributions = []
+                for row in rows_buffer:
+                    row_dict = {}
+                    for i, col in enumerate(columns):
+                        row_dict[col] = row[i]
+                    distributions.append(row_dict)
+                
+                yield "\n## 📊 Analytics Summary\n\n"
+                
+                # 1. Descriptive Analytics
+                try:
+                    desc_analytics = dividend_analytics.analyze_payment_history(distributions)
+                    if desc_analytics and desc_analytics.get('total_payments', 0) > 0:
+                        yield "### Descriptive Analytics\n"
+                        yield f"- **Total Payments**: {desc_analytics['total_payments']}\n"
+                        yield f"- **Frequency**: {desc_analytics['frequency']}\n"
+                        yield f"- **Average Amount**: ${desc_analytics['avg_amount']:.4f}\n"
+                        yield f"- **Consistency Score**: {desc_analytics['consistency_score']}/100\n"
+                        yield f"- **Pattern**: {desc_analytics['pattern']}\n\n"
+                except Exception as e:
+                    logger.warning(f"Error in descriptive analytics: {e}")
+                
+                # 2. Diagnostic Analytics (distribution consistency)
+                try:
+                    diagnostic = dividend_analytics.analyze_distribution_consistency(distributions)
+                    if diagnostic and diagnostic.get('regularity_score') is not None:
+                        yield "### Diagnostic Analytics\n"
+                        yield f"- **Regularity Score**: {diagnostic['regularity_score']}/100\n"
+                        if diagnostic.get('outliers', 0) > 0:
+                            yield f"- **Outliers Detected**: {diagnostic['outliers']} payment(s)\n"
+                        if diagnostic.get('missed_payments', 0) > 0:
+                            yield f"- **Potential Missed Payments**: {diagnostic['missed_payments']}\n"
+                        yield f"- **Variance**: {diagnostic.get('variance', 'N/A')}\n\n"
+                except Exception as e:
+                    logger.warning(f"Error in diagnostic analytics: {e}")
+                
+                # 3. Predictive Analytics (if we have ticker info)
+                if parsed_tickers and len(parsed_tickers) > 0:
+                    try:
+                        ticker = parsed_tickers[0]
+                        next_dist = dividend_analytics.predict_next_distribution(ticker, distributions)
+                        if next_dist and next_dist.get('predicted_date'):
+                            yield "### Predictive Analytics\n"
+                            yield f"- **Predicted Next Distribution**: ${next_dist.get('predicted_amount', 0):.4f}\n"
+                            yield f"- **Estimated Date**: {next_dist['predicted_date']}\n"
+                            if next_dist.get('confidence'):
+                                yield f"- **Confidence**: {next_dist['confidence']}\n"
+                            yield "\n"
+                    except Exception as e:
+                        logger.warning(f"Error in predictive analytics: {e}")
+                
+                # 4. Prescriptive Analytics (recommendations)
+                if parsed_tickers and len(parsed_tickers) > 0:
+                    try:
+                        ticker = parsed_tickers[0]
+                        # Build analytics data for recommendations by extracting values
+                        analytics_data = {
+                            'consistency_score': desc_analytics.get('consistency_score', 50) if 'desc_analytics' in locals() else 50,
+                            'cut_risk_score': 0.3,  # Default moderate risk - would need ML API for actual value
+                            'current_yield': 0.0,  # Would need price data to calculate
+                            'growth_rate': 0.0  # Would need historical comparison
+                        }
+                        recommendations = dividend_analytics.recommend_action(ticker, analytics_data)
+                        if recommendations and recommendations.get('recommendation'):
+                            yield "### Prescriptive Recommendations\n"
+                            yield f"- **Action**: {recommendations['recommendation']}\n"
+                            yield f"- **Rationale**: {recommendations.get('rationale', 'Based on historical analysis')}\n"
+                            if recommendations.get('confidence_score'):
+                                yield f"- **Confidence Score**: {recommendations['confidence_score']}/100\n"
+                            yield "\n"
+                    except Exception as e:
+                        logger.warning(f"Error in prescriptive analytics: {e}")
+                
+            except Exception as e:
+                logger.error(f"Error in 4-tier analytics: {e}")
+
+        # b2) zero-row safeguard → web fallback
         if AUTO_WEB_FALLBACK and cnt == 0 and should_route_to_web(question, parsed_tickers):
             yield "\n# ANSWER\n\n"
             for chunk in perform_enhanced_web_search(question, max_pages=FAST_WEB_MAX_PAGES, fast=True):
@@ -380,10 +492,25 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
             answer_content += tok
             yield tok
         
-        # Add action prompts for dividend queries
+        # Add conversational follow-up prompts for dividend queries
+        if is_dividend_query and should_show_conversational_prompts(question, cnt > 0):
+            try:
+                follow_ups = get_follow_up_prompts(parsed_tickers, num_prompts=3)
+                if follow_ups:
+                    yield "\n\n---\n\n### 💡 What would you like to explore next?\n\n"
+                    for i, prompt in enumerate(follow_ups, 1):
+                        yield f"{i}. {prompt}\n"
+                    yield "\n"
+            except Exception as e:
+                logger.warning(f"Error generating follow-up prompts: {e}")
+        
+        # Add legacy action prompts for backward compatibility
         if is_dividend_query:
-            action_prompt = ProfessionalMarkdownFormatter.add_action_prompt("", parsed_tickers)
-            yield action_prompt
+            try:
+                action_prompt = ProfessionalMarkdownFormatter.add_action_prompt("", parsed_tickers)
+                yield action_prompt
+            except Exception as e:
+                logger.warning(f"Error adding action prompt: {e}")
         
         run["answer_ms"] = int((time.time() - ans_t0) * 1000)
         write_runlog(run, logfile)
