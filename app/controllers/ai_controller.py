@@ -19,6 +19,7 @@ from app.utils.helper import (
 from app.utils.extract_tickers import extract_tickers_function
 
 from app.logger_module import QueryResponseLogger
+from app.services import conversation_service
 
 logging.basicConfig(
     level=logging.INFO,
@@ -85,6 +86,62 @@ def process_query_with_tickers(query: str, rid: str, debug: bool = False) -> tup
             logger.info(f"[{rid}] No tickers detected in query")
         
         return query, "", []
+
+
+def handle_conversation_memory(
+    session_id: str = None,
+    conversation_id: str = None,
+    user_query: str = "",
+    rid: str = "",
+    max_history_tokens: int = 4000
+) -> dict:
+    """
+    Handle conversation memory: create session/conversation if needed, load history, save user message.
+    
+    Returns:
+        Dict with session_id, conversation_id, and conversation_history
+    """
+    try:
+        if not session_id or not conversation_service.session_exists(session_id):
+            session_id = conversation_service.create_session()
+            logger.info(f"[{rid}] Created new session: {session_id}")
+        else:
+            conversation_service.update_session_activity(session_id)
+            logger.info(f"[{rid}] Using existing session: {session_id}")
+        
+        if not conversation_id or not conversation_service.conversation_exists(conversation_id):
+            conversation_id = conversation_service.create_conversation(session_id)
+            logger.info(f"[{rid}] Created new conversation: {conversation_id}")
+        else:
+            logger.info(f"[{rid}] Using existing conversation: {conversation_id}")
+        
+        conversation_history = conversation_service.get_conversation_history(
+            conversation_id,
+            max_tokens=max_history_tokens
+        )
+        logger.info(f"[{rid}] Loaded {len(conversation_history)} messages from history")
+        
+        conversation_service.add_message(
+            conversation_id=conversation_id,
+            role="user",
+            content=user_query,
+            metadata={"rid": rid}
+        )
+        logger.info(f"[{rid}] Saved user message to conversation {conversation_id}")
+        
+        return {
+            "session_id": session_id,
+            "conversation_id": conversation_id,
+            "conversation_history": conversation_history
+        }
+        
+    except Exception as e:
+        logger.error(f"[{rid}] Conversation memory error: {e}")
+        return {
+            "session_id": session_id or "",
+            "conversation_id": conversation_id or "",
+            "conversation_history": []
+        }
 
 
 async def chat_completions(request: Request):
@@ -236,6 +293,23 @@ async def chat_completions(request: Request):
                     extracted_text = extracted_text[:MAX_PREPEND] + f"\n\n...[truncated] (orig={len(extracted_text)} chars)..."
                 overrides["prepend_user"] = (f"FILE_TEXT (OCR/DI extract):\n{extracted_text}\n\n" + overrides["prepend_user"]).strip()
 
+        # === CONVERSATION MEMORY ===
+        session_id_raw = (form.get("session_id") or "").strip()
+        conversation_id_raw = (form.get("conversation_id") or "").strip()
+        
+        conv_memory = handle_conversation_memory(
+            session_id=session_id_raw if session_id_raw else None,
+            conversation_id=conversation_id_raw if conversation_id_raw else None,
+            user_query=question,
+            rid=rid
+        )
+        
+        session_id = conv_memory["session_id"]
+        conversation_id = conv_memory["conversation_id"]
+        conversation_history = conv_memory["conversation_history"]
+        
+        overrides["conversation_history"] = conversation_history
+        
         # === LOG QUERY ===
         query_logger.log_query(
             rid=rid,
@@ -247,12 +321,15 @@ async def chat_completions(request: Request):
                 "use_web": overrides.get("use_web"),
                 "llm_provider": overrides.get("llm_provider"),
                 "stream": stream,
-                "has_file": is_upload_like(upload)
+                "has_file": is_upload_like(upload),
+                "session_id": session_id,
+                "conversation_id": conversation_id
             }
         )
 
         logger.info(
-            f"[{rid}] Processing request: stream={stream}, debug={debug}, tickers={detected_tickers}"
+            f"[{rid}] Processing request: stream={stream}, debug={debug}, tickers={detected_tickers}, "
+            f"conversation_id={conversation_id}"
         )
 
         # Generate response
@@ -267,17 +344,29 @@ async def chat_completions(request: Request):
                         collected.append(chunk)
                         yield chunk
                 finally:
+                    response_text = "".join(collected)
+                    
+                    # Save assistant response to conversation
+                    conversation_service.add_message(
+                        conversation_id=conversation_id,
+                        role="assistant",
+                        content=response_text,
+                        metadata={"rid": rid, "detected_tickers": detected_tickers}
+                    )
+                    
                     # Log after streaming completes
                     query_logger.log_full_conversation(
                         rid=rid,
                         query=question,
-                        response="".join(collected),
+                        response=response_text,
                         metadata={
                             "detected_tickers": detected_tickers,
                             "original_query": question,
                             "updated_query": updated_question,
                             "stream": True,
-                            "use_web": overrides.get("use_web")
+                            "use_web": overrides.get("use_web"),
+                            "session_id": session_id,
+                            "conversation_id": conversation_id
                         }
                     )
             
@@ -290,6 +379,14 @@ async def chat_completions(request: Request):
             collected.append(chunk)
         text = "".join(collected)
         
+        # === SAVE ASSISTANT RESPONSE ===
+        conversation_service.add_message(
+            conversation_id=conversation_id,
+            role="assistant",
+            content=text,
+            metadata={"rid": rid, "detected_tickers": detected_tickers}
+        )
+        
         # === LOG FULL CONVERSATION ===
         query_logger.log_full_conversation(
             rid=rid,
@@ -300,7 +397,9 @@ async def chat_completions(request: Request):
                 "original_query": question,
                 "updated_query": updated_question,
                 "stream": False,
-                "use_web": overrides.get("use_web")
+                "use_web": overrides.get("use_web"),
+                "session_id": session_id,
+                "conversation_id": conversation_id
             }
         )
         
@@ -312,7 +411,9 @@ async def chat_completions(request: Request):
             "metadata": {
                 "detected_tickers": detected_tickers,
                 "original_query": question,
-                "updated_query": updated_question
+                "updated_query": updated_question,
+                "session_id": session_id,
+                "conversation_id": conversation_id
             }
         })
 
@@ -363,6 +464,23 @@ async def chat_completions(request: Request):
     if ticker_info:
         overrides["prepend_user"] = (ticker_info + overrides["prepend_user"]).strip()
 
+    # === CONVERSATION MEMORY ===
+    session_id_raw = (body.get("session_id") or "").strip()
+    conversation_id_raw = (body.get("conversation_id") or "").strip()
+    
+    conv_memory = handle_conversation_memory(
+        session_id=session_id_raw if session_id_raw else None,
+        conversation_id=conversation_id_raw if conversation_id_raw else None,
+        user_query=question,
+        rid=rid
+    )
+    
+    session_id = conv_memory["session_id"]
+    conversation_id = conv_memory["conversation_id"]
+    conversation_history = conv_memory["conversation_history"]
+    
+    overrides["conversation_history"] = conversation_history
+
     # === LOG QUERY ===
     query_logger.log_query(
         rid=rid,
@@ -373,12 +491,15 @@ async def chat_completions(request: Request):
             "updated_query": updated_question,
             "use_web": overrides.get("use_web"),
             "llm_provider": overrides.get("llm_provider") == "llama" if overrides.get("llm_provider")  else "fallback",
-            "stream": stream
+            "stream": stream,
+            "session_id": session_id,
+            "conversation_id": conversation_id
         }
     )
 
     logger.info(
-        f"[{rid}] (JSON) Processing: stream={stream}, debug={debug}, tickers={detected_tickers}"
+        f"[{rid}] (JSON) Processing: stream={stream}, debug={debug}, tickers={detected_tickers}, "
+        f"conversation_id={conversation_id}"
     )
 
     gen = handle_request(updated_question, user_system_all, overrides, debug=debug)
@@ -391,16 +512,28 @@ async def chat_completions(request: Request):
                     collected.append(chunk)
                     yield chunk
             finally:
+                response_text = "".join(collected)
+                
+                # Save assistant response to conversation
+                conversation_service.add_message(
+                    conversation_id=conversation_id,
+                    role="assistant",
+                    content=response_text,
+                    metadata={"rid": rid, "detected_tickers": detected_tickers}
+                )
+                
                 query_logger.log_full_conversation(
                     rid=rid,
                     query=question,
-                    response="".join(collected),
+                    response=response_text,
                     metadata={
                         "detected_tickers": detected_tickers,
                         "original_query": question,
                         "updated_query": updated_question,
                         "stream": True,
-                        "use_web": overrides.get("use_web")
+                        "use_web": overrides.get("use_web"),
+                        "session_id": session_id,
+                        "conversation_id": conversation_id
                     }
                 )
         
@@ -413,6 +546,14 @@ async def chat_completions(request: Request):
         collected.append(chunk)
     text = "".join(collected)
     
+    # === SAVE ASSISTANT RESPONSE ===
+    conversation_service.add_message(
+        conversation_id=conversation_id,
+        role="assistant",
+        content=text,
+        metadata={"rid": rid, "detected_tickers": detected_tickers}
+    )
+    
     # === LOG FULL CONVERSATION ===
     query_logger.log_full_conversation(
         rid=rid,
@@ -423,7 +564,9 @@ async def chat_completions(request: Request):
             "original_query": question,
             "updated_query": updated_question,
             "stream": False,
-            "use_web": overrides.get("use_web")
+            "use_web": overrides.get("use_web"),
+            "session_id": session_id,
+            "conversation_id": conversation_id
         }
     )
     
@@ -435,6 +578,8 @@ async def chat_completions(request: Request):
         "metadata": {
             "detected_tickers": detected_tickers,
             "original_query": question,
-            "updated_query": updated_question
+            "updated_query": updated_question,
+            "session_id": session_id,
+            "conversation_id": conversation_id
         }
     })

@@ -334,6 +334,11 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
         msgs = [{"role": "system", "content": "You are a friendly, concise assistant."}]
         if user_system_all:
             msgs[0]["content"] += "\n\n" + user_system_all
+        
+        conversation_history = overrides.get("conversation_history", [])
+        if conversation_history:
+            msgs.extend(conversation_history)
+        
         msgs.append({"role": "user", "content": plan.get("final_answer") or question})
 
         def gen():
