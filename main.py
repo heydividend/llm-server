@@ -3,7 +3,7 @@ import time
 import uuid
 import logging
 import json
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
@@ -13,6 +13,7 @@ from typing import List, Dict, Optional
 from sqlalchemy import text
 from app.routes import chat as ai_routes
 from app.core.database import engine
+from app.core.auth import verify_api_key
 
 
 # Setup logging before anything else
@@ -74,7 +75,7 @@ class SavePortfolioRequest(BaseModel):
 
 
 @app.post("/v1/portfolio/save")
-async def save_portfolio(request: SavePortfolioRequest):
+async def save_portfolio(request: SavePortfolioRequest, api_key: str = Depends(verify_api_key)):
     """
     Save a portfolio or watchlist with positions.
     
