@@ -87,3 +87,13 @@ A separate Next.js frontend (not part of this backend repository but referenced)
     - Ollama (for local Llama models, optional)
 - **Charting Library:** Highcharts (client-side JavaScript CDN)
 - **Python Libraries:** `FastAPI`, `uvicorn`, `pyodbc`, `pandas`
+
+## API Documentation
+Comprehensive API reference for all Harvey endpoints is available in **`API_DOCUMENTATION.md`**. This single source of truth covers:
+- Core Chat API with JSON and multipart/form-data support (file uploads)
+- All 5 Harvey-1o features: Conversational Memory, Income Ladder Builder, Tax Optimization AI, Natural Language Alerts, Proactive Insights
+- ML Predictions integration (payout ratings, cut risk, yield forecasts, anomaly detection, comprehensive scores)
+- Complete request/response schemas with code examples in JavaScript/TypeScript and Python
+- Authentication, error handling, and streaming response patterns
+
+Frontend teams should refer to `API_DOCUMENTATION.md` for integration guidance.
