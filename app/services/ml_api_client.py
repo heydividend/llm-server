@@ -60,6 +60,8 @@ class MLAPIClient:
     
     def _get_headers(self) -> Dict[str, str]:
         """Get request headers with authentication."""
+        if not self.api_key:
+            raise ValueError("ML API key is required but not set. Set INTERNAL_ML_API_KEY environment variable.")
         return {
             "X-Internal-API-Key": self.api_key,
             "Content-Type": "application/json"
