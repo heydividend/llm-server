@@ -3,11 +3,163 @@
 ## Overview
 This document describes the complete database structure for the AskHeyDividend financial assistant application, including both the financial data views (read-only) and portfolio management tables (user data).
 
+**INTEGRATION UPDATE (Oct 30, 2025):** This AI system now integrates with the HeyDividend production database, accessing 6 enhanced views that provide:
+- **Fresher Data**: Updates every 2 hours (vs. daily) for ETF distributions
+- **Higher Quality**: Confidence scores and 3-layer fallback strategy  
+- **Real-time Insights**: Social media dividend announcements
+- **ML Predictions**: Growth forecasts and cut risk analysis
+- **2000+ ETFs**: Coverage from 22 providers (YieldMax, Roundhill, Defiance, etc.)
+
 ---
 
-## **Financial Data Views** (Read-only for AI queries)
+## **Enhanced Views** (PREFERRED - Integrated with HeyDividend Database)
 
-### **1. `dbo.vTickers`** - Stock & ETF Information
+### **1. `dbo.vSecurities`** - Master Security Lookup
+Direct mapping from the HeyDividend `Securities` table.
+
+**Source Table**: `Securities`
+
+**Key Columns**:
+- `Symbol_ID` - Unique identifier (maps to Canonical_Dividends.symbol_id)
+- `Ticker` - Stock/ETF ticker symbol
+- `Company_Name` - Company or fund name
+- `Exchange` - Exchange code
+- `Sector` - Business sector
+- `Industry` - Industry classification
+- `Market_Cap` - Market capitalization
+
+**Usage**: Required for joining with Canonical_Dividends (which uses symbol_id instead of ticker).
+
+---
+
+### **2. `dbo.vDividendsEnhanced`** - Multi-Source Dividend Data (BEST SOURCE)
+Unified dividend data with 3-layer fallback strategy and confidence scoring.
+
+**Source Tables**: 
+- Priority 1: `Canonical_Dividends` (hourly updates, highest confidence)
+- Priority 2: `distribution_schedules` (2-hour updates, ETF-specific)
+- Priority 3: `SocialMediaMentions` (2-minute updates, real-time)
+
+**Key Columns**:
+- `Ticker` - Stock/ETF ticker symbol
+- `Dividend_Amount` - Dividend amount
+- `AdjDividend_Amount` - Adjusted dividend amount
+- `Dividend_Type` - Type of dividend
+- `Currency` - Currency code
+- `Distribution_Frequency` - Payment frequency (12=monthly, 4=quarterly)
+- `Declaration_Date` - Declaration date
+- `Ex_Dividend_Date` - Ex-dividend date
+- `Record_Date` - Record date
+- `Payment_Date` - Payment date
+- `Confidence_Score` - Data confidence (0-1, filter ≥0.7 recommended)
+- `Data_Quality_Score` - Data quality score (0-1)
+- `Created_At` - Record timestamp
+- `Data_Source` - Source system (Canonical, ETF_Schedule, Social_Media)
+- `Priority` - Priority level (1=highest, 3=lowest)
+
+**Query Strategy**: Automatically uses ROW_NUMBER() to select highest-confidence data per ticker/ex_date combination.
+
+**Usage**: PRIMARY dividend source - replaces vDividends for all dividend queries.
+
+---
+
+### **3. `dbo.vDividendSchedules`** - ETF Distribution Calendars
+ETF-specific distribution data from 22 providers, updated every 2 hours.
+
+**Source Table**: `distribution_schedules`
+
+**Key Columns**:
+- `Ticker` - ETF ticker symbol
+- `Distribution_Amount` - Distribution amount
+- `Ex_Date` - Ex-dividend date
+- `Payment_Date` - Payment date
+- `Declaration_Date` - Declaration date
+- `Record_Date` - Record date
+- `Sponsor` - ETF provider name (YieldMax, Roundhill, Defiance, etc.)
+- `Schedule_Type` - Schedule type
+- `Confidence_Score` - Confidence score (0-1)
+- `Is_Confirmed` - Confirmation flag
+- `Last_Updated` - Last update timestamp (2-hour refresh)
+- `Source_URL` - Source URL
+
+**Coverage**:
+- 2,000+ ETFs from 22 providers
+- YieldMax (28 ETFs): TSLY, MSTY, NVDY, CONY, etc.
+- Roundhill (37+ ETFs): QDTE, XDTE, NVDW, TSLW, MAGS
+- Kurv (9 ETFs): KGLD, KQQQ, AAPY, TSLP, AMZP
+- Defiance (50 ETFs): QQQY, IWMY, SPYT, MSTX, QTUM
+- ProShares (161 ETFs): ISPY, IQQQ, ITWO
+- GraniteShares (55 ETFs): NVYY, TSYY, TQQY, YSPY
+
+**Usage**: Freshest ETF dividend data, updated every 2 hours.
+
+---
+
+### **4. `dbo.vDividendSignals`** - Real-time Social Media Dividend Alerts
+Real-time dividend announcements from Twitter/X, monitored every 2 minutes.
+
+**Source Table**: `SocialMediaMentions`
+
+**Key Columns**:
+- `Ticker` - Stock ticker symbol
+- `Dividend_Amount` - Extracted dividend amount
+- `Tweet_Text` - Full tweet text
+- `Mentioned_At` - Tweet timestamp
+- `Twitter_Username` - Twitter username
+- `Platform` - Platform name (Twitter/X)
+- `Extracted_Dates_JSON` - JSON with extracted dates
+- `Confidence_Score` - Extraction confidence (0-1, filter ≥0.8 recommended)
+- `Ex_Date` - Parsed ex-dividend date
+- `Payment_Date` - Parsed payment date
+
+**Usage**: Captures dividend announcements BEFORE official sources. Use for breaking news and early detection.
+
+---
+
+### **5. `dbo.vQuotesEnhanced`** - Real-time Stock Quotes
+Current stock prices and fundamentals from Financial Modeling Prep API.
+
+**Source Table**: `fmp_quotes`
+
+**Key Columns**:
+- `Ticker` - Stock ticker symbol
+- `Price` - Current price
+- `Price_Change` - Price change (dollars)
+- `Change_Percent` - Price change (percentage)
+- `Volume` - Trading volume
+- `Market_Cap` - Market capitalization
+- `PE_Ratio` - Price-to-earnings ratio
+- `EPS` - Earnings per share
+- `Last_Updated` - Last update timestamp
+
+**Usage**: Replaces vPrices for real-time price lookups and fundamental data.
+
+---
+
+### **6. `dbo.vDividendPredictions`** - ML Dividend Forecasts
+Machine learning predictions for dividend growth and cut risk.
+
+**Source Tables**:
+- `ml_dividend_growth_predictions`
+- `ml_dividend_cut_predictions`
+
+**Key Columns**:
+- `Ticker` - Stock ticker symbol
+- `Growth_Rate_Prediction` - Predicted annual dividend growth rate
+- `Growth_Confidence` - Growth prediction confidence (0-1)
+- `Cut_Risk_Score` - Dividend cut risk score (0-1, higher = more risk)
+- `Cut_Risk_Confidence` - Cut risk prediction confidence (0-1)
+- `Risk_Factors_JSON` - Detailed risk analysis (JSON)
+- `Prediction_Date` - When prediction was made
+- `Growth_Model_Version` - ML model version
+
+**Usage**: Provides ML-powered insights for dividend sustainability analysis.
+
+---
+
+## **Legacy Views** (Backward Compatibility)
+
+### **7. `dbo.vTickers`** - Stock & ETF Information
 Combines data from both stock and ETF ticker tables.
 
 **Source Tables**: 
@@ -165,33 +317,44 @@ Stores individual stock positions within portfolios/watchlists.
 ## **How the Database is Used**
 
 ### **AI Query Generation**
-The three views (`vTickers`, `vDividends`, `vPrices`) are queried by the AI to answer user questions:
-- "What are the top dividend stocks in the utilities sector?"
-- "Show me AAPL's dividend history"
-- "What's the current price of MSFT?"
-- "Find high-yield REITs"
+The AI queries both legacy and enhanced views to answer user questions:
+- "What are the top dividend stocks in the utilities sector?" → vDividendsEnhanced
+- "Show me AAPL's dividend history" → vDividendsEnhanced
+- "What's the current price of MSFT?" → vQuotesEnhanced
+- "Find high-yield REITs" → vDividendsEnhanced + vQuotesEnhanced
+- "What ETFs pay monthly dividends?" → vDividendSchedules
+- "Are there any dividend announcements today?" → vDividendSignals
+- "What's the dividend cut risk for XYZ?" → vDividendPredictions
 
 ### **Passive Income Portfolio Builder**
-The portfolio builder feature:
-1. Queries `vDividends` + `vPrices` + `vTickers` to find optimal dividend stocks
-2. Calculates required capital based on target income and dividend yields
-3. Builds diversified portfolios across 8 sectors
-4. Projects 5-year income growth
-5. Saves recommendations to `portfolio_groups` and `portfolio_positions` tables
+The portfolio builder feature now uses enhanced views:
+1. Queries `vDividendsEnhanced` + `vQuotesEnhanced` + `vSecurities` for optimal dividend stocks
+2. Filters by Confidence_Score ≥ 0.7 for high-quality data
+3. Calculates required capital based on target income and dividend yields
+4. Builds diversified portfolios across 8 sectors
+5. Projects 5-year income growth
+6. Saves recommendations to `portfolio_groups` and `portfolio_positions` tables
 
 ### **Database Safety**
 - AI-generated SQL is sandboxed to only SELECT from views
 - No writes, updates, or deletes allowed via AI queries
-- No access to underlying ingestion tables
+- No access to underlying raw tables (Securities, Canonical_Dividends, etc.)
 - Portfolio saves use parameterized queries via SQLAlchemy ORM
+- Enhanced views use read-only queries with confidence filtering
 
-### **Data Flow**
+### **Data Flow (Updated with Enhanced Integration)**
 ```
-External Data Sources
+External Sources (Twitter, FMP, Alpha Vantage, YieldMax, Roundhill, etc.)
         ↓
-Ingestion Tables (Ingest_Tickers_*, Ingest_Dividends_*, Ingest_Prices_*)
+Raw Tables (Canonical_Dividends, distribution_schedules, SocialMediaMentions, 
+            fmp_quotes, ml_predictions, Securities)
         ↓
-Views (vTickers, vDividends, vPrices) ← AI Queries (Read-Only)
+Enhanced Views (vDividendsEnhanced, vQuotesEnhanced, vDividendSchedules, 
+                vDividendSignals, vDividendPredictions, vSecurities)
+        ↓
+Legacy Views (vTickers, vDividends, vPrices) ← Backward Compatibility
+        ↓
+AI Queries (Read-Only SELECT statements with confidence filtering)
         ↓
 AI Analysis & Portfolio Building
         ↓
@@ -276,6 +439,107 @@ FROM dbo.vDividends
 WHERE Ticker = 'JNJ'
     AND Payment_Date >= DATEADD(year, -5, CAST(GETDATE() AS DATE))
 ORDER BY Payment_Date DESC
+```
+
+---
+
+## **Enhanced View Example Queries**
+
+### Find High-Quality Dividend Stocks (Using vDividendsEnhanced)
+```sql
+WITH HighConfidenceDividends AS (
+    SELECT 
+        Ticker,
+        SUM(AdjDividend_Amount) AS annual_dividend,
+        MAX(Confidence_Score) AS max_confidence,
+        MAX(Data_Source) AS primary_source
+    FROM dbo.vDividendsEnhanced
+    WHERE Payment_Date >= DATEADD(year, -1, CAST(GETDATE() AS DATE))
+        AND Confidence_Score >= 0.7
+    GROUP BY Ticker
+)
+SELECT TOP 20
+    s.Ticker,
+    s.Company_Name,
+    s.Sector,
+    hcd.annual_dividend,
+    q.Price,
+    (hcd.annual_dividend / NULLIF(q.Price, 0) * 100) AS dividend_yield_pct,
+    hcd.max_confidence AS confidence_score,
+    hcd.primary_source AS data_source
+FROM dbo.vSecurities s
+INNER JOIN HighConfidenceDividends hcd ON s.Ticker = hcd.Ticker
+INNER JOIN dbo.vQuotesEnhanced q ON s.Ticker = q.Ticker
+WHERE q.Price > 0
+    AND hcd.annual_dividend > 0
+    AND (hcd.annual_dividend / NULLIF(q.Price, 0)) > 0.03
+ORDER BY dividend_yield_pct DESC
+```
+
+### Find Monthly Dividend ETFs (Using vDividendSchedules)
+```sql
+SELECT TOP 20
+    Ticker,
+    Sponsor,
+    Distribution_Amount,
+    Ex_Date,
+    Payment_Date,
+    Confidence_Score,
+    Is_Confirmed
+FROM dbo.vDividendSchedules
+WHERE Ex_Date >= CAST(GETDATE() AS DATE)
+    AND Is_Confirmed = 1
+    AND Confidence_Score >= 0.8
+ORDER BY Ex_Date ASC
+```
+
+### Real-time Dividend Announcements (Using vDividendSignals)
+```sql
+SELECT TOP 10
+    Ticker,
+    Dividend_Amount,
+    Tweet_Text,
+    Mentioned_At,
+    Twitter_Username,
+    Confidence_Score
+FROM dbo.vDividendSignals
+WHERE Mentioned_At >= CAST(GETDATE() AS DATE)
+    AND Confidence_Score >= 0.85
+ORDER BY Mentioned_At DESC
+```
+
+### ML Dividend Sustainability Analysis (Using vDividendPredictions)
+```sql
+SELECT TOP 20
+    dp.Ticker,
+    s.Company_Name,
+    s.Sector,
+    dp.Growth_Rate_Prediction,
+    dp.Growth_Confidence,
+    dp.Cut_Risk_Score,
+    dp.Cut_Risk_Confidence,
+    dp.Risk_Factors_JSON
+FROM dbo.vDividendPredictions dp
+INNER JOIN dbo.vSecurities s ON dp.Ticker = s.Ticker
+WHERE dp.Growth_Confidence >= 0.7
+    AND dp.Cut_Risk_Confidence >= 0.7
+ORDER BY dp.Cut_Risk_Score ASC, dp.Growth_Rate_Prediction DESC
+```
+
+### Multi-Source Dividend Data Comparison
+```sql
+SELECT 
+    Ticker,
+    Dividend_Amount,
+    Ex_Dividend_Date,
+    Payment_Date,
+    Data_Source,
+    Confidence_Score,
+    Priority
+FROM dbo.vDividendsEnhanced
+WHERE Ticker = 'TSLY'
+    AND Ex_Dividend_Date >= DATEADD(month, -3, CAST(GETDATE() AS DATE))
+ORDER BY Ex_Dividend_Date DESC, Priority ASC
 ```
 
 ---
