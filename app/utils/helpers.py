@@ -331,3 +331,136 @@ def format_ml_comprehensive(data: List[Dict]) -> str:
         lines.append("")
     
     return "\n".join(lines)
+
+
+def format_ml_payout_rating_single(item: Dict) -> str:
+    """Format single payout rating result for streaming."""
+    symbol = item.get("symbol", "N/A")
+    rating = item.get("payout_rating", 0)
+    label = item.get("rating_label", "N/A")
+    confidence = item.get("confidence", 0)
+    percentile = item.get("payout_percentile", 0)
+    
+    emoji = "🟢" if rating >= 80 else "🟡" if rating >= 60 else "🔴"
+    
+    lines = [f"### {emoji} {symbol}"]
+    lines.append(f"- **Payout Rating:** {rating:.1f}/100 ({label})")
+    lines.append(f"- **Percentile:** Top {100-percentile}%")
+    lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+    
+    if "payout_quality_score" in item:
+        lines.append(f"- **Quality Score:** {item['payout_quality_score']:.1f}")
+    if "nav_protection_score" in item:
+        lines.append(f"- **NAV Protection:** {item['nav_protection_score']:.1f}")
+    
+    lines.append("")
+    return "\n".join(lines)
+
+
+def format_ml_cut_risk_single(item: Dict) -> str:
+    """Format single cut risk result for streaming."""
+    symbol = item.get("symbol", "N/A")
+    risk_score = item.get("cut_risk_score", 0)
+    risk_level = item.get("risk_level", "unknown")
+    confidence = item.get("confidence", 0)
+    risk_factors = item.get("risk_factors", [])
+    
+    emoji_map = {
+        "very_low": "🟢",
+        "low": "🟢",
+        "moderate": "🟡",
+        "high": "🟠",
+        "very_high": "🔴"
+    }
+    emoji = emoji_map.get(risk_level, "⚪")
+    
+    lines = [f"### {emoji} {symbol}"]
+    lines.append(f"- **Cut Risk Score:** {risk_score*100:.1f}% ({risk_level.replace('_', ' ').title()})")
+    lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+    
+    if "payout_ratio" in item:
+        lines.append(f"- **Payout Ratio:** {item['payout_ratio']:.1f}%")
+    if "earnings_coverage" in item:
+        lines.append(f"- **Earnings Coverage:** {item['earnings_coverage']:.2f}x")
+    
+    if risk_factors:
+        lines.append(f"- **Risk Factors:**")
+        for factor in risk_factors:
+            lines.append(f"  - {factor.replace('_', ' ').title()}")
+    
+    lines.append("")
+    return "\n".join(lines)
+
+
+def format_ml_yield_forecast_single(item: Dict) -> str:
+    """Format single yield forecast result for streaming."""
+    symbol = item.get("symbol", "N/A")
+    growth_rate = item.get("predicted_growth_rate", 0)
+    current_yield = item.get("current_yield", 0)
+    confidence = item.get("confidence", 0)
+    
+    emoji = "🚀" if growth_rate >= 10 else "📈" if growth_rate >= 5 else "📊"
+    
+    lines = [f"### {emoji} {symbol}"]
+    lines.append(f"- **Predicted Growth Rate:** {growth_rate:.1f}% annually")
+    lines.append(f"- **Current Yield:** {current_yield:.2f}%")
+    lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def format_ml_anomaly_single(item: Dict) -> str:
+    """Format single anomaly result for streaming."""
+    symbol = item.get("symbol", "N/A")
+    has_anomaly = item.get("has_anomaly", False) or item.get("is_anomaly", False)
+    anomaly_score = item.get("anomaly_score", 0)
+    anomaly_type = item.get("anomaly_type")
+    details = item.get("details", "")
+    confidence = item.get("confidence", 0)
+    
+    emoji = "🔴" if has_anomaly else "🟢"
+    status = "Anomaly Detected" if has_anomaly else "Normal"
+    
+    lines = [f"### {emoji} {symbol} - {status}"]
+    lines.append(f"- **Anomaly Score:** {anomaly_score*100:.1f}%")
+    
+    if has_anomaly and anomaly_type:
+        lines.append(f"- **Type:** {anomaly_type.replace('_', ' ').title()}")
+    
+    if details:
+        lines.append(f"- **Details:** {details}")
+    
+    lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def format_ml_comprehensive_single(item: Dict) -> str:
+    """Format single comprehensive score result for streaming."""
+    symbol = item.get("symbol", "N/A")
+    overall_score = item.get("overall_score", 0)
+    recommendation = item.get("recommendation", "hold")
+    confidence = item.get("confidence", 0)
+    
+    emoji_map = {
+        "strong_buy": "🟢",
+        "buy": "🟡",
+        "hold": "⚪",
+        "sell": "🔴"
+    }
+    emoji = emoji_map.get(recommendation, "⚪")
+    
+    lines = [f"### {emoji} {symbol}"]
+    lines.append(f"- **Overall Score:** {overall_score:.1f}/100")
+    lines.append(f"- **Recommendation:** {recommendation.replace('_', ' ').title()}")
+    lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+    
+    if "payout_rating" in item:
+        lines.append(f"- **Payout Rating:** {item['payout_rating']:.1f}")
+    if "cut_risk_score" in item:
+        lines.append(f"- **Cut Risk:** {item['cut_risk_score']*100:.1f}%")
+    if "growth_forecast" in item:
+        lines.append(f"- **Growth Forecast:** {item['growth_forecast']:.1f}%")
+    
+    lines.append("")
+    return "\n".join(lines)
