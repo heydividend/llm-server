@@ -16,9 +16,16 @@ A separate Next.js frontend (not part of this backend repository but referenced)
 - "New Chat," "Global Print to PDF," and "Per-message Save as PDF" functionalities with professional branding.
 
 **Technical Implementations & Feature Specifications:**
-- **Query Classification:** Routes queries to appropriate handlers (SQL, chat, web search, passive income planning, multipart).
+- **Query Classification:** Routes queries to appropriate handlers (SQL, chat, web search, passive income planning, ML predictions, multipart).
 - **SQL Generation:** Generates and executes SQL queries against the financial database.
-- **Streaming Responses:** Utilizes server-sent events for real-time interaction.
+- **ML-Powered Predictions:** Integration with HeyDividend's Internal ML API (`INTERNAL_ML_API_KEY`) for advanced dividend analysis with progressive streaming:
+  - **Payout Sustainability Ratings:** 0-100 scores with quality and NAV protection metrics
+  - **Dividend Growth Forecasts:** Predicted annual growth rates with confidence levels
+  - **Cut Risk Analysis:** 12-month dividend cut probability with risk factors
+  - **Anomaly Detection:** Identifies unusual payout patterns and payment irregularities
+  - **Comprehensive ML Scores:** Overall dividend quality scores with buy/sell recommendations
+  - All ML predictions stream progressively for real-time user feedback
+- **Streaming Responses:** Utilizes server-sent events for real-time progressive interaction (AI chat, SQL results, ML predictions).
 - **Web Search Integration:** Fallback mechanism for data not present in the database.
 - **File Processing:** Supports uploads for PDFs, images, and spreadsheets.
 - **Passive Income Portfolio Builder:** AI-powered tool for personalized dividend portfolio recommendations, including capital needs calculation, diversified portfolio construction, 5-year income projections, and interactive charts. Portfolios can be saved and tracked.
