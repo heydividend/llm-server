@@ -114,3 +114,37 @@ METADATA:
   - llm_provider: gpt-4o
   - use_web: False
 ================================================================================
+
+================================================================================
+[2025-10-30 23:58:19] Request ID: 017ff15d
+================================================================================
+QUERY:
+what is the distribution amount for HOOW?
+
+METADATA:
+  - detected_tickers: ['HOOW']
+  - original_query: what is the distribution amount for HOOW?
+  - updated_query: what is the distribution amount for #HOOW?
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+  - session_id: 258265aa-2869-4004-a947-258b522125d2
+  - conversation_id: 
+================================================================================
+
+================================================================================
+[2025-10-30 23:58:21] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: HOOW
+[TICKER_EXTRACTION] Detected tickers: HOOW (processed in 8.117ms)what is the distribution amount for #HOOW?
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'HOOW' ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: gpt-4o
+  - use_web: False
+================================================================================
