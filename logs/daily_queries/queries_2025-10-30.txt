@@ -63,3 +63,54 @@ METADATA:
   - llm_provider: 
   - use_web: False
 ================================================================================
+
+================================================================================
+[2025-10-30 22:34:29] Request ID: 752d8133
+================================================================================
+QUERY:
+What is a dividend?
+
+METADATA:
+  - detected_tickers: []
+  - original_query: What is a dividend?
+  - updated_query: What is a dividend?
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+  - session_id: 96d82145-5742-4660-a764-c3337c675167
+  - conversation_id: 
+================================================================================
+
+================================================================================
+[2025-10-30 23:05:06] Request ID: fc173155
+================================================================================
+QUERY:
+what is the dividend distribution for HOOY?
+
+METADATA:
+  - detected_tickers: ['HOOY']
+  - original_query: what is the dividend distribution for HOOY?
+  - updated_query: what is the dividend distribution for #HOOY?
+  - use_web: False
+  - llm_provider: False
+  - stream: True
+  - session_id: e95ac17f-03a6-45e8-91fc-c52973a33faa
+  - conversation_id: 
+================================================================================
+
+================================================================================
+[2025-10-30 23:05:09] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: HOOY
+[TICKER_EXTRACTION] Detected tickers: HOOY (processed in 2.166ms)what is the dividend distribution for #HOOY?
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'HOOY' ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: gpt-4o
+  - use_web: False
+================================================================================
