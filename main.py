@@ -13,6 +13,7 @@ from typing import List, Dict, Optional
 from sqlalchemy import text
 from app.routes import chat as ai_routes
 from app.routes import income_ladder
+from app.routes import tax_optimization
 from app.core.database import engine
 from app.core.auth import verify_api_key
 
@@ -52,6 +53,7 @@ class TimingMiddleware(BaseHTTPMiddleware):
 app.add_middleware(TimingMiddleware)
 app.include_router(ai_routes.router, prefix="/v1/chat", tags=["AI"])
 app.include_router(income_ladder.router, prefix="/v1", tags=["Income Ladder"])
+app.include_router(tax_optimization.router, prefix="/v1", tags=["Tax Optimization"])
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
