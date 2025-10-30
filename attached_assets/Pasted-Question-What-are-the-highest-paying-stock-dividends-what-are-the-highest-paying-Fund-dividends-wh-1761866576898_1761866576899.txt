@@ -1,0 +1,156 @@
+Question
+What are the highest paying stock dividends?
+what are the highest paying Fund dividends?
+when was the last time the dividend was paid for a specific stock or fund paying dividends?
+what’s the dividend yield of a specific dividend?
+if I purchase 200 shares of YMAX how much can I expect in to receive in dividend payments?
+what dividends are announcing their declaration dates this week? Next week? This month?
+How should I view the dividend stocks when they decrease in value?
+When these ETFs decrease in value, does this automatically mean that the distribution will decrease?
+Why does the stock usually fluctuates after the ex-dividend date, is there a reason for this?
+What is NAV erosion mean?
+How do I view the company financials?
+How do you view a companies assets under management (AUM)?
+What does TTM mean?
+I noticed that historic and aristocrat dividends produce quarterly increases every payout.
+Why don’t I see that with High Yield Dividends?
+Do all ETFs have the same structure?
+What is an underlining stock?
+How important is the underlining stock to the performance of the ETF?
+If the success of higher dividends are predicated on options trading, are they focusing on “calls" or “puts”?
+What does it mean when a company focuses on the “inverse” of an underlining stock?
+How do weekly paying dividends normally perform?
+What is a special Dividend? can you give an example (follow-up question)
+What are the top 10 highest paying stocks or ETFs that pay dividends?
+What are the top 10 highest paying stocks or funds paying the highest dividend yield on a weekly, monthly, quarterly, or yearly basis?
+How do weekly paying dividends normally perform?
+How do weekly paying dividends normally perform?
+What is the dividend payout ratio of a specific stock of fund?
+What dividends pay this month?
+What dividends pay this week?
+What dividends pay next month?
+what dividends pay in 2 weeks?
+How does the company's dividend yield compare to industry peers?
+Has the company been able to regularly increase its dividends?
+What is the average dividend growth rate over the past 5-10 years for a specific dividend?
+What is the company's debt-to-equity ratio?
+Does the company have sufficient free cash flow to sustain dividend payments?
+How resilient are the company's earnings and cash flow in different economic conditions?
+what is the declaration date of a specific stock or fund paying dividends?
+what is the ex-dividend date of a specific stock or fund paying dividends?
+what is the record date of a specific stock or fund paying dividends?
+any questions, followed by "put answer in a graph" or "put answer in a chart"
+What is a dividend?
+How do I make money from dividends?
+Describe what dividend yield means
+What is a market buy?
+What is a limit buy?
+What is an ETF or a fund?
+When buying an ETF does it mean, I actually own shares of that company?
+How can I determine what the underlining stock of that ETF is?
+What is option trading and how does that relate to high yield dividends?
+Why do high yield dividends fluctuate so much from month to month?
+What does NAV erosion mean?
+What approach should I take when new portfolios of high yield dividends come to the market?
+Why do high dividends and stocks they correlate to act differently in the market?
+What is margin?
+What is margin call?
+How much margin should I take?
+Typically, how much margin can I take?
+Can you grow your account without using margin?
+What time is the market open?
+What trading platforms can I use?
+How much does it cost to start?
+Can you describe the difference between a declaration date, activity, date, record date, and pay date?
+How quickly will I start seeing results?
+When and how do I get paid from dividends?
+What does DRIP mean and how does it work?
+Are all stocks eligible for dividend reinvestment?
+Why do I have to buy a stock prior to the record date?
+If I do deploy the DRIP and I am using margin can I still withdraw the money?
+How long will high yield dividends be around?
+I heard of YieldMax what other companies hold large portfolios of ETFs ?
+What does AUM mean?
+What is the difference between a growth mindset and an income mindset?
+Why is it beneficial to create passive income?
+How do I look up these HighYield Dividends?
+What makes high dividends so different from the historic dividends that have been around for a long time?
+How do these stocks perform during a bull market and how do they perform doing bearish market?
+Is there a difference between how the weekly dividends performed versus monthly?
+How aredividends to be taxed?
+What is the difference between a qualified and non-qualified dividend?
+What stocks or funds paying dividends offer the lowest nav?
+What stocks or funds paying dividends has been paying the longest?
+We are using this new data source that will give these metrics on Dividends?
+what is the Ex-to-Pay on my Portfolio name [user includes the name of a Portfolio they set]?
+what is the Ex-to-Pay on my Watchlist name [user includes the name of a Watchlist they set]?
+what is the Ex-to-Pay on my Strategy name [user includes the name of a Strategy they set]?
+what is the 30-Before-Ex on my Portfolio name [user includes the name of a Portfolio they set]?
+what is the 30-Before-Ex on my Watchlist name [user includes the name of a Watchlist they set]?
+what is the 30-Before-Ex on my Strategy name [user includes the name of a Strategy they set]?
+what is the Pay-to-Ex on my Strategy name [user includes the name of a Strategy they set]?
+what is the Pay-to-Ex on my Watchlist name [user includes the name of a Watchlist they set]?
+what is the Pay-to-Ex on my Portfolio name [user includes the name of a Portfolio they set]?
+what is the Pay-to-Pay on my Watchlist name [user includes the name of a Watchlist they set]?
+what is the Pay-to-Pay on my Strategy name [user includes the name of a Strategy they set]?
+what is the Pay-to-Pay on my Portfolio name [user includes the name of a Portfolio they set]?
+show a list of dividends paying more than $1.00
+show a list of dividends paying more than $2.00
+I see there are new monthly/weekly paying dividends all the time, Can I invest in them immediately?
+How do I calculate distributions if I own 200 shares of a stock if it pays $0.75 in one month?
+If I'm using the D.R.I.P feature, and stock pays $1.00 while owning 200 shares, how much should I expect my share count to increase by?
+If I'm scheduled to be paid a payment of 150.00 forthcoming, for owning 150 shares @ 1.00 each, where do I see the payment in my trading account on the payment date? if the stock price is $20
+If the stock does drop on the Ex-Dividend date and I'm using DRIP are the funds reinvested at the lower price?
+Why does the stock price occasionally drop after it pays a dividend?
+How important is it for me to be diversified in my holdings?
+How can I forecast my future earnings?
+If a stock pays $.50 on average monthly for a year and I own 500 shares while using the DRIP feature, how do I calculate what my value is at the end of the year?
+How do I calculate the average dividend payout if for 6 months the distributions are 0.91, 0.70, 1.04, 1.10, 0.80, .75?
+How do I determine the total return of distributions paid in the last TTM?
+How do I determine the ROI of high yield dividend stocks? If I invest $2,000 to purchase 67 stocks and the stock pays $50.25 ($0.75 per stock), in 6 months what will my total value be if the stock value decreases from $30 to $20?
+Is the dividend received sustainable for high yield dividends?
+Is there value in buying a stock at a lower value?
+Should I be concerned about NAV (Net Asset Value) erosion of a stock?
+Can I sell these stocks at any time?
+How can I view the ETF breakdown percentage of the stocks? I see they vary between holdings?
+What is the stock breakdown percentage of an ETF?
+How important is the underlying to the performance of a high yield dividend? For example, both CONY and MSTY both have Bitcoin but the performance and payments vary a great deal.
+Will a lower stock value affect the distribution?
+How can I forecast my dividend payments? Will this be consistent month over month?
+I see Yield Max launch the "Dorsey 7", what makes them different?
+Why does the stock price sometimes drop after it pays a dividend?
+Is the dividend received sustainable for high yield dividends?
+How can I find out the high yield portfolio holder /company's financial health?
+What are the risks associated with High yield Dividends?
+How to determine if the dividend will fit into my overall strategy/ portfolio?
+Why can't I buy on the ex-dividend date?
+What are special dividends?
+Who are the major portfolio holders of high yield dividends? Are all their distributions the same?
+How do "options trading" work with ETFs?
+Does the option strategy work in "Bullish" and "Bearish" market conditions?
+What is an inverserve of a fund?
+How are these High Yield dividends taxed?
+I've decided to use margin and use 20% of my allowance, will I be at risk for a margin call?
+If I am in a margin call and indicate I owe them $350.00, am I at risk of selling my stocks or should I wait for the market to rise or wait for a dividend payment?
+If I use margin, can I still withdraw my payments?
+What is the difference between having a "Growth Mindset" vs a "Income Mindset"?
+How is DRIP important in an investment strategy?
+Wha
+What dividend paying stocks, ETF's, and funds fall under the Energy industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Materials industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Industrials industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Consumer Discretionary industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Consumer Staples industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Healthcare industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Financials industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Information Technology (IT) industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Communication Services industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Utilities industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Real Estate industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Consumer Goods industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Transportation industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Commodities industry sector?
+What dividend paying stocks, ETF's, and funds fall under the Emerging Industries industry sector?
+Are there any differences between Yieldmax ,Defiance, Proshares, GraniteShares, Kraneshares, RexShares, Kurv, IShares, Roundhill, UBS AG and other monthly/weekly paying stocks?
+List the 10 Best Dividend Growth ETFs
+When comparing YMAG and YMAX what are the main differences?
