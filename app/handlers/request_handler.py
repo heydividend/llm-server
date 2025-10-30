@@ -16,6 +16,14 @@ from app.utils.helpers import (
     format_ml_anomaly_single, format_ml_comprehensive_single
 )
 from app.utils.metrics import compute_dividend_metrics
+from app.utils.markdown_formatter import ProfessionalMarkdownFormatter
+from app.utils.conversational_prompts import (
+    detect_share_ownership, get_follow_up_prompts, format_ttm_message,
+    is_dividend_query, should_show_conversational_prompts
+)
+from app.utils.ttm_calculator import (
+    calculate_ttm_distributions, format_ttm_result, format_ttm_summary
+)
 from app.config.settings import (
     PLANNER_SYSTEM_DEFAULT, ANSWER_SYSTEM_DEFAULT, 
     AUTO_WEB_FALLBACK, FAST_WEB_MAX_PAGES
@@ -60,7 +68,7 @@ def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str 
             ml_client = get_ml_client()
             
             if query_type == "payout_rating":
-                yield "## 📊 Dividend Payout Rating\n\n"
+                yield "## Dividend Payout Rating\n\n"
                 response = ml_client.get_payout_rating(parsed_tickers)
                 data = response.get("data", [])
                 
@@ -71,7 +79,7 @@ def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str 
                         yield format_ml_payout_rating_single(item)
             
             elif query_type == "cut_risk":
-                yield "## ⚠️ Dividend Cut Risk Analysis\n\n"
+                yield "## Dividend Cut Risk Analysis\n\n"
                 response = ml_client.get_cut_risk(parsed_tickers, include_earnings=True)
                 data = response.get("data", [])
                 
@@ -82,7 +90,7 @@ def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str 
                         yield format_ml_cut_risk_single(item)
             
             elif query_type == "yield_forecast":
-                yield "## 📈 Dividend Growth Forecast\n\n"
+                yield "## Dividend Growth Forecast\n\n"
                 response = ml_client.get_yield_forecast(parsed_tickers)
                 data = response.get("data", [])
                 
@@ -93,7 +101,7 @@ def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str 
                         yield format_ml_yield_forecast_single(item)
             
             elif query_type == "anomaly":
-                yield "## 🔍 Dividend Anomaly Detection\n\n"
+                yield "## Dividend Anomaly Detection\n\n"
                 response = ml_client.check_anomalies(parsed_tickers)
                 data = response.get("data", [])
                 
@@ -104,7 +112,7 @@ def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str 
                         yield format_ml_anomaly_single(item)
             
             elif query_type == "comprehensive":
-                yield "## 🎯 Comprehensive ML Score\n\n"
+                yield "## Comprehensive ML Score\n\n"
                 response = ml_client.get_comprehensive_score(parsed_tickers)
                 data = response.get("data", [])
                 
@@ -115,7 +123,7 @@ def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str 
                         yield format_ml_comprehensive_single(item)
             
             else:
-                yield "## 📊 Dividend Payout Rating\n\n"
+                yield "## Dividend Payout Rating\n\n"
                 response = ml_client.get_payout_rating(parsed_tickers)
                 data = response.get("data", [])
                 
@@ -266,20 +274,47 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
     rows_buffer: List[tuple] = []
 
     def composed():
-        # a) stream data table
-        yield "\n# DATA\n\n"
-        yield "│ " + " │ ".join(columns) + " │\n"
-        yield "─" * min(180, 4 * len(columns) + 8) + "\n"
+        # Detect if this is a dividend query by checking column names
+        columns_lower = [col.lower() for col in columns]
+        dividend_fields = ['dividend_amount', 'yield', 'payout_ratio', 'ex_date', 'pay_date', 
+                          'exdate', 'paydate', 'ex_dividend_date', 'payment_date', 
+                          'declaration_date', 'declarationdate', 'distribution_amount']
+        is_dividend_query = any(field in columns_lower for field in dividend_fields)
+        
+        # Buffer all rows first
         cnt = 0
         for r in rows_iter:
             cnt += 1
             rows_buffer.append(r)
-            cells = ["(null)" if (v is None or (isinstance(v, float) and pd.isna(v))) else str(v) for v in r]
-            yield "│ " + " │ ".join(cells) + " │\n"
-            if cnt % 5000 == 0:
-                yield f"… streamed {cnt} rows …\n"
         run["rows_streamed"] = cnt
-        yield f"(total rows streamed: {cnt})\n"
+        
+        # a) Format and display data table
+        yield "\n# DATA\n\n"
+        
+        if is_dividend_query and cnt > 0:
+            # Use professional markdown formatting for dividend queries
+            formatter = ProfessionalMarkdownFormatter()
+            
+            # Convert rows to list of dictionaries for the formatter
+            dividend_data = []
+            for row in rows_buffer:
+                row_dict = {}
+                for i, col in enumerate(columns):
+                    row_dict[col] = row[i]
+                dividend_data.append(row_dict)
+            
+            # Format the professional dividend table
+            formatted_table = formatter.format_dividend_table(dividend_data)
+            yield formatted_table + "\n\n"
+            yield f"(total rows: {cnt})\n"
+        else:
+            # Use current streaming format for non-dividend queries
+            yield "│ " + " │ ".join(columns) + " │\n"
+            yield "─" * min(180, 4 * len(columns) + 8) + "\n"
+            for r in rows_buffer:
+                cells = ["(null)" if (v is None or (isinstance(v, float) and pd.isna(v))) else str(v) for v in r]
+                yield "│ " + " │ ".join(cells) + " │\n"
+            yield f"(total rows streamed: {cnt})\n"
 
         # b0) zero-row safeguard → web fallback
         if AUTO_WEB_FALLBACK and cnt == 0 and should_route_to_web(question, parsed_tickers):
@@ -339,8 +374,17 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                 "content": f"QUESTION:\n{question}\n\nDERIVED METRICS:\n{derived_txt}\n\nSAMPLE ROWS:\n{sample_txt}\n\n{invest_note}",
             },
         ]
+        
+        answer_content = ""
         for tok in oai_stream(msgs):
+            answer_content += tok
             yield tok
+        
+        # Add action prompts for dividend queries
+        if is_dividend_query:
+            action_prompt = ProfessionalMarkdownFormatter.add_action_prompt("", parsed_tickers)
+            yield action_prompt
+        
         run["answer_ms"] = int((time.time() - ans_t0) * 1000)
         write_runlog(run, logfile)
 

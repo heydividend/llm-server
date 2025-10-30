@@ -54,10 +54,10 @@ class ProfessionalMarkdownFormatter:
                     item.get("declaration_date", item.get("Declaration Date", item.get("declarationDate")))
                 ),
                 "Ex-Date": ProfessionalMarkdownFormatter._format_date(
-                    item.get("ex_date", item.get("Ex-Date", item.get("exDate", item.get("ex_dividend_date")))
+                    item.get("ex_date", item.get("Ex-Date", item.get("exDate", item.get("ex_dividend_date"))))
                 ),
                 "Pay Date": ProfessionalMarkdownFormatter._format_date(
-                    item.get("pay_date", item.get("Pay Date", item.get("payDate", item.get("payment_date")))
+                    item.get("pay_date", item.get("Pay Date", item.get("payDate", item.get("payment_date"))))
                 )
             }
             formatted_data.append(formatted_row)
