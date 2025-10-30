@@ -59,7 +59,27 @@ A separate Next.js frontend (not part of this backend repository but referenced)
   - AI-generated personalized summaries using GPT-4o
   - Priority-based insight delivery
   - Manual digest generation on-demand
-- **Streaming Responses:** Utilizes server-sent events for real-time progressive interaction (AI chat, SQL results, ML predictions).
+- **Professional Markdown Formatting (NEW):** Clean, business-grade response formatting:
+  - Uses mdformat and py-markdown-table for consistent professional styling
+  - Standardized 8-column dividend tables (Ticker, Price, Distribution Amount, Yield, Payout Ratio, Declaration Date, Ex-Date, Pay Date)
+  - Automatic removal of emojis and icons for business-appropriate output
+  - Action prompts for watchlist, portfolio tracking, alerts, and income ladder features
+  - Formatted tables work seamlessly with streaming responses
+- **Conversational AI Training (NEW):** Makes Harvey feel like a real financial advisor:
+  - Proactive follow-up questions suggesting relevant next steps (forecasting, watchlist, portfolio tracking, alerts, income ladder, tax optimization)
+  - Share ownership detection using natural language patterns ("I own 200 shares of YMAX", "my 100 TSLY shares")
+  - Automatic TTM (trailing twelve months) income calculator
+  - Personalized income messages with historical distribution data
+  - Intelligent conversation flow that guides users toward valuable features
+- **4-Tier Dividend Analytics Framework (NEW):** Comprehensive analytics across all dimensions:
+  - **Descriptive Analytics:** Historical payment patterns, consistency scores, yield trends, distribution frequency
+  - **Diagnostic Analytics:** Dividend cut analysis, yield change diagnosis, payment irregularity detection, variance explanations
+  - **Predictive Analytics:** Next distribution forecasts, annual income projections, ML API integration, yield trajectory modeling
+  - **Prescriptive Analytics:** Buy/Hold/Sell/Trim recommendations, portfolio optimization suggestions, tax strategies, risk mitigation actions
+  - All analytics stream progressively during dividend responses
+  - 17 specialized analytics functions covering every aspect of dividend analysis
+  - Integration with existing ML predictions API for comprehensive forecasting
+- **Streaming Responses:** Utilizes server-sent events for real-time progressive interaction (AI chat, SQL results, ML predictions, analytics).
 - **Web Search Integration:** Fallback mechanism for data not present in the database.
 - **File Processing:** Supports uploads for PDFs, images, and spreadsheets.
 - **Passive Income Portfolio Builder:** AI-powered tool for personalized dividend portfolio recommendations, including capital needs calculation, diversified portfolio construction, 5-year income projections, and interactive charts. Portfolios can be saved and tracked.
