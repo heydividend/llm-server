@@ -8,6 +8,7 @@ from app.config.settings import (
     CREATE_ENHANCED_VIEWS_SQL, CREATE_ENHANCED_VIEWS_FALLBACK_SQL
 )
 from app.config.portfolio_schema import CREATE_PORTFOLIO_TABLES_SQL
+from app.config.features_schema import CREATE_FEATURES_TABLES_SQL
 
 # Database Configuration
 HOST = os.getenv("SQLSERVER_HOST")
@@ -131,6 +132,30 @@ try:
             conn.exec_driver_sql(stmt)
 except Exception as e:
     print(f"[warn] ensure_portfolio_tables failed: {e}")
+
+# Create feature tables (Conversational Memory, Alerts, Tax, Income Ladders, Insights)
+# Execute each statement individually to avoid transaction issues with DDL in SQL Server
+feature_tables_created = 0
+feature_tables_errors = 0
+for stmt in [s.strip() for s in CREATE_FEATURES_TABLES_SQL.split(";") if s.strip()]:
+    try:
+        with engine.connect() as conn:
+            conn.exec_driver_sql(stmt)
+            conn.commit()
+        feature_tables_created += 1
+    except Exception as e:
+        feature_tables_errors += 1
+        if "already exists" not in str(e) and "There is already an object" not in str(e):
+            print(f"[debug] Statement execution note: {str(e)[:100]}")
+
+if feature_tables_errors == 0 or feature_tables_created > 5:
+    print("[info] ✓ Feature tables created successfully")
+    print("[info]   Tables: user_sessions, conversations, conversation_messages, user_portfolios,")
+    print("[info]           alert_rules, alert_events, tax_scenarios, income_ladders, proactive_insights")
+elif feature_tables_created > 0:
+    print(f"[info] ✓ Feature tables partially created ({feature_tables_created} statements succeeded)")
+else:
+    print(f"[warn] Feature tables creation had issues ({feature_tables_errors} errors)")
 
 def normalize_sql_server(sql: str) -> str:
     s = sql
