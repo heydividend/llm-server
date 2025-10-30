@@ -129,3 +129,205 @@ def _maybe_flatten_vision_json(s: str) -> str:
         return flat or s
     except Exception:
         return s
+
+
+ML_QUERY_KEYWORDS = {
+    "payout_rating": ["payout rating", "payout score", "dividend rating", "dividend sustainability", "payout quality"],
+    "cut_risk": ["cut risk", "dividend cut", "cut probability", "dividend safety", "risk of cut", "at risk", "cutting dividend"],
+    "yield_forecast": ["yield forecast", "dividend growth", "growth forecast", "dividend forecast", "future yield", "growth rate"],
+    "anomaly": ["anomaly", "unusual pattern", "abnormal dividend", "irregular payment", "dividend issue"],
+    "comprehensive": ["ml score", "comprehensive score", "overall score", "dividend score", "ml analysis", "ml rating"]
+}
+
+
+def is_ml_query(text: str) -> bool:
+    """Detect if query is requesting ML predictions."""
+    t = text.lower()
+    for keywords_list in ML_QUERY_KEYWORDS.values():
+        if any(kw in t for kw in keywords_list):
+            return True
+    return False
+
+
+def detect_ml_query_type(text: str) -> str:
+    """
+    Determine which ML endpoint to call based on query keywords.
+    
+    Returns:
+        One of: "payout_rating", "cut_risk", "yield_forecast", "anomaly", "comprehensive", or "payout_rating" (default)
+    """
+    t = text.lower()
+    
+    for query_type, keywords in ML_QUERY_KEYWORDS.items():
+        if any(kw in t for kw in keywords):
+            return query_type
+    
+    return "payout_rating"
+
+
+def format_ml_payout_rating(data: List[Dict]) -> str:
+    """Format payout rating response as markdown."""
+    if not data:
+        return "No payout rating data available."
+    
+    lines = ["## 📊 Dividend Payout Rating\n"]
+    
+    for item in data:
+        symbol = item.get("symbol", "N/A")
+        rating = item.get("payout_rating", 0)
+        label = item.get("rating_label", "N/A")
+        confidence = item.get("confidence", 0)
+        percentile = item.get("payout_percentile", 0)
+        
+        emoji = "🟢" if rating >= 80 else "🟡" if rating >= 60 else "🔴"
+        
+        lines.append(f"### {emoji} {symbol}")
+        lines.append(f"- **Payout Rating:** {rating:.1f}/100 ({label})")
+        lines.append(f"- **Percentile:** Top {100-percentile}%")
+        lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+        
+        if "payout_quality_score" in item:
+            lines.append(f"- **Quality Score:** {item['payout_quality_score']:.1f}")
+        if "nav_protection_score" in item:
+            lines.append(f"- **NAV Protection:** {item['nav_protection_score']:.1f}")
+        
+        lines.append("")
+    
+    return "\n".join(lines)
+
+
+def format_ml_cut_risk(data: List[Dict]) -> str:
+    """Format cut risk response as markdown."""
+    if not data:
+        return "No cut risk data available."
+    
+    lines = ["## ⚠️ Dividend Cut Risk Analysis\n"]
+    
+    for item in data:
+        symbol = item.get("symbol", "N/A")
+        risk_score = item.get("cut_risk_score", 0)
+        risk_level = item.get("risk_level", "unknown")
+        confidence = item.get("confidence", 0)
+        risk_factors = item.get("risk_factors", [])
+        
+        emoji_map = {
+            "very_low": "🟢",
+            "low": "🟢",
+            "moderate": "🟡",
+            "high": "🟠",
+            "very_high": "🔴"
+        }
+        emoji = emoji_map.get(risk_level, "⚪")
+        
+        lines.append(f"### {emoji} {symbol}")
+        lines.append(f"- **Cut Risk Score:** {risk_score*100:.1f}% ({risk_level.replace('_', ' ').title()})")
+        lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+        
+        if "payout_ratio" in item:
+            lines.append(f"- **Payout Ratio:** {item['payout_ratio']:.1f}%")
+        if "earnings_coverage" in item:
+            lines.append(f"- **Earnings Coverage:** {item['earnings_coverage']:.2f}x")
+        
+        if risk_factors:
+            lines.append(f"- **Risk Factors:**")
+            for factor in risk_factors:
+                lines.append(f"  - {factor.replace('_', ' ').title()}")
+        
+        lines.append("")
+    
+    return "\n".join(lines)
+
+
+def format_ml_yield_forecast(data: List[Dict]) -> str:
+    """Format yield forecast response as markdown."""
+    if not data:
+        return "No yield forecast data available."
+    
+    lines = ["## 📈 Dividend Growth Forecast\n"]
+    
+    for item in data:
+        symbol = item.get("symbol", "N/A")
+        growth_rate = item.get("predicted_growth_rate", 0)
+        current_yield = item.get("current_yield", 0)
+        confidence = item.get("confidence", 0)
+        
+        emoji = "🚀" if growth_rate >= 10 else "📈" if growth_rate >= 5 else "📊"
+        
+        lines.append(f"### {emoji} {symbol}")
+        lines.append(f"- **Predicted Growth Rate:** {growth_rate:.1f}% annually")
+        lines.append(f"- **Current Yield:** {current_yield:.2f}%")
+        lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+        lines.append("")
+    
+    return "\n".join(lines)
+
+
+def format_ml_anomaly(data: List[Dict]) -> str:
+    """Format anomaly detection response as markdown."""
+    if not data:
+        return "No anomaly data available."
+    
+    lines = ["## 🔍 Dividend Anomaly Detection\n"]
+    
+    for item in data:
+        symbol = item.get("symbol", "N/A")
+        has_anomaly = item.get("has_anomaly", False) or item.get("is_anomaly", False)
+        anomaly_score = item.get("anomaly_score", 0)
+        anomaly_type = item.get("anomaly_type")
+        details = item.get("details", "")
+        confidence = item.get("confidence", 0)
+        
+        emoji = "🔴" if has_anomaly else "🟢"
+        status = "Anomaly Detected" if has_anomaly else "Normal"
+        
+        lines.append(f"### {emoji} {symbol} - {status}")
+        lines.append(f"- **Anomaly Score:** {anomaly_score*100:.1f}%")
+        
+        if has_anomaly and anomaly_type:
+            lines.append(f"- **Type:** {anomaly_type.replace('_', ' ').title()}")
+        
+        if details:
+            lines.append(f"- **Details:** {details}")
+        
+        lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+        lines.append("")
+    
+    return "\n".join(lines)
+
+
+def format_ml_comprehensive(data: List[Dict]) -> str:
+    """Format comprehensive ML score response as markdown."""
+    if not data:
+        return "No comprehensive score data available."
+    
+    lines = ["## 🎯 Comprehensive ML Score\n"]
+    
+    for item in data:
+        symbol = item.get("symbol", "N/A")
+        overall_score = item.get("overall_score", 0)
+        recommendation = item.get("recommendation", "hold")
+        confidence = item.get("confidence", 0)
+        
+        emoji_map = {
+            "strong_buy": "🟢",
+            "buy": "🟡",
+            "hold": "⚪",
+            "sell": "🔴"
+        }
+        emoji = emoji_map.get(recommendation, "⚪")
+        
+        lines.append(f"### {emoji} {symbol}")
+        lines.append(f"- **Overall Score:** {overall_score:.1f}/100")
+        lines.append(f"- **Recommendation:** {recommendation.replace('_', ' ').title()}")
+        lines.append(f"- **Confidence:** {confidence*100:.0f}%")
+        
+        if "payout_rating" in item:
+            lines.append(f"- **Payout Rating:** {item['payout_rating']:.1f}")
+        if "cut_risk_score" in item:
+            lines.append(f"- **Cut Risk:** {item['cut_risk_score']*100:.1f}%")
+        if "growth_forecast" in item:
+            lines.append(f"- **Growth Forecast:** {item['growth_forecast']:.1f}%")
+        
+        lines.append("")
+    
+    return "\n".join(lines)

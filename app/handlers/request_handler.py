@@ -5,7 +5,9 @@ from app.core.database import engine, sanitize_sql, exec_sql_stream
 from app.web_search.enhanced_search import perform_enhanced_web_search
 from app.utils.helpers import (
     user_wants_cap, parse_last_n_years, extract_ticker_list, 
-    should_route_to_web, is_greeting_only, openai_sse_wrap, write_runlog
+    should_route_to_web, is_greeting_only, openai_sse_wrap, write_runlog,
+    is_ml_query, detect_ml_query_type, format_ml_payout_rating, format_ml_cut_risk,
+    format_ml_yield_forecast, format_ml_anomaly, format_ml_comprehensive, has_finance_intent
 )
 from app.utils.metrics import compute_dividend_metrics
 from app.config.settings import (
@@ -25,6 +27,77 @@ def handle_web_request(question: str, as_stream: bool = True, max_pages: int = 8
         return openai_sse_wrap(gen(), req_id)
     else:
         return perform_enhanced_web_search(question, max_pages=max_pages, fast=fast)
+
+
+def handle_ml_request(question: str, parsed_tickers: List[str], query_type: str = "payout_rating"):
+    """
+    Handle ML prediction requests.
+    
+    Args:
+        question: User's question
+        parsed_tickers: List of ticker symbols extracted from question
+        query_type: Type of ML query (payout_rating, cut_risk, yield_forecast, anomaly, comprehensive)
+    
+    Returns:
+        Generator yielding formatted ML response
+    """
+    from app.services.ml_api_client import get_ml_client
+    
+    req_id = f"chatcmpl-ml-{int(time.time()*1000)}"
+    
+    def gen():
+        try:
+            if not parsed_tickers:
+                yield "Please specify one or more ticker symbols for ML analysis. For example: 'What's the payout rating for AAPL?'"
+                return
+            
+            logger.info(f"ML request: type={query_type}, tickers={parsed_tickers}")
+            
+            ml_client = get_ml_client()
+            
+            if query_type == "payout_rating":
+                response = ml_client.get_payout_rating(parsed_tickers)
+                formatted = format_ml_payout_rating(response.get("data", []))
+            
+            elif query_type == "cut_risk":
+                response = ml_client.get_cut_risk(parsed_tickers, include_earnings=True)
+                formatted = format_ml_cut_risk(response.get("data", []))
+            
+            elif query_type == "yield_forecast":
+                response = ml_client.get_yield_forecast(parsed_tickers)
+                formatted = format_ml_yield_forecast(response.get("data", []))
+            
+            elif query_type == "anomaly":
+                response = ml_client.check_anomalies(parsed_tickers)
+                formatted = format_ml_anomaly(response.get("data", []))
+            
+            elif query_type == "comprehensive":
+                response = ml_client.get_comprehensive_score(parsed_tickers)
+                formatted = format_ml_comprehensive(response.get("data", []))
+            
+            else:
+                response = ml_client.get_payout_rating(parsed_tickers)
+                formatted = format_ml_payout_rating(response.get("data", []))
+            
+            yield formatted
+            
+            yield "\n\n---\n*ML predictions powered by HeyDividend's Internal ML API*"
+            
+        except Exception as e:
+            logger.error(f"ML API error: {e}")
+            
+            yield f"I encountered an error while fetching ML predictions: {str(e)}\n\n"
+            yield "Let me provide a general analysis instead:\n\n"
+            
+            msgs = [
+                {"role": "system", "content": "You are a friendly dividend investing assistant. Provide helpful analysis based on general knowledge."},
+                {"role": "user", "content": question}
+            ]
+            
+            for tok in oai_stream(msgs):
+                yield tok
+    
+    return openai_sse_wrap(gen(), req_id)
 
 def handle_request(question: str, user_system_all: str, overrides: Dict[str, str], debug=False, logfile="runlogger.jsonl"):
     """
@@ -65,6 +138,12 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
 
     if parsed_tickers and (has_finance_intent(question) or len(parsed_tickers) >= 2):
         question = f"TICKERS_HINT: {','.join(parsed_tickers)}\n" + question
+
+    # ML query detection (before planner)
+    if is_ml_query(question):
+        ml_query_type = detect_ml_query_type(question)
+        logger.info(f"Detected ML query: type={ml_query_type}, tickers={parsed_tickers}")
+        return handle_ml_request(question, parsed_tickers, ml_query_type)
 
     # Early auto web switch (FAST)
     if AUTO_WEB_FALLBACK and not bool(overrides.get("use_web")):

@@ -523,6 +523,18 @@ Return STRICT one-line JSON: {{"action":"chat"|"sql"|"multipart"|"passive_income
   • Generates 5-year income projections with charts
   • Offers to save as a portfolio/watchlist
 
+*** ML PREDICTIONS (AUTOMATIC) ***
+- ML predictions are handled automatically by a separate ML query handler
+- When users ask for:
+  • "payout rating", "dividend rating", "payout sustainability", "payout quality"
+  • "cut risk", "dividend cut", "dividend safety", "risk of cut"
+  • "yield forecast", "dividend growth", "growth forecast", "future yield"
+  • "anomaly", "unusual pattern", "abnormal dividend"
+  • "ml score", "comprehensive score", "dividend score"
+- DO NOT write SQL queries for these - they are routed to the ML API automatically
+- The system will detect these keywords and call the appropriate ML endpoint
+- Just return {{"action":"chat","final_answer":"Processing ML request...","sql":null}} if asked
+
 *** SMART FINTECH QUERY HANDLING ***
 - The system can answer ANY fintech-related query using available data:
   • Dividend yield, growth rates, payout ratios
