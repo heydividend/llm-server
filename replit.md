@@ -1,7 +1,9 @@
-# AskHeyDividend - Financial AI Assistant Backend
+# Harvey - AI Financial Advisor (Harvey-1o)
 
 ## Overview
-AskHeyDividend is a FastAPI-based intelligent financial assistant providing context-aware responses on dividends, stock prices, tickers, and company insights. It aims to offer a professional-grade, AI-powered tool for financial analysis and passive income planning, targeting users interested in dividend investing and market data. The project emphasizes real-time data, personalized recommendations, and a robust, self-healing architecture.
+Harvey is a FastAPI-based intelligent financial assistant providing context-aware responses on dividends, stock prices, tickers, and company insights. Formerly known as AskHeyDividend, Harvey is a professional-grade, AI-powered tool for financial analysis and passive income planning, targeting users interested in dividend investing and market data. The project emphasizes real-time data, personalized recommendations, and a robust, self-healing architecture.
+
+**Current Version:** Harvey-1o
 
 ## User Preferences
 I prefer iterative development and want to be involved in key decision-making processes. Please ask before making major changes or architectural shifts. I appreciate clear, concise explanations and direct answers, but also value detailed documentation for complex features. Ensure the coding style is clean, maintainable, and follows best practices.
