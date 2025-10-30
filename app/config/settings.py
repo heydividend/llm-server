@@ -35,27 +35,241 @@ LOW_PRIORITY_DOMAINS = {
 # ---------- Prompts (defaults) ----------
 SCHEMA_DOC = """Allowed SQL Server objects:
 
-Views (preferred):
-  dbo.vTickers(
-    Ticker_ID, Ticker, Ticker_Symbol_Name, Exchange, Exchange_Full_Name,
-    Company_Name, Website, Sector, Industry, Country, Security_Type,
-    Reference_Asset, Benchmark_Index, Description, Inception_Date,
-    Gross_Expense_Ratio, ThirtyDay_SEC_Yield, Created_At, Updated_At, Distribution_Frequency
-  )
-  dbo.vDividends(
-    Dividend_ID, Ticker, Dividend_Amount, AdjDividend_Amount, Dividend_Type, Currency,
+Legacy Views (backward compatibility):
+  dbo.vTickers(Ticker_ID, Ticker, Ticker_Symbol_Name, Exchange, Exchange_Full_Name,
+    Company_Name, Website, Sector, Industry, Country, Security_Type, Reference_Asset,
+    Benchmark_Index, Description, Inception_Date, Gross_Expense_Ratio, ThirtyDay_SEC_Yield,
+    Created_At, Updated_At, Distribution_Frequency)
+  dbo.vDividends(Dividend_ID, Ticker, Dividend_Amount, AdjDividend_Amount, Dividend_Type,
+    Currency, Distribution_Frequency, Declaration_Date, Ex_Dividend_Date, Record_Date,
+    Payment_Date, Created_At, Updated_At, Security_Type)
+  dbo.vPrices(Price_ID, Ticker, Price, Volume, Bid, Ask, Bid_Size, Ask_Size,
+    Trade_Timestamp_UTC, Quote_Timestamp_UTC, Snapshot_Timestamp, Change_Percent, Source,
+    Created_At, Updated_At, Security_Type)
+
+Enhanced Views (PREFERRED - fresher data with confidence scores):
+  dbo.vSecurities(Symbol_ID, Ticker, Company_Name, Exchange, Sector, Industry, Market_Cap)
+    - Master security lookup table
+    
+  dbo.vDividendsEnhanced(Ticker, Dividend_Amount, AdjDividend_Amount, Dividend_Type, Currency,
     Distribution_Frequency, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date,
-    Created_At, Updated_At, Security_Type
-  )
-  dbo.vPrices(
-    Price_ID, Ticker, Price, Volume, Bid, Ask, Bid_Size, Ask_Size,
-    Trade_Timestamp_UTC, Quote_Timestamp_UTC, Snapshot_Timestamp,
-    Change_Percent, Source, Created_At, Updated_At, Security_Type
-  )
+    Confidence_Score, Data_Quality_Score, Created_At, Data_Source, Priority)
+    - BEST dividend source with 3-layer fallback strategy:
+      Priority 1: Canonical (hourly updates, highest confidence)
+      Priority 2: ETF_Schedule (2-hour updates, 2000+ ETFs from 22 providers)
+      Priority 3: Social_Media (real-time Twitter announcements, 2-min updates)
+    - Use Confidence_Score to filter high-quality data (>0.7 recommended)
+    - Data_Source indicates which system provided the data
+    
+  dbo.vDividendSchedules(Ticker, Distribution_Amount, Ex_Date, Payment_Date, Declaration_Date,
+    Record_Date, Sponsor, Schedule_Type, Confidence_Score, Is_Confirmed, Last_Updated, Source_URL)
+    - ETF-specific distribution calendars from 22 providers
+    - Covers YieldMax (TSLY, NVDY, MSTY), Roundhill (QDTE, XDTE), Kurv, Defiance (QQQY, SPYT),
+      ProShares, GraniteShares (NVYY, TSYY) and more
+    - Updated every 2 hours - freshest ETF data available
+    
+  dbo.vDividendSignals(Ticker, Dividend_Amount, Tweet_Text, Mentioned_At, Twitter_Username,
+    Platform, Extracted_Dates_JSON, Confidence_Score, Ex_Date, Payment_Date)
+    - Real-time dividend announcements from Twitter/X
+    - Captures announcements BEFORE official sources
+    - Updated every 2 minutes
+    - Use Confidence_Score to filter reliable extractions (>0.8 recommended)
+    
+  dbo.vQuotesEnhanced(Ticker, Price, Price_Change, Change_Percent, Volume, Market_Cap, PE_Ratio,
+    EPS, Last_Updated)
+    - Real-time stock quotes with fundamentals
+    - Current prices, market cap, P/E ratios, earnings per share
+    
+  dbo.vDividendPredictions(Ticker, Growth_Rate_Prediction, Growth_Confidence, Cut_Risk_Score,
+    Cut_Risk_Confidence, Risk_Factors_JSON, Prediction_Date, Growth_Model_Version)
+    - ML-powered dividend forecasts
+    - Growth_Rate_Prediction: predicted annual dividend growth rate
+    - Cut_Risk_Score: probability of dividend cut (0-1, higher = more risk)
+    - Risk_Factors_JSON: detailed risk analysis
+    - Use Growth_Confidence and Cut_Risk_Confidence to assess prediction quality
+
+Query Strategy:
+  1. For dividend queries: Use vDividendsEnhanced (automatic fallback across all sources)
+  2. For ETF-specific queries: Use vDividendSchedules for freshest data
+  3. For breaking news: Use vDividendSignals for real-time announcements  
+  4. For price queries: Use vQuotesEnhanced for current market data
+  5. For forecasts: Use vDividendPredictions for ML insights
+  6. Always filter by Confidence_Score when available (>0.7 for dividends, >0.8 for signals)
 """
 
 
 # ---------- Ensure views (idempotent) ----------
+CREATE_ENHANCED_VIEWS_SQL = """
+-- Enhanced View 1: Master Securities Lookup
+CREATE OR ALTER VIEW dbo.vSecurities AS
+SELECT
+  id AS Symbol_ID,
+  symbol AS Ticker,
+  companyName AS Company_Name,
+  exchange AS Exchange,
+  sector AS Sector,
+  industry AS Industry,
+  marketCap AS Market_Cap
+FROM dbo.Securities;
+
+-- Enhanced View 2: Multi-Source Dividend Data with Priority Fallback
+CREATE OR ALTER VIEW dbo.vDividendsEnhanced AS
+WITH RankedDividends AS (
+  -- Priority 1: Canonical_Dividends (highest confidence, hourly updates)
+  SELECT 
+    s.symbol AS Ticker,
+    cd.amount AS Dividend_Amount,
+    cd.amount AS AdjDividend_Amount,
+    NULL AS Dividend_Type,
+    cd.currency AS Currency,
+    cd.frequency AS Distribution_Frequency,
+    cd.declaration_date AS Declaration_Date,
+    cd.ex_date AS Ex_Dividend_Date,
+    cd.record_date AS Record_Date,
+    cd.pay_date AS Payment_Date,
+    cd.confidence_score AS Confidence_Score,
+    cd.data_quality_score AS Data_Quality_Score,
+    cd.created_at AS Created_At,
+    'Canonical' AS Data_Source,
+    1 AS Priority,
+    ROW_NUMBER() OVER (PARTITION BY s.symbol, cd.ex_date ORDER BY cd.confidence_score DESC, cd.created_at DESC) AS rn
+  FROM dbo.Canonical_Dividends cd
+  INNER JOIN dbo.Securities s ON cd.symbol_id = s.id
+  WHERE cd.amount IS NOT NULL AND cd.ex_date IS NOT NULL
+  
+  UNION ALL
+  
+  -- Priority 2: distribution_schedules (ETF-specific, 2-hour updates)
+  SELECT 
+    ds.etf_symbol AS Ticker,
+    ds.amount AS Dividend_Amount,
+    ds.amount AS AdjDividend_Amount,
+    NULL AS Dividend_Type,
+    NULL AS Currency,
+    NULL AS Distribution_Frequency,
+    ds.declaration_date AS Declaration_Date,
+    ds.ex_date AS Ex_Dividend_Date,
+    ds.record_date AS Record_Date,
+    ds.payment_date AS Payment_Date,
+    ds.confidence_score AS Confidence_Score,
+    NULL AS Data_Quality_Score,
+    ds.last_updated AS Created_At,
+    'ETF_Schedule' AS Data_Source,
+    2 AS Priority,
+    ROW_NUMBER() OVER (PARTITION BY ds.etf_symbol, ds.ex_date ORDER BY ds.confidence_score DESC, ds.last_updated DESC) AS rn
+  FROM dbo.distribution_schedules ds
+  WHERE ds.amount IS NOT NULL AND ds.ex_date IS NOT NULL
+  
+  UNION ALL
+  
+  -- Priority 3: SocialMediaMentions (real-time Twitter, 2-min updates)
+  SELECT 
+    sm.ticker_symbol AS Ticker,
+    sm.extracted_dividend_amount AS Dividend_Amount,
+    sm.extracted_dividend_amount AS AdjDividend_Amount,
+    NULL AS Dividend_Type,
+    NULL AS Currency,
+    NULL AS Distribution_Frequency,
+    TRY_CAST(JSON_VALUE(sm.extracted_dates, '$.declaration_date') AS DATE) AS Declaration_Date,
+    TRY_CAST(JSON_VALUE(sm.extracted_dates, '$.ex_date') AS DATE) AS Ex_Dividend_Date,
+    TRY_CAST(JSON_VALUE(sm.extracted_dates, '$.record_date') AS DATE) AS Record_Date,
+    TRY_CAST(JSON_VALUE(sm.extracted_dates, '$.payment_date') AS DATE) AS Payment_Date,
+    sm.confidence_score AS Confidence_Score,
+    NULL AS Data_Quality_Score,
+    sm.mentioned_at AS Created_At,
+    'Social_Media' AS Data_Source,
+    3 AS Priority,
+    ROW_NUMBER() OVER (PARTITION BY sm.ticker_symbol, TRY_CAST(JSON_VALUE(sm.extracted_dates, '$.ex_date') AS DATE) 
+                       ORDER BY sm.confidence_score DESC, sm.mentioned_at DESC) AS rn
+  FROM dbo.SocialMediaMentions sm
+  WHERE sm.extracted_dividend_amount IS NOT NULL 
+    AND JSON_VALUE(sm.extracted_dates, '$.ex_date') IS NOT NULL
+)
+SELECT 
+  Ticker,
+  Dividend_Amount,
+  AdjDividend_Amount,
+  Dividend_Type,
+  Currency,
+  Distribution_Frequency,
+  Declaration_Date,
+  Ex_Dividend_Date,
+  Record_Date,
+  Payment_Date,
+  Confidence_Score,
+  Data_Quality_Score,
+  Created_At,
+  Data_Source,
+  Priority
+FROM RankedDividends
+WHERE rn = 1;
+
+-- Enhanced View 3: ETF Distribution Schedules
+CREATE OR ALTER VIEW dbo.vDividendSchedules AS
+SELECT
+  etf_symbol AS Ticker,
+  amount AS Distribution_Amount,
+  ex_date AS Ex_Date,
+  payment_date AS Payment_Date,
+  declaration_date AS Declaration_Date,
+  record_date AS Record_Date,
+  sponsor_name AS Sponsor,
+  schedule_type AS Schedule_Type,
+  confidence_score AS Confidence_Score,
+  is_confirmed AS Is_Confirmed,
+  last_updated AS Last_Updated,
+  source_url AS Source_URL
+FROM dbo.distribution_schedules
+WHERE amount IS NOT NULL;
+
+-- Enhanced View 4: Real-time Social Media Dividend Signals
+CREATE OR ALTER VIEW dbo.vDividendSignals AS
+SELECT
+  ticker_symbol AS Ticker,
+  extracted_dividend_amount AS Dividend_Amount,
+  mention_text AS Tweet_Text,
+  mentioned_at AS Mentioned_At,
+  author_username AS Twitter_Username,
+  platform AS Platform,
+  extracted_dates AS Extracted_Dates_JSON,
+  confidence_score AS Confidence_Score,
+  TRY_CAST(JSON_VALUE(extracted_dates, '$.ex_date') AS DATE) AS Ex_Date,
+  TRY_CAST(JSON_VALUE(extracted_dates, '$.payment_date') AS DATE) AS Payment_Date
+FROM dbo.SocialMediaMentions
+WHERE extracted_dividend_amount IS NOT NULL;
+
+-- Enhanced View 5: Real-time Stock Quotes
+CREATE OR ALTER VIEW dbo.vQuotesEnhanced AS
+SELECT
+  symbol AS Ticker,
+  price AS Price,
+  change AS Price_Change,
+  change_percent AS Change_Percent,
+  volume AS Volume,
+  market_cap AS Market_Cap,
+  pe_ratio AS PE_Ratio,
+  eps AS EPS,
+  last_updated AS Last_Updated
+FROM dbo.fmp_quotes
+WHERE price IS NOT NULL;
+
+-- Enhanced View 6: ML Dividend Predictions
+CREATE OR ALTER VIEW dbo.vDividendPredictions AS
+SELECT
+  g.symbol AS Ticker,
+  g.predicted_growth_rate AS Growth_Rate_Prediction,
+  g.confidence_score AS Growth_Confidence,
+  c.cut_risk_score AS Cut_Risk_Score,
+  c.confidence_score AS Cut_Risk_Confidence,
+  c.risk_factors AS Risk_Factors_JSON,
+  COALESCE(g.prediction_date, c.prediction_date) AS Prediction_Date,
+  g.model_version AS Growth_Model_Version
+FROM dbo.ml_dividend_growth_predictions g
+FULL OUTER JOIN dbo.ml_dividend_cut_predictions c ON g.symbol = c.symbol 
+  AND CAST(g.prediction_date AS DATE) = CAST(c.prediction_date AS DATE)
+WHERE g.predicted_growth_rate IS NOT NULL OR c.cut_risk_score IS NOT NULL;
+"""
+
 CREATE_VIEWS_SQL = """
 CREATE OR ALTER VIEW dbo.vTickers AS
 SELECT
@@ -482,7 +696,7 @@ If the database returns no results:
 SQL_ONLY   = re.compile(r"(?is)^\s*(with\b.+\bselect\b.+|select\b.+)$", re.DOTALL)
 DANGEROUS  = re.compile(r"(?i)\b(insert|update|delete|merge|drop|alter|truncate|create|grant|revoke|xp_|sp_)\b")
 SEMICOLON  = re.compile(r";")
-ALLOWED_TB = re.compile(r"(?i)\b(?:dbo\.vTickers|dbo\.vDividends|dbo\.vPrices)\b")
+ALLOWED_TB = re.compile(r"(?i)\b(?:dbo\.vTickers|dbo\.vDividends|dbo\.vPrices|dbo\.vSecurities|dbo\.vDividendsEnhanced|dbo\.vDividendSchedules|dbo\.vDividendSignals|dbo\.vQuotesEnhanced|dbo\.vDividendPredictions)\b")
 
 # ---------- Greetings, Small-talk, Intent (fixed) ----------
 GREETING_WORDS = {"hi","hello","hey","salam","assalamualaikum","asalamualaikum","yo","hiya"}
