@@ -14,8 +14,11 @@ from sqlalchemy import text
 from app.routes import chat as ai_routes
 from app.routes import income_ladder
 from app.routes import tax_optimization
+from app.routes import alerts
+from app.routes import insights
 from app.core.database import engine
 from app.core.auth import verify_api_key
+from app.services.scheduler_service import scheduler
 
 
 # Setup logging before anything else
@@ -54,6 +57,8 @@ app.add_middleware(TimingMiddleware)
 app.include_router(ai_routes.router, prefix="/v1/chat", tags=["AI"])
 app.include_router(income_ladder.router, prefix="/v1", tags=["Income Ladder"])
 app.include_router(tax_optimization.router, prefix="/v1", tags=["Tax Optimization"])
+app.include_router(alerts.router, prefix="/v1", tags=["Alerts"])
+app.include_router(insights.router, prefix="/v1", tags=["Insights"])
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -174,3 +179,17 @@ async def save_portfolio(request: SavePortfolioRequest, api_key: str = Depends(v
 @app.get("/")
 async def root():
     return FileResponse("static/index.html")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Start background scheduler on app startup."""
+    logger.info("[startup] Starting background scheduler...")
+    scheduler.start()
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Stop background scheduler on app shutdown."""
+    logger.info("[shutdown] Stopping background scheduler...")
+    scheduler.stop()
