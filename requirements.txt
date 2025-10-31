@@ -157,3 +157,4 @@ tiktoken
 mdformat
 py-markdown-table
 paramiko
+azure-storage-blob
