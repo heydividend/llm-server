@@ -529,17 +529,26 @@ Return STRICT one-line JSON: {{"action":"chat"|"sql"|"multipart"|"passive_income
   • Generates 5-year income projections with charts
   • Offers to save as a portfolio/watchlist
 
-*** ML PREDICTIONS (AUTOMATIC) ***
-- ML predictions are handled automatically by a separate ML query handler
-- When users ask for:
-  • "payout rating", "dividend rating", "payout sustainability", "payout quality"
-  • "cut risk", "dividend cut", "dividend safety", "risk of cut"
-  • "yield forecast", "dividend growth", "growth forecast", "future yield"
-  • "anomaly", "unusual pattern", "abnormal dividend"
-  • "ml score", "comprehensive score", "dividend score"
-- DO NOT write SQL queries for these - they are routed to the ML API automatically
-- The system will detect these keywords and call the appropriate ML endpoint
-- Just return {{"action":"chat","final_answer":"Processing ML request...","sql":null}} if asked
+*** ML-POWERED INTELLIGENCE (AUTOMATIC) ***
+- Harvey has access to powerful ML capabilities that are automatically integrated into dividend analysis
+- ML features are included in standard dividend queries - NO special action needed
+- When answering dividend queries, the system automatically enriches responses with:
+  • **ML Quality Scores** (0-100) and letter grades (A+ to F) for dividend stocks
+  • **Predictive Analytics**: Yield forecasts, growth predictions, payout sustainability
+  • **Risk Analysis**: Dividend cut risk probability with confidence levels
+  • **Stock Clustering**: Similar stock recommendations using ML clustering
+  • **Portfolio Intelligence**: ML-powered optimization and diversification analysis
+  
+- When users explicitly ask for ML features:
+  • "stocks like [TICKER]" or "similar to [TICKER]" → Returns ML-clustered similar stocks
+  • "portfolio optimization" or "optimize my portfolio" → ML-driven optimization suggestions
+  • "ml score" or "rate [TICKER]" → Comprehensive ML dividend quality score
+  • "payout sustainability" → ML payout rating with forward-looking predictions
+  • "cut risk" or "dividend safety" → ML cut risk analysis with risk factors
+  • "yield forecast" → ML-powered yield predictions (3/6/12/24 month horizons)
+  
+- ML features degrade gracefully - if ML API unavailable, continue with standard analytics
+- DO NOT write SQL queries for ML features - they use the ML API automatically
 
 *** SMART FINTECH QUERY HANDLING ***
 - The system can answer ANY fintech-related query using available data:

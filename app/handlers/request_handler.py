@@ -403,30 +403,111 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                     except Exception as e:
                         logger.warning(f"Error in predictive analytics: {e}")
                 
-                # 4. Prescriptive Analytics (recommendations)
+                # 4. Prescriptive Analytics (recommendations with ML enhancement)
                 if parsed_tickers and len(parsed_tickers) > 0:
                     try:
                         ticker = parsed_tickers[0]
                         # Build analytics data for recommendations by extracting values
                         analytics_data = {
                             'consistency_score': desc_analytics.get('consistency_score', 50) if 'desc_analytics' in locals() else 50,
-                            'cut_risk_score': 0.3,  # Default moderate risk - would need ML API for actual value
-                            'current_yield': 0.0,  # Would need price data to calculate
-                            'growth_rate': 0.0  # Would need historical comparison
+                            'cut_risk_score': 0.3,
+                            'current_yield': 0.0,
+                            'growth_rate': 0.0
                         }
-                        recommendations = dividend_analytics.recommend_action(ticker, analytics_data)
+                        recommendations = dividend_analytics.recommend_action(ticker, analytics_data, include_ml=True)
                         if recommendations and recommendations.get('recommendation'):
                             yield "### Prescriptive Recommendations\n"
                             yield f"- **Action**: {recommendations['recommendation']}\n"
                             yield f"- **Rationale**: {recommendations.get('rationale', 'Based on historical analysis')}\n"
                             if recommendations.get('confidence_score'):
                                 yield f"- **Confidence Score**: {recommendations['confidence_score']}/100\n"
+                            
+                            if recommendations.get('ml_enhanced') and recommendations.get('ml_insights'):
+                                ml_insights = recommendations['ml_insights']
+                                if ml_insights.get('overall_score'):
+                                    yield f"- **ML Quality Score**: {ml_insights['overall_score']:.0f}/100"
+                                    if ml_insights.get('ml_grade'):
+                                        yield f" (Grade: {ml_insights['ml_grade']})"
+                                    yield "\n"
+                                if ml_insights.get('payout_rating'):
+                                    yield f"- **Payout Sustainability**: {ml_insights['payout_rating']:.0f}/100"
+                                    if ml_insights.get('rating_label'):
+                                        yield f" ({ml_insights['rating_label']})"
+                                    yield "\n"
                             yield "\n"
                     except Exception as e:
                         logger.warning(f"Error in prescriptive analytics: {e}")
                 
             except Exception as e:
                 logger.error(f"Error in 4-tier analytics: {e}")
+        
+        # b1.5) ML Intelligence Section (optional, non-blocking)
+        if is_dividend_query and cnt > 0 and parsed_tickers and len(parsed_tickers) > 0:
+            try:
+                ticker = parsed_tickers[0]
+                ml_result = dividend_analytics.integrate_ml_predictions(ticker)
+                
+                if ml_result.get('has_ml_data'):
+                    ml_preds = ml_result.get('predictions', {})
+                    
+                    yield "\n## 🤖 ML Intelligence\n\n"
+                    
+                    if ml_preds.get('overall_score') or ml_preds.get('payout_rating'):
+                        yield "### Quality Metrics\n"
+                        if ml_preds.get('overall_score'):
+                            yield f"- **Overall ML Score**: {ml_preds['overall_score']:.0f}/100"
+                            if ml_preds.get('ml_grade'):
+                                yield f" (Grade: {ml_preds['ml_grade']})"
+                            yield "\n"
+                        if ml_preds.get('payout_rating'):
+                            yield f"- **Payout Sustainability**: {ml_preds['payout_rating']:.0f}/100"
+                            if ml_preds.get('rating_label'):
+                                yield f" ({ml_preds['rating_label']})"
+                            yield "\n"
+                        yield "\n"
+                    
+                    if ml_preds.get('predicted_growth_rate') or ml_preds.get('current_yield'):
+                        yield "### ML Predictions\n"
+                        if ml_preds.get('current_yield'):
+                            yield f"- **Current Yield**: {ml_preds['current_yield']:.2f}%\n"
+                        if ml_preds.get('predicted_growth_rate'):
+                            yield f"- **Predicted Growth Rate**: {ml_preds['predicted_growth_rate']:.2f}%"
+                            if ml_preds.get('yield_confidence'):
+                                yield f" (confidence: {ml_preds['yield_confidence']:.0%})"
+                            yield "\n"
+                        yield "\n"
+                    
+                    if ml_preds.get('cut_risk_score') is not None:
+                        yield "### Risk Assessment\n"
+                        yield f"- **Dividend Cut Risk**: {ml_preds['cut_risk_score']:.0%}"
+                        if ml_preds.get('risk_level'):
+                            yield f" ({ml_preds['risk_level']} risk)"
+                        if ml_preds.get('cut_risk_confidence'):
+                            yield f"\n- **Risk Confidence**: {ml_preds['cut_risk_confidence']:.0%}"
+                        yield "\n\n"
+                    
+                    try:
+                        from app.services.ml_integration import get_ml_integration
+                        ml_integration = get_ml_integration()
+                        
+                        import asyncio
+                        similar_stocks = asyncio.run(ml_integration.find_similar_stocks(ticker, limit=5))
+                        
+                        if similar_stocks:
+                            yield "### Similar Dividend Stocks\n"
+                            yield f"Stocks similar to {ticker} based on ML clustering:\n"
+                            for stock in similar_stocks[:5]:
+                                symbol = stock.get('symbol', 'N/A')
+                                similarity = stock.get('similarity_score', 0)
+                                yield f"- **{symbol}** (similarity: {similarity:.0%})\n"
+                            yield "\n"
+                    except Exception as e:
+                        logger.warning(f"Similar stocks unavailable for {ticker}: {e}")
+                    
+                    yield f"*ML insights powered by {ml_result.get('source', 'Internal ML API')}*\n\n"
+                
+            except Exception as e:
+                logger.warning(f"ML intelligence unavailable: {e}")
 
         # b2) zero-row safeguard → web fallback
         if AUTO_WEB_FALLBACK and cnt == 0 and should_route_to_web(question, parsed_tickers):

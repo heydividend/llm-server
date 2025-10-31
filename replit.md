@@ -20,13 +20,44 @@ A separate Next.js frontend (not part of this backend repository but referenced)
 **Technical Implementations & Feature Specifications:**
 - **Query Classification:** Routes queries to appropriate handlers (SQL, chat, web search, passive income planning, ML predictions, multipart).
 - **SQL Generation:** Generates and executes SQL queries against the financial database.
-- **ML-Powered Predictions:** Integration with HeyDividend's Internal ML API (`INTERNAL_ML_API_KEY`) for advanced dividend analysis with progressive streaming:
-  - **Payout Sustainability Ratings:** 0-100 scores with quality and NAV protection metrics
-  - **Dividend Growth Forecasts:** Predicted annual growth rates with confidence levels
-  - **Cut Risk Analysis:** 12-month dividend cut probability with risk factors
-  - **Anomaly Detection:** Identifies unusual payout patterns and payment irregularities
-  - **Comprehensive ML Scores:** Overall dividend quality scores with buy/sell recommendations
-  - All ML predictions stream progressively for real-time user feedback
+- **Comprehensive ML API Integration (EXPANDED):** Full integration with HeyDividend's Internal ML API (`INTERNAL_ML_API_KEY`) providing 22+ ML endpoints across scoring, predictions, clustering, and optimization:
+  
+  **ML Scoring & Quality Assessment:**
+  - **Single Stock Scoring:** Real-time dividend quality scores (0-100) with letter grades (A+ to F)
+  - **Portfolio Scoring:** Aggregated ML metrics with risk assessment and diversification scores
+  - **Watchlist Scoring:** Batch scoring for multiple symbols with comparative analysis
+  - **Batch Processing:** Efficiently score up to 100 symbols in a single request
+  
+  **ML Predictions & Forecasting:**
+  - **Yield Forecasting:** ML-powered yield predictions with 3/6/12/24-month horizons
+  - **Growth Rate Predictions:** Dividend growth rate forecasts with confidence levels
+  - **Payout Ratio Forecasting:** Future payout sustainability with risk levels (EXCELLENT/GOOD/MODERATE/POOR)
+  - **Batch Predictions:** Batch yield and payout forecasts for portfolio-wide analysis
+  
+  **ML Clustering & Similarity Analysis:**
+  - **Stock Clustering:** K-means clustering identifies dividend stock categories (Dividend Aristocrats, High Yield Growth, etc.)
+  - **Similar Stock Discovery:** Find stocks similar to any ticker using ML clustering (similarity scores 0-1)
+  - **Cluster Dashboard:** Overview of all ML clusters with characteristics and member counts
+  - **Portfolio Cluster Analysis:** Detailed cluster breakdown for diversification insights
+  
+  **ML-Powered Portfolio Optimization:**
+  - **Portfolio Optimization:** ML-driven buy/sell/reduce suggestions with optimization goals (maximize_yield, minimize_risk)
+  - **Diversification Analysis:** ML-assessed diversification scores across clusters
+  - **Portfolio Health Metrics:** Comprehensive ML health checks combining scoring, diversification, and cluster analysis
+  
+  **Advanced ML Insights:**
+  - **Symbol Insights:** Deep ML-powered insights combining all ML models for comprehensive analysis
+  - **Prediction History:** Historical prediction tracking with accuracy metrics
+  - **Model Performance:** Access to ML model performance metrics (MAE, RMSE, R² scores)
+  - **Usage Statistics:** ML API usage tracking with tier-based limits
+  
+  **Integration Architecture:**
+  - **MLAPIClient:** 22 endpoints for scoring, predictions, clustering, optimization, monitoring
+  - **MLIntegration Service:** High-level wrapper providing conversation-friendly ML features
+  - **Automatic Enrichment:** ML intelligence automatically added to dividend responses
+  - **Graceful Degradation:** All ML calls non-blocking; continues with standard analytics if ML unavailable
+  - **Progressive Streaming:** ML predictions stream progressively for real-time user feedback
+  - **Conversational AI Integration:** ML insights seamlessly woven into Harvey's responses
 - **Conversational Memory (NEW):** Makes Harvey feel like a real financial advisor through intelligent context retention:
   - Stores entire conversation history with automatic session and thread management
   - Token-aware context loading (4000 token budget) for continuous conversations
@@ -112,7 +143,12 @@ A separate Next.js frontend (not part of this backend repository but referenced)
 Comprehensive API reference for all Harvey endpoints is available in **`API_DOCUMENTATION.md`**. This single source of truth covers:
 - Core Chat API with JSON and multipart/form-data support (file uploads)
 - All 5 Harvey-1o features: Conversational Memory, Income Ladder Builder, Tax Optimization AI, Natural Language Alerts, Proactive Insights
-- ML Predictions integration (payout ratings, cut risk, yield forecasts, anomaly detection, comprehensive scores)
+- **Comprehensive ML API Integration:** All 22+ ML endpoints automatically integrated into dividend responses:
+  - ML Scoring (single stock, portfolio, watchlist, batch)
+  - ML Predictions (yield forecasts, growth rates, payout sustainability)
+  - ML Clustering (stock similarity, cluster analysis, portfolio diversification)
+  - ML Portfolio Optimization (buy/sell suggestions, health metrics)
+  - ML Monitoring (model performance, usage stats, prediction history)
 - Complete request/response schemas with code examples in JavaScript/TypeScript and Python
 - Authentication, error handling, and streaming response patterns
 
