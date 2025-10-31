@@ -99,6 +99,18 @@ Query Strategy:
   4. For price queries: Use vQuotesEnhanced for current market data
   5. For forecasts: Use vDividendPredictions for ML insights
   6. Always filter by Confidence_Score when available (>0.7 for dividends, >0.8 for signals)
+  
+  **CRITICAL: For dividend queries showing tables/lists, ALWAYS include Price and Yield:**
+  - JOIN vDividendsEnhanced with vQuotesEnhanced on Ticker to get Price
+  - Calculate Yield as: ROUND((d.Dividend_Amount * ISNULL(d.Distribution_Frequency, 4) / NULLIF(q.Price, 0)) * 100, 2) AS Yield
+  - Include these columns in SELECT: d.Ticker, q.Price, d.Dividend_Amount, [Calculated Yield], d.Declaration_Date, d.Ex_Dividend_Date, d.Payment_Date
+  - Use LEFT JOIN to ensure dividends show even if price is missing
+  - Example: SELECT d.Ticker, q.Price, d.Dividend_Amount AS Distribution, 
+              ROUND((d.Dividend_Amount * ISNULL(d.Distribution_Frequency, 4) / NULLIF(q.Price, 0)) * 100, 2) AS Yield,
+              d.Declaration_Date, d.Ex_Dividend_Date, d.Payment_Date
+            FROM vDividendsEnhanced d
+            LEFT JOIN vQuotesEnhanced q ON d.Ticker = q.Ticker
+            WHERE d.Ticker = 'MSFT' ORDER BY d.Ex_Dividend_Date DESC
 """
 
 
