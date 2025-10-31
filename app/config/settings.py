@@ -727,6 +727,9 @@ Q: "Dividends declared this week" →
 
 Q: "What dividends will be paid next year?" →
 {{"action":"sql","final_answer":null,"sql":"SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Payment_Date BETWEEN DATEFROMPARTS(YEAR(GETDATE()) + 1, 1, 1) AND DATEFROMPARTS(YEAR(GETDATE()) + 1, 12, 31) ORDER BY Payment_Date DESC"}}
+
+Q: "Tell me about Microsoft dividends" OR "Show AAPL dividends" OR any dividend table/list query →
+{{"action":"sql","final_answer":null,"sql":"SELECT d.Ticker, q.Price, d.Dividend_Amount AS Distribution, ROUND((d.Dividend_Amount * ISNULL(d.Distribution_Frequency, 4) / NULLIF(q.Price, 0)) * 100, 2) AS Yield, d.Declaration_Date, d.Ex_Dividend_Date, d.Payment_Date FROM dbo.vDividendsEnhanced d LEFT JOIN dbo.vQuotesEnhanced q ON d.Ticker = q.Ticker WHERE d.Ticker = 'MSFT' AND d.Confidence_Score >= 0.7 ORDER BY d.Ex_Dividend_Date DESC"}}
 """
 
 
