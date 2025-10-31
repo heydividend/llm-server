@@ -1,0 +1,33 @@
+
+================================================================================
+[2025-10-31 00:00:31] Request ID: 2278d83f
+================================================================================
+QUERY:
+What are the top 5 highest paying dividends?
+
+METADATA:
+  - detected_tickers: []
+  - original_query: What are the top 5 highest paying dividends?
+  - updated_query: What are the top 5 highest paying dividends?
+  - use_web: False
+  - llm_provider: fallback
+  - stream: False
+  - session_id: ee59f310-ab20-4d80-95d0-cdc016a8dc1d
+  - conversation_id: 
+================================================================================
+
+================================================================================
+[2025-10-31 00:00:32] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+What are the top 5 highest paying dividends?
+
+Generated SQL:
+SELECT TOP 5 Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends ORDER BY Dividend_Amount DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: 
+  - use_web: False
+================================================================================
