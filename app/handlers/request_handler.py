@@ -292,8 +292,11 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
         # a) Format and display data table
         yield "\n# DATA\n\n"
         
+        logger.info(f"DEBUG: is_dividend_query={is_dividend_query}, cnt={cnt}, columns={columns}")
+        
         if is_dividend_query and cnt > 0:
             # Use professional markdown formatting for dividend queries
+            logger.info(f"Attempting professional markdown formatting for dividend query with columns: {columns}")
             try:
                 formatter = ProfessionalMarkdownFormatter()
                 
@@ -305,8 +308,14 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                         row_dict[col] = row[i]
                     dividend_data.append(row_dict)
                 
+                logger.info(f"Formatted {len(dividend_data)} rows for dividend table")
+                logger.info(f"Sample row: {dividend_data[0] if dividend_data else 'None'}")
+                
                 # Format the professional dividend table with proper markdown
                 formatted_table = formatter.format_dividend_table(dividend_data)
+                logger.info(f"Formatter returned table of length {len(formatted_table)}")
+                logger.info(f"First 200 chars of formatted table: {formatted_table[:200]}")
+                
                 yield formatted_table + "\n\n"
                 yield f"*{cnt} dividend payment(s) shown*\n"
                 

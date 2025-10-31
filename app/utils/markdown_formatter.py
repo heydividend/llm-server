@@ -52,7 +52,8 @@ class ProfessionalMarkdownFormatter:
                     item_lower.get("price") or item_lower.get("current_price"))
             
             # Distribution Amount
-            distribution = (item.get("distribution_amount") or 
+            distribution = (item.get("Dividend_Amount") or  # Match exact SQL column name
+                          item.get("distribution_amount") or 
                           item.get("Distribution Amount") or 
                           item.get("dividend_amount") or 
                           item.get("Dividend Amount") or
@@ -74,7 +75,8 @@ class ProfessionalMarkdownFormatter:
                      item_lower.get("payout_ratio") or item_lower.get("payoutratio"))
             
             # Declaration Date
-            decl_date = (item.get("declaration_date") or 
+            decl_date = (item.get("Declaration_Date") or  # Match exact SQL column name
+                        item.get("declaration_date") or 
                         item.get("Declaration Date") or 
                         item.get("declarationDate") or
                         item.get("declarationdate") or
@@ -83,7 +85,8 @@ class ProfessionalMarkdownFormatter:
                         item_lower.get("declarationdate"))
             
             # Ex-Date
-            ex_date = (item.get("ex_date") or item.get("Ex-Date") or 
+            ex_date = (item.get("Ex_Dividend_Date") or  # Match exact SQL column name
+                      item.get("ex_date") or item.get("Ex-Date") or 
                       item.get("exDate") or item.get("exdate") or
                       item.get("ex_dividend_date") or 
                       item.get("Ex Dividend Date") or
@@ -92,7 +95,8 @@ class ProfessionalMarkdownFormatter:
                       item_lower.get("ex_dividend_date"))
             
             # Pay Date
-            pay_date = (item.get("pay_date") or item.get("Pay Date") or 
+            pay_date = (item.get("Payment_Date") or  # Match exact SQL column name
+                       item.get("pay_date") or item.get("Pay Date") or 
                        item.get("payDate") or item.get("paydate") or
                        item.get("payment_date") or 
                        item.get("Payment Date") or

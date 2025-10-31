@@ -13,8 +13,8 @@ from app.utils.helper import (
     is_upload_like,
     extract_text_via_node,
     _maybe_flatten_vision_json,
-    handle_request,
 )
+from app.handlers.request_handler import handle_request
 
 from app.utils.extract_tickers import extract_tickers_function
 
