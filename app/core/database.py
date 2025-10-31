@@ -11,11 +11,11 @@ from app.config.portfolio_schema import CREATE_PORTFOLIO_TABLES_SQL
 from app.config.features_schema import CREATE_FEATURES_TABLES_SQL
 
 # Database Configuration
-HOST = os.getenv("SQLSERVER_HOST")
+HOST = os.getenv("SQLSERVER_HOST", "")
 PORT = os.getenv("SQLSERVER_PORT", "1433")
-DB   = os.getenv("SQLSERVER_DB")
-USER = os.getenv("SQLSERVER_USER")
-PWD  = os.getenv("SQLSERVER_PASSWORD")
+DB   = os.getenv("SQLSERVER_DB", "")
+USER = os.getenv("SQLSERVER_USER", "")
+PWD  = os.getenv("SQLSERVER_PASSWORD", "")
 DRV  = os.getenv("ODBC_DRIVER", "FreeTDS")
 LOGIN_TIMEOUT = os.getenv("SQLSERVER_LOGIN_TIMEOUT", "10")
 CONN_TIMEOUT  = os.getenv("SQLSERVER_CONN_TIMEOUT", "20")
@@ -27,6 +27,7 @@ params = {
     "TrustServerCertificate": "no",
     "LoginTimeout": LOGIN_TIMEOUT,
     "Connection Timeout": CONN_TIMEOUT,
+    "AUTOCOMMIT": "True",
 }
 param_str = "&".join([f"{k}={quote_plus(v)}" for k, v in params.items()])
 ENGINE_URL = f"mssql+pyodbc://{quote_plus(USER)}:{quote_plus(PWD)}@{HOST}:{PORT}/{quote_plus(DB)}?{param_str}"
@@ -34,6 +35,7 @@ ENGINE_URL = f"mssql+pyodbc://{quote_plus(USER)}:{quote_plus(PWD)}@{HOST}:{PORT}
 def open_engine():
     return create_engine(
         ENGINE_URL,
+        isolation_level="AUTOCOMMIT",
         fast_executemany=True,
         pool_pre_ping=True,
         pool_size=20,
