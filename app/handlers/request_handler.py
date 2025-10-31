@@ -305,33 +305,74 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                         row_dict[col] = row[i]
                     dividend_data.append(row_dict)
                 
-                # Format the professional dividend table
+                # Format the professional dividend table with proper markdown
                 formatted_table = formatter.format_dividend_table(dividend_data)
                 yield formatted_table + "\n\n"
-                yield f"(total rows: {cnt})\n"
+                yield f"*{cnt} dividend payment(s) shown*\n"
+                
+                logger.info(f"Successfully formatted dividend table with {cnt} rows using ProfessionalMarkdownFormatter")
+                
             except Exception as e:
-                logger.error(f"Error formatting dividend table with professional formatter: {e}")
-                # Fallback to ASCII table on error
+                # Log detailed error for debugging
+                logger.error(f"Error formatting dividend table with professional formatter: {e}", exc_info=True)
+                logger.error(f"Columns: {columns}")
+                logger.error(f"First row sample: {rows_buffer[0] if rows_buffer else 'N/A'}")
+                
+                # Fallback: show a simple message instead of raw ASCII
+                yield f"_Data formatting error - showing {cnt} rows in raw format_\n\n"
                 yield "│ " + " │ ".join(columns) + " │\n"
                 yield "─" * min(180, 4 * len(columns) + 8) + "\n"
-                for r in rows_buffer:
+                for r in rows_buffer[:20]:  # Limit fallback to 20 rows
                     cells = ["(null)" if (v is None or (isinstance(v, float) and pd.isna(v))) else str(v) for v in r]
                     yield "│ " + " │ ".join(cells) + " │\n"
-                yield f"(total rows: {cnt})\n"
+                if cnt > 20:
+                    yield f"... ({cnt - 20} more rows)\n"
+                    
         else:
-            # Use current streaming format for non-dividend queries
-            yield "│ " + " │ ".join(columns) + " │\n"
-            yield "─" * min(180, 4 * len(columns) + 8) + "\n"
-            for r in rows_buffer:
-                cells = ["(null)" if (v is None or (isinstance(v, float) and pd.isna(v))) else str(v) for v in r]
-                yield "│ " + " │ ".join(cells) + " │\n"
-            yield f"(total rows streamed: {cnt})\n"
+            # Use professional table formatting for non-dividend queries if possible
+            if cnt > 0 and cnt <= 100:
+                try:
+                    formatter = ProfessionalMarkdownFormatter()
+                    
+                    # Convert rows to list of dictionaries
+                    table_data = []
+                    for row in rows_buffer:
+                        row_dict = {}
+                        for i, col in enumerate(columns):
+                            row_dict[col] = row[i]
+                        table_data.append(row_dict)
+                    
+                    # Format using the stock table formatter
+                    formatted_table = formatter.format_stock_table(table_data, columns=columns)
+                    yield formatted_table + "\n\n"
+                    yield f"*{cnt} row(s) shown*\n"
+                    
+                except Exception as e:
+                    logger.warning(f"Error formatting table professionally, using ASCII format: {e}")
+                    # Fallback to ASCII table
+                    yield "│ " + " │ ".join(columns) + " │\n"
+                    yield "─" * min(180, 4 * len(columns) + 8) + "\n"
+                    for r in rows_buffer:
+                        cells = ["(null)" if (v is None or (isinstance(v, float) and pd.isna(v))) else str(v) for v in r]
+                        yield "│ " + " │ ".join(cells) + " │\n"
+                    yield f"(total rows: {cnt})\n"
+            else:
+                # For large result sets, use ASCII format
+                yield "│ " + " │ ".join(columns) + " │\n"
+                yield "─" * min(180, 4 * len(columns) + 8) + "\n"
+                for r in rows_buffer[:100]:  # Limit display
+                    cells = ["(null)" if (v is None or (isinstance(v, float) and pd.isna(v))) else str(v) for v in r]
+                    yield "│ " + " │ ".join(cells) + " │\n"
+                if cnt > 100:
+                    yield f"... ({cnt - 100} more rows)\n"
+                else:
+                    yield f"(total rows: {cnt})\n"
 
         # b0) Share ownership detection and TTM calculation (before zero-row check)
         ownership_info = detect_share_ownership(question)
         if ownership_info and cnt > 0 and is_dividend_query:
+            ticker = ownership_info.get('ticker', 'Unknown')
             try:
-                ticker = ownership_info['ticker']
                 shares = ownership_info['shares']
                 
                 # Convert rows_buffer to list of dicts for TTM calculator
@@ -362,6 +403,7 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                 yield "\n## 📊 Analytics Summary\n\n"
                 
                 # 1. Descriptive Analytics
+                desc_analytics = None
                 try:
                     desc_analytics = dividend_analytics.analyze_payment_history(distributions)
                     if desc_analytics and desc_analytics.get('total_payments', 0) > 0:
@@ -409,7 +451,7 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                         ticker = parsed_tickers[0]
                         # Build analytics data for recommendations by extracting values
                         analytics_data = {
-                            'consistency_score': desc_analytics.get('consistency_score', 50) if 'desc_analytics' in locals() else 50,
+                            'consistency_score': desc_analytics.get('consistency_score', 50) if desc_analytics else 50,
                             'cut_risk_score': 0.3,
                             'current_yield': 0.0,
                             'growth_rate': 0.0
