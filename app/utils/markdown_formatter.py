@@ -20,10 +20,10 @@ class ProfessionalMarkdownFormatter:
         Required columns (in order):
         1. Ticker
         2. Price
-        3. Distribution Amount
+        3. Distribution
         4. Yield
         5. Payout Ratio
-        6. Declaration Date
+        6. Declaration
         7. Ex-Date
         8. Pay Date
         
@@ -31,40 +31,99 @@ class ProfessionalMarkdownFormatter:
             data: List of dividend data dictionaries
             
         Returns:
-            Formatted markdown table string
+            Formatted markdown table string with proper header separators
         """
         if not data:
             return "No dividend data available."
         
         formatted_data = []
         for item in data:
+            # Handle various column name variations (case-insensitive matching)
+            item_lower = {k.lower(): v for k, v in item.items()}
+            
+            # Ticker
+            ticker = (item.get("ticker") or item.get("Ticker") or 
+                     item.get("symbol") or item.get("Symbol") or
+                     item_lower.get("ticker") or item_lower.get("symbol") or "N/A")
+            
+            # Price
+            price = (item.get("price") or item.get("Price") or 
+                    item.get("current_price") or item.get("Current Price") or
+                    item_lower.get("price") or item_lower.get("current_price"))
+            
+            # Distribution Amount
+            distribution = (item.get("distribution_amount") or 
+                          item.get("Distribution Amount") or 
+                          item.get("dividend_amount") or 
+                          item.get("Dividend Amount") or
+                          item.get("amount") or item.get("Amount") or
+                          item_lower.get("distribution_amount") or
+                          item_lower.get("dividend_amount") or
+                          item_lower.get("amount"))
+            
+            # Yield
+            yield_val = (item.get("yield") or item.get("Yield") or 
+                        item.get("dividend_yield") or item.get("Dividend Yield") or
+                        item.get("current_yield") or item.get("Current Yield") or
+                        item_lower.get("yield") or item_lower.get("dividend_yield") or
+                        item_lower.get("current_yield"))
+            
+            # Payout Ratio
+            payout = (item.get("payout_ratio") or item.get("Payout Ratio") or
+                     item.get("payoutratio") or item.get("PayoutRatio") or
+                     item_lower.get("payout_ratio") or item_lower.get("payoutratio"))
+            
+            # Declaration Date
+            decl_date = (item.get("declaration_date") or 
+                        item.get("Declaration Date") or 
+                        item.get("declarationDate") or
+                        item.get("declarationdate") or
+                        item.get("DeclarationDate") or
+                        item_lower.get("declaration_date") or
+                        item_lower.get("declarationdate"))
+            
+            # Ex-Date
+            ex_date = (item.get("ex_date") or item.get("Ex-Date") or 
+                      item.get("exDate") or item.get("exdate") or
+                      item.get("ex_dividend_date") or 
+                      item.get("Ex Dividend Date") or
+                      item.get("ExDate") or
+                      item_lower.get("ex_date") or item_lower.get("exdate") or
+                      item_lower.get("ex_dividend_date"))
+            
+            # Pay Date
+            pay_date = (item.get("pay_date") or item.get("Pay Date") or 
+                       item.get("payDate") or item.get("paydate") or
+                       item.get("payment_date") or 
+                       item.get("Payment Date") or
+                       item.get("PayDate") or
+                       item_lower.get("pay_date") or item_lower.get("paydate") or
+                       item_lower.get("payment_date"))
+            
+            # Create formatted row with standardized 8-column schema
             formatted_row = {
-                "Ticker": item.get("ticker", item.get("Ticker", "N/A")),
-                "Price": ProfessionalMarkdownFormatter._format_price(item.get("price", item.get("Price"))),
-                "Distribution Amount": ProfessionalMarkdownFormatter._format_currency(
-                    item.get("distribution_amount", item.get("Distribution Amount", item.get("dividend_amount")))
-                ),
-                "Yield": ProfessionalMarkdownFormatter._format_percentage(
-                    item.get("yield", item.get("Yield", item.get("dividend_yield")))
-                ),
-                "Payout Ratio": ProfessionalMarkdownFormatter._format_percentage(
-                    item.get("payout_ratio", item.get("Payout Ratio"))
-                ),
-                "Declaration Date": ProfessionalMarkdownFormatter._format_date(
-                    item.get("declaration_date", item.get("Declaration Date", item.get("declarationDate")))
-                ),
-                "Ex-Date": ProfessionalMarkdownFormatter._format_date(
-                    item.get("ex_date", item.get("Ex-Date", item.get("exDate", item.get("ex_dividend_date"))))
-                ),
-                "Pay Date": ProfessionalMarkdownFormatter._format_date(
-                    item.get("pay_date", item.get("Pay Date", item.get("payDate", item.get("payment_date"))))
-                )
+                "Ticker": str(ticker) if ticker and ticker != "N/A" else "N/A",
+                "Price": ProfessionalMarkdownFormatter._format_price(price),
+                "Distribution": ProfessionalMarkdownFormatter._format_currency(distribution),
+                "Yield": ProfessionalMarkdownFormatter._format_percentage(yield_val),
+                "Payout Ratio": ProfessionalMarkdownFormatter._format_percentage(payout),
+                "Declaration": ProfessionalMarkdownFormatter._format_date(decl_date),
+                "Ex-Date": ProfessionalMarkdownFormatter._format_date(ex_date),
+                "Pay Date": ProfessionalMarkdownFormatter._format_date(pay_date)
             }
             formatted_data.append(formatted_row)
         
-        table = markdown_table(formatted_data).get_markdown()
+        # Generate markdown table (py-markdown-table automatically adds header separators)
+        table = markdown_table(formatted_data).set_params(
+            row_sep='markdown',
+            quote=False
+        ).get_markdown()
         
-        return ProfessionalMarkdownFormatter.clean_markdown(table)
+        # Don't use clean_markdown here as mdformat can sometimes break table formatting
+        # Just remove emojis if present
+        table = ProfessionalMarkdownFormatter._remove_emojis(table)
+        
+        return table
     
     @staticmethod
     def format_stock_table(data: List[Dict[str, Any]], columns: Optional[List[str]] = None) -> str:
