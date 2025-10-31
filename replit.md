@@ -120,6 +120,15 @@ A separate Next.js frontend (not part of this backend repository but referenced)
 - **Web Search Integration:** Fallback mechanism for data not present in the database.
 - **File Processing:** Supports uploads for PDFs, images, and spreadsheets.
 - **Passive Income Portfolio Builder:** AI-powered tool for personalized dividend portfolio recommendations, including capital needs calculation, diversified portfolio construction, 5-year income projections, and interactive charts. Portfolios can be saved and tracked.
+- **Azure VM Training Job Management (NEW):** Simple SSH client for managing ML training jobs on Azure VM:
+  - Execute arbitrary shell commands remotely via API
+  - Check GPU status (nvidia-smi) and system resources (CPU, memory, disk)
+  - List running training jobs (Python processes)
+  - Start training jobs in background with nohup
+  - Tail training logs remotely
+  - File upload/download capabilities (SFTP)
+  - All operations secured with API key authentication
+  - Environment-based configuration (AZURE_VM_IP, AZURE_VM_USER, AZURE_VM_PASSWORD)
 - **API Authentication:** All protected API endpoints require authentication using a `HARVEY_AI_API_KEY` via a Bearer token in the Authorization header. Public endpoints (`/` and `/healthz`) do not require authentication.
 - **Self-Healing AI:** Automatic error detection, web search fallback, HTTP retry logic, database resilience (connection pooling, graceful degradation), OpenAI API resilience, and intelligent handling of empty data.
 - **Database Views:** Utilizes a robust system of SQL views (`vSecurities`, `vDividendsEnhanced`, `vDividendSchedules`, `vDividendSignals`, `vQuotesEnhanced`, `vDividendPredictions`) for enhanced financial data, with a graceful degradation mechanism to legacy views and mock data if production tables are unavailable.

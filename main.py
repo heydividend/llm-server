@@ -16,6 +16,7 @@ from app.routes import income_ladder
 from app.routes import tax_optimization
 from app.routes import alerts
 from app.routes import insights
+from app.routes import azure_vm
 from app.routers import data_quality
 from app.core.database import engine
 from app.core.auth import verify_api_key
@@ -60,6 +61,7 @@ app.include_router(income_ladder.router, prefix="/v1", tags=["Income Ladder"])
 app.include_router(tax_optimization.router, prefix="/v1", tags=["Tax Optimization"])
 app.include_router(alerts.router, prefix="/v1", tags=["Alerts"])
 app.include_router(insights.router, prefix="/v1", tags=["Insights"])
+app.include_router(azure_vm.router, prefix="/v1", tags=["Azure VM"])
 app.include_router(data_quality.router, prefix="/v1", tags=["Data Quality"])
 
 # Mount static files
