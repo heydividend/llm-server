@@ -68,6 +68,64 @@ def healthz():
     return {"ok": True}
 
 
+@app.get("/v1/ml/health")
+def ml_health_status():
+    """
+    Get ML API health status and metrics.
+    
+    Returns:
+        Health status including uptime, downtime, and recovery metrics
+    """
+    try:
+        from app.services.ml_health_monitor import get_ml_health_monitor
+        from app.services.circuit_breaker import get_ml_circuit_breaker
+        
+        health_monitor = get_ml_health_monitor()
+        circuit_breaker = get_ml_circuit_breaker()
+        
+        health_status = health_monitor.get_health_status()
+        circuit_stats = circuit_breaker.get_stats()
+        
+        return JSONResponse({
+            "success": True,
+            "ml_api_health": health_status,
+            "circuit_breaker": circuit_stats
+        })
+    except Exception as e:
+        logger.error(f"Failed to get ML health status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/v1/ml/circuit-breaker/reset")
+async def reset_circuit_breaker(api_key: str = Depends(verify_api_key)):
+    """
+    Manually reset circuit breaker to CLOSED state.
+    
+    This is an admin endpoint to force reset the circuit breaker
+    when you know the ML API service has recovered.
+    
+    Returns:
+        Success confirmation
+    """
+    try:
+        from app.services.circuit_breaker import get_ml_circuit_breaker
+        from datetime import datetime
+        
+        circuit_breaker = get_ml_circuit_breaker()
+        circuit_breaker.reset()
+        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        return JSONResponse({
+            "success": True,
+            "message": "Circuit breaker manually reset to CLOSED state",
+            "timestamp": timestamp
+        })
+    except Exception as e:
+        logger.error(f"Failed to reset circuit breaker: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 class PortfolioAllocation(BaseModel):
     ticker: str
     shares: Optional[float] = None
@@ -214,6 +272,16 @@ async def startup_event():
     except Exception as e:
         logger.warning(f"[startup] Cache prewarming initialization failed (non-critical): {e}")
     
+    # Start ML API health monitor (auto-recovery system)
+    try:
+        from app.services.ml_health_monitor import get_ml_health_monitor
+        logger.info("[startup] Starting ML API health monitor (auto-recovery system)...")
+        health_monitor = get_ml_health_monitor()
+        health_monitor.start()
+        logger.info("[startup] ✓ ML health monitor started - auto-recovery enabled")
+    except Exception as e:
+        logger.warning(f"[startup] ML health monitor initialization failed (non-critical): {e}")
+    
     logger.info("[startup] ✅ Harvey initialized with performance optimizations enabled")
 
 
@@ -231,5 +299,13 @@ async def shutdown_event():
         stop_cache_prewarming()
     except Exception as e:
         logger.warning(f"[shutdown] Cache prewarmer stop failed: {e}")
+    
+    # Stop ML health monitor
+    try:
+        from app.services.ml_health_monitor import get_ml_health_monitor
+        health_monitor = get_ml_health_monitor()
+        health_monitor.stop()
+    except Exception as e:
+        logger.warning(f"[shutdown] ML health monitor stop failed: {e}")
     
     logger.info("[shutdown] ✅ All background services stopped")

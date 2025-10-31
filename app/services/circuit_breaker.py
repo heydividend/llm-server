@@ -8,13 +8,15 @@ Implements circuit breaker to protect against rate limit errors and API failures
 
 Features:
 - Track consecutive failures
-- Auto-recovery after timeout
+- Exponential backoff with jitter for recovery
 - Fail fast when circuit is OPEN
 - Request queuing to prevent rate limit bursts
+- Configurable recovery attempts in HALF_OPEN state
 """
 
 import time
 import logging
+import random
 from enum import Enum
 from typing import Optional, Callable, Any
 from datetime import datetime, timedelta
@@ -32,35 +34,48 @@ class CircuitState(Enum):
 
 class CircuitBreaker:
     """
-    Circuit breaker for ML API calls.
+    Circuit breaker for ML API calls with exponential backoff and jitter.
     
     Protects against cascading failures and rate limit errors.
+    Implements intelligent recovery with exponential backoff and jitter.
     """
     
     def __init__(
         self,
         failure_threshold: int = 5,
-        recovery_timeout: int = 60,
+        initial_recovery_timeout: int = 10,
+        max_recovery_timeout: int = 300,
+        half_open_max_attempts: int = 3,
         expected_exception: type = Exception
     ):
         """
-        Initialize circuit breaker.
+        Initialize circuit breaker with exponential backoff.
         
         Args:
             failure_threshold: Number of consecutive failures before opening circuit
-            recovery_timeout: Seconds to wait before attempting recovery
+            initial_recovery_timeout: Initial recovery timeout (10s)
+            max_recovery_timeout: Maximum recovery timeout (300s = 5 minutes)
+            half_open_max_attempts: Maximum recovery attempts in HALF_OPEN state
             expected_exception: Exception type to catch
         """
         self.failure_threshold = failure_threshold
-        self.recovery_timeout = recovery_timeout
+        self.initial_recovery_timeout = initial_recovery_timeout
+        self.max_recovery_timeout = max_recovery_timeout
+        self.half_open_max_attempts = half_open_max_attempts
         self.expected_exception = expected_exception
         
         self.failure_count = 0
+        self.half_open_attempts = 0
+        self.consecutive_open_count = 0
         self.last_failure_time: Optional[float] = None
         self.state = CircuitState.CLOSED
         self._lock = threading.Lock()
         
-        logger.info(f"Circuit breaker initialized: threshold={failure_threshold}, recovery={recovery_timeout}s")
+        logger.info(
+            f"Circuit breaker initialized: threshold={failure_threshold}, "
+            f"initial_timeout={initial_recovery_timeout}s, max_timeout={max_recovery_timeout}s, "
+            f"half_open_attempts={half_open_max_attempts}"
+        )
     
     def call(self, func: Callable, *args, **kwargs) -> Any:
         """
@@ -80,11 +95,14 @@ class CircuitBreaker:
         with self._lock:
             if self.state == CircuitState.OPEN:
                 if self._should_attempt_recovery():
-                    logger.info("Circuit breaker: Attempting recovery (HALF_OPEN)")
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    logger.info(f"[{timestamp}] Circuit breaker: Attempting recovery (HALF_OPEN) - Attempt {self.half_open_attempts + 1}/{self.half_open_max_attempts}")
                     self.state = CircuitState.HALF_OPEN
+                    self.half_open_attempts += 1
                 else:
                     elapsed = time.time() - (self.last_failure_time or 0)
-                    remaining = self.recovery_timeout - elapsed
+                    current_timeout = self._get_current_recovery_timeout()
+                    remaining = current_timeout - elapsed
                     logger.warning(f"Circuit breaker OPEN: Failing fast (retry in {remaining:.0f}s)")
                     raise Exception(f"Circuit breaker is OPEN. Service temporarily unavailable. Retry in {remaining:.0f}s.")
         
@@ -97,48 +115,102 @@ class CircuitBreaker:
             self._on_failure()
             raise
     
+    def _get_current_recovery_timeout(self) -> int:
+        """
+        Calculate current recovery timeout with exponential backoff and jitter.
+        
+        Exponential backoff: 10s, 20s, 40s, 80s, 160s, 300s (max)
+        Jitter: +/- 20% randomness to prevent thundering herd
+        """
+        base_timeout = min(
+            self.initial_recovery_timeout * (2 ** self.consecutive_open_count),
+            self.max_recovery_timeout
+        )
+        
+        jitter_range = base_timeout * 0.2
+        jitter = random.uniform(-jitter_range, jitter_range)
+        
+        return int(base_timeout + jitter)
+    
     def _should_attempt_recovery(self) -> bool:
         """Check if enough time has passed to attempt recovery."""
         if self.last_failure_time is None:
             return True
-        return (time.time() - self.last_failure_time) >= self.recovery_timeout
+        
+        current_timeout = self._get_current_recovery_timeout()
+        elapsed = time.time() - self.last_failure_time
+        
+        return elapsed >= current_timeout
     
     def _on_success(self):
-        """Handle successful call."""
+        """Handle successful call - reset all counters on success."""
         with self._lock:
             if self.state == CircuitState.HALF_OPEN:
-                logger.info("Circuit breaker: Recovery successful (CLOSED)")
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                logger.info(f"[{timestamp}] ✅ Circuit breaker: Recovery successful! Returning to CLOSED state")
                 self.state = CircuitState.CLOSED
             
             self.failure_count = 0
+            self.half_open_attempts = 0
+            self.consecutive_open_count = 0
             self.last_failure_time = None
     
     def _on_failure(self):
-        """Handle failed call."""
+        """Handle failed call - implement progressive backoff."""
         with self._lock:
             self.failure_count += 1
             self.last_failure_time = time.time()
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             if self.failure_count >= self.failure_threshold:
                 if self.state != CircuitState.OPEN:
-                    logger.warning(f"Circuit breaker OPEN: {self.failure_count} consecutive failures")
+                    logger.warning(f"[{timestamp}] Circuit breaker OPEN: {self.failure_count} consecutive failures")
                     self.state = CircuitState.OPEN
+                    self.consecutive_open_count = 0
             
             elif self.state == CircuitState.HALF_OPEN:
-                logger.warning("Circuit breaker: Recovery failed, reopening circuit")
-                self.state = CircuitState.OPEN
+                if self.half_open_attempts < self.half_open_max_attempts:
+                    logger.warning(
+                        f"[{timestamp}] Circuit breaker: Recovery attempt {self.half_open_attempts}/{self.half_open_max_attempts} failed, "
+                        f"will retry after backoff"
+                    )
+                    self.state = CircuitState.OPEN
+                else:
+                    logger.warning(
+                        f"[{timestamp}] Circuit breaker: All {self.half_open_max_attempts} recovery attempts exhausted, "
+                        f"increasing backoff (attempt #{self.consecutive_open_count + 1})"
+                    )
+                    self.state = CircuitState.OPEN
+                    self.consecutive_open_count += 1
+                    self.half_open_attempts = 0
     
     def get_state(self) -> CircuitState:
         """Get current circuit state."""
         return self.state
     
     def reset(self):
-        """Manually reset circuit breaker."""
+        """Manually reset circuit breaker to CLOSED state."""
         with self._lock:
-            logger.info("Circuit breaker: Manual reset")
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logger.info(f"[{timestamp}] Circuit breaker: Manual reset to CLOSED state")
             self.failure_count = 0
+            self.half_open_attempts = 0
+            self.consecutive_open_count = 0
             self.last_failure_time = None
             self.state = CircuitState.CLOSED
+    
+    def get_stats(self) -> dict:
+        """Get circuit breaker statistics for monitoring."""
+        with self._lock:
+            current_timeout = self._get_current_recovery_timeout() if self.state == CircuitState.OPEN else 0
+            return {
+                "state": self.state.value,
+                "failure_count": self.failure_count,
+                "half_open_attempts": self.half_open_attempts,
+                "consecutive_open_count": self.consecutive_open_count,
+                "current_recovery_timeout": current_timeout,
+                "last_failure_time": datetime.fromtimestamp(self.last_failure_time).isoformat() if self.last_failure_time else None
+            }
 
 
 class RateLimitQueue:
@@ -180,12 +252,14 @@ _ml_rate_limiter: Optional[RateLimitQueue] = None
 
 
 def get_ml_circuit_breaker() -> CircuitBreaker:
-    """Get or create global ML API circuit breaker."""
+    """Get or create global ML API circuit breaker with exponential backoff."""
     global _ml_circuit_breaker
     if _ml_circuit_breaker is None:
         _ml_circuit_breaker = CircuitBreaker(
             failure_threshold=5,
-            recovery_timeout=60,
+            initial_recovery_timeout=10,
+            max_recovery_timeout=300,
+            half_open_max_attempts=3,
             expected_exception=Exception
         )
     return _ml_circuit_breaker
