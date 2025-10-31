@@ -249,10 +249,11 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
         if AUTO_WEB_FALLBACK and should_route_to_web(question, parsed_tickers):
             return handle_web_request(question, as_stream=True, max_pages=FAST_WEB_MAX_PAGES, fast=True)
 
+        error_msg = str(e)
         def gen_err():
-            yield f"I couldn't form a safe SQL query ({e}). Try adding ticker, date range, or metric."
+            yield f"I couldn't form a safe SQL query ({error_msg}). Try adding ticker, date range, or metric."
 
-        run["sql"] = f"[planner_error] {e}\nSQL_RAW={sql_raw}"
+        run["sql"] = f"[planner_error] {error_msg}\nSQL_RAW={sql_raw}"
         write_runlog(run, logfile)
         req_id = f"chatcmpl-{int(time.time() * 1000)}"
         return openai_sse_wrap(gen_err(), req_id)

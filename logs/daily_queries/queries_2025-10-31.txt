@@ -150,3 +150,20 @@ METADATA:
   - session_id: 59d03a0c-2640-4f62-82e9-ec0aa87d24de
   - conversation_id: 
 ================================================================================
+
+================================================================================
+[2025-10-31 01:35:52] Request ID: e974046c
+================================================================================
+QUERY:
+I want to build a passive income portfolio to replace my $200k income in 5 years
+
+METADATA:
+  - detected_tickers: []
+  - original_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - updated_query: I want to build a passive income portfolio to replace my $200k income in 5 years
+  - use_web: False
+  - llm_provider: fallback
+  - stream: True
+  - session_id: 9fedc799-ee23-43f5-8b63-d08241417491
+  - conversation_id: 
+================================================================================
