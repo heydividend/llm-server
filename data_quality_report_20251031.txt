@@ -1,0 +1,124 @@
+================================================================================
+HARVEY DATA QUALITY REPORT
+================================================================================
+Generated: 2025-10-31 02:06:28
+
+SUMMARY STATISTICS
+================================================================================
+Total Dividend Records: 433,185
+Unique Tickers: 9,658
+Average Dividend: $151.36
+Min Dividend: $0.00
+Max Dividend: $5,017,628.00
+Average Confidence Score: 100.00%
+
+DATA QUALITY ISSUES
+================================================================================
+
+⚠️  UNREALISTIC AMOUNTS (>$1,000) - 170 issues
+--------------------------------------------------------------------------------
+  ASII.JK      $   5,017,628.00  Ex: 2025-05-21    Pay: 2025-06-05    Source: Legacy
+  PGAS.JK      $   2,966,282.00  Ex: 2025-06-12    Pay: 2025-07-02    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1995-11-16    Pay: 1995-12-08    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1997-03-25    Pay: 1997-04-30    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1996-02-22    Pay: 1996-03-13    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1994-05-16    Pay: 1994-05-26    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1995-08-17    Pay: 1995-08-31    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1995-02-13    Pay: 1995-02-28    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1996-05-28    Pay: 1996-06-28    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1993-11-02    Pay: 1993-11-19    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1994-11-16    Pay: 1994-11-30    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1994-08-12    Pay: 1994-08-29    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1995-05-16    Pay: 1995-05-31    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1996-11-22    Pay: 1997-01-31    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1996-08-22    Pay: 1996-10-11    Source: Legacy
+  AKR          $   2,642,823.53  Ex: 1994-02-09    Pay: 1994-02-25    Source: Legacy
+  AKR          $   1,468,235.29  Ex: 1997-06-26    Pay: 1997-07-31    Source: Legacy
+  AKR          $   1,468,235.29  Ex: 1997-10-29    Pay: 1997-12-15    Source: Legacy
+  AKR          $     954,352.94  Ex: 2002-03-26    Pay: 2002-04-15    Source: Legacy
+  AKR          $     954,352.94  Ex: 2002-09-26    Pay: 2002-10-15    Source: Legacy
+  AKR          $     954,352.94  Ex: 2002-06-26    Pay: 2002-07-15    Source: Legacy
+  AKR          $     880,941.18  Ex: 2000-06-28    Pay: 2000-07-15    Source: Legacy
+  AKR          $     880,941.18  Ex: 1999-09-28    Pay: 1999-10-15    Source: Legacy
+  AKR          $     880,941.18  Ex: 1999-12-29    Pay: 2000-01-15    Source: Legacy
+  AKR          $     880,941.18  Ex: 2000-12-27    Pay: 2001-01-15    Source: Legacy
+  AKR          $     880,941.18  Ex: 2001-06-27    Pay: 2001-07-13    Source: Legacy
+  AKR          $     880,941.18  Ex: 2001-12-27    Pay: 2002-01-15    Source: Legacy
+  AKR          $     880,941.18  Ex: 2001-09-26    Pay: 2001-10-12    Source: Legacy
+  AKR          $     880,941.18  Ex: 2000-09-27    Pay: 2000-10-13    Source: Legacy
+  AKR          $     880,941.18  Ex: 1999-06-28    Pay: 1999-07-15    Source: Legacy
+  AKR          $     880,941.18  Ex: 1999-03-29    Pay: 1999-04-15    Source: Legacy
+  AKR          $     880,941.18  Ex: 2000-03-29    Pay: 2000-04-17    Source: Legacy
+  AKR          $     880,941.18  Ex: 2001-03-28    Pay: 2001-04-13    Source: Legacy
+  AKR          $     807,529.41  Ex: 1993-07-06    Pay: 1993-07-23    Source: Legacy
+  AKR          $     253,270.59  Ex: 2004-12-29    Pay: 2005-01-14    Source: Legacy
+  AKR          $     253,270.59  Ex: 2005-03-29    Pay: 2005-04-15    Source: Legacy
+  AKR          $     234,917.65  Ex: 2004-09-28    Pay: 2004-10-15    Source: Legacy
+  AKR          $     234,917.65  Ex: 2003-12-29    Pay: 2004-01-15    Source: Legacy
+  AKR          $     234,917.65  Ex: 2004-06-28    Pay: 2004-07-15    Source: Legacy
+  AKR          $     234,917.65  Ex: 2004-03-29    Pay: 2004-04-15    Source: Legacy
+  AKR          $     212,894.12  Ex: 2003-09-26    Pay: 2003-10-15    Source: Legacy
+  AKR          $     212,894.12  Ex: 2003-06-30    Pay: 2003-07-15    Source: Legacy
+  AKR          $     212,894.12  Ex: 2003-03-27    Pay: 2003-04-15    Source: Legacy
+  AKR          $     190,870.59  Ex: 2002-12-27    Pay: 2003-02-03    Source: Legacy
+  AKR          $      55,792.94  Ex: 2008-12-29    Pay: 2009-01-15    Source: Legacy
+  EZEN         $      48,358.57  Ex: 2024-11-22    Pay: 2024-12-02    Source: Legacy
+  EZEN         $      44,441.45  Ex: 2025-03-10    Pay: 2025-03-20    Source: Legacy
+  AKR          $      31,787.29  Ex: 2007-12-27    Pay: 2008-01-15    Source: Legacy
+  EZEN         $      26,783.72  Ex: 2024-08-23    Pay: 2024-09-02    Source: Legacy
+  005930.KS    $      21,500.00  Ex: 2017-12-27    Pay: 2018-04-23    Source: Legacy
+
+⚠️  ZERO AMOUNTS - 34 issues (showing first 20)
+--------------------------------------------------------------------------------
+  PRIPX        Ex: 2023-09-28  Source: Legacy
+  BETZ         Ex: 2023-12-27  Source: Legacy
+  SBIO         Ex: 2016-12-21  Source: Legacy
+  CHAT         Ex: 2024-12-30  Source: Legacy
+  RDOG         Ex: 2013-06-26  Source: Legacy
+  SXQG         Ex: 2025-03-27  Source: Legacy
+  RDOG         Ex: 2013-03-20  Source: Legacy
+  SXQG         Ex: 2025-02-27  Source: Legacy
+  SBIO         Ex: 2022-12-22  Source: Legacy
+  SBIO         Ex: 2021-12-22  Source: Legacy
+  WEED         Ex: 2022-12-13  Source: Legacy
+  WEED         Ex: 2024-12-30  Source: Legacy
+  ACES         Ex: 2024-03-21  Source: Legacy
+  BETZ         Ex: 2021-12-23  Source: Legacy
+  OEUR         Ex: 2022-01-27  Source: Legacy
+  CHAT         Ex: 2023-12-27  Source: Legacy
+  WEED         Ex: 2023-12-27  Source: Legacy
+  SBIO         Ex: 2020-12-22  Source: Legacy
+  RDOG         Ex: 2017-03-22  Source: Legacy
+  OEUR         Ex: 2016-01-15  Source: Legacy
+
+⚠️  MISSING DATES - 3028 issues (showing first 20)
+--------------------------------------------------------------------------------
+  SYQH         $      0.03  Missing: payment_date  Source: Legacy
+  TAK          $      0.32  Missing: payment_date  Source: Legacy
+  ACENY        $     14.68  Missing: payment_date  Source: Legacy
+  VIV          $      0.03  Missing: payment_date  Source: Legacy
+  REGX         $      0.15  Missing: payment_date  Source: Legacy
+  VIV          $      0.02  Missing: payment_date  Source: Legacy
+  CRDE         $    500.00  Missing: payment_date  Source: Legacy
+  KBSR         $      0.04  Missing: payment_date  Source: Legacy
+  VIV          $      0.02  Missing: payment_date  Source: Legacy
+  ANZLY        $      1.70  Missing: payment_date  Source: Legacy
+  SID          $     10.59  Missing: payment_date  Source: Legacy
+  MACK         $     15.10  Missing: payment_date  Source: Legacy
+  SUM          $      1.70  Missing: payment_date  Source: Legacy
+  BAMR         $      5.48  Missing: payment_date  Source: Legacy
+  AITUY        $      0.11  Missing: payment_date  Source: Legacy
+  AIV          $      2.23  Missing: payment_date  Source: Legacy
+  AJINY        $      0.10  Missing: payment_date  Source: Legacy
+  AJISF        $      0.65  Missing: payment_date  Source: Legacy
+  AKEJF        $      0.76  Missing: payment_date  Source: Legacy
+  ALFRY        $      0.23  Missing: payment_date  Source: Legacy
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+✓ Add filter: WHERE Dividend_Amount <= 1000
+✓ Add filter: WHERE Dividend_Amount > 0
+✓ Add validation: WHERE Ex_Dividend_Date IS NOT NULL AND Payment_Date IS NOT NULL
+
+================================================================================
