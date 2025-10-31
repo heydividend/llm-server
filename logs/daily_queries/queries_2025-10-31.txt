@@ -167,3 +167,20 @@ METADATA:
   - session_id: 9fedc799-ee23-43f5-8b63-d08241417491
   - conversation_id: 
 ================================================================================
+
+================================================================================
+[2025-10-31 01:38:37] Request ID: f3f62edc
+================================================================================
+QUERY:
+Tell me about Microsoft dividends
+
+METADATA:
+  - detected_tickers: ['MSFT']
+  - original_query: Tell me about Microsoft dividends
+  - updated_query: Tell me about #MSFT dividends
+  - use_web: False
+  - llm_provider: fallback
+  - stream: True
+  - session_id: 6ad6857e-89e1-4dba-a6fe-e497bb63634c
+  - conversation_id: 
+================================================================================
