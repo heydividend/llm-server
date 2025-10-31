@@ -156,3 +156,4 @@ pandas
 tiktoken
 mdformat
 py-markdown-table
+paramiko
