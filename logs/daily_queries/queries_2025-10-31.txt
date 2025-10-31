@@ -31,3 +31,122 @@ METADATA:
   - llm_provider: 
   - use_web: False
 ================================================================================
+
+================================================================================
+[2025-10-31 00:58:11] Request ID: 3edcc332
+================================================================================
+QUERY:
+show HOOY dividends
+
+METADATA:
+  - detected_tickers: ['HOOY']
+  - original_query: show HOOY dividends
+  - updated_query: show #HOOY dividends
+  - use_web: False
+  - llm_provider: fallback
+  - stream: True
+  - session_id: 50f85cbc-20a3-46fb-9d9e-cfc5734c6235
+  - conversation_id: 
+================================================================================
+
+================================================================================
+[2025-10-31 00:58:13] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: HOOY
+[TICKER_EXTRACTION] Detected tickers: HOOY (processed in 14.245ms)show #HOOY dividends
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'HOOY' ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: 
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-31 00:59:50] Request ID: 0281c280
+================================================================================
+QUERY:
+show HOOY dividends
+
+METADATA:
+  - detected_tickers: ['HOOY']
+  - original_query: show HOOY dividends
+  - updated_query: show #HOOY dividends
+  - use_web: False
+  - llm_provider: fallback
+  - stream: True
+  - session_id: 5486a37b-534d-4649-bd35-0241e58f9479
+  - conversation_id: 
+================================================================================
+
+================================================================================
+[2025-10-31 00:59:52] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: HOOY
+[TICKER_EXTRACTION] Detected tickers: HOOY (processed in 13.459ms)show #HOOY dividends
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'HOOY' ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: 
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-31 01:01:53] Request ID: e302ddb6
+================================================================================
+QUERY:
+show HOOY dividends
+
+METADATA:
+  - detected_tickers: ['HOOY']
+  - original_query: show HOOY dividends
+  - updated_query: show #HOOY dividends
+  - use_web: False
+  - llm_provider: fallback
+  - stream: True
+  - session_id: c27463bd-16b2-48e0-b1e7-1bff468df653
+  - conversation_id: 
+================================================================================
+
+================================================================================
+[2025-10-31 01:01:55] Request ID: no-id
+================================================================================
+QUERY:
+User Query:
+TICKERS_HINT: HOOY
+[TICKER_EXTRACTION] Detected tickers: HOOY (processed in 10.362ms)show #HOOY dividends
+
+Generated SQL:
+SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker = 'HOOY' ORDER BY Payment_Date DESC
+
+METADATA:
+  - action: sql
+  - llm_provider: 
+  - use_web: False
+================================================================================
+
+================================================================================
+[2025-10-31 01:05:03] Request ID: 428e6903
+================================================================================
+QUERY:
+show HOOY dividends
+
+METADATA:
+  - detected_tickers: ['HOOY']
+  - original_query: show HOOY dividends
+  - updated_query: show #HOOY dividends
+  - use_web: False
+  - llm_provider: fallback
+  - stream: True
+  - session_id: 59d03a0c-2640-4f62-82e9-ec0aa87d24de
+  - conversation_id: 
+================================================================================
