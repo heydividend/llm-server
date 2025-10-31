@@ -121,13 +121,16 @@ def handle_conversation_memory(
         )
         logger.info(f"[{rid}] Loaded {len(conversation_history)} messages from history")
         
-        conversation_service.add_message(
-            conversation_id=conversation_id,
-            role="user",
-            content=user_query,
-            metadata={"rid": rid}
-        )
-        logger.info(f"[{rid}] Saved user message to conversation {conversation_id}")
+        try:
+            conversation_service.add_message(
+                conversation_id=conversation_id,
+                role="user",
+                content=user_query,
+                metadata={"rid": rid}
+            )
+            logger.info(f"[{rid}] Saved user message to conversation {conversation_id}")
+        except Exception as e:
+            logger.warning(f"Failed to save conversation message (non-critical): {e}")
         
         return {
             "session_id": session_id,
@@ -347,12 +350,15 @@ async def chat_completions(request: Request):
                     response_text = "".join(collected)
                     
                     # Save assistant response to conversation
-                    conversation_service.add_message(
-                        conversation_id=conversation_id,
-                        role="assistant",
-                        content=response_text,
-                        metadata={"rid": rid, "detected_tickers": detected_tickers}
-                    )
+                    try:
+                        conversation_service.add_message(
+                            conversation_id=conversation_id,
+                            role="assistant",
+                            content=response_text,
+                            metadata={"rid": rid, "detected_tickers": detected_tickers}
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to save conversation message (non-critical): {e}")
                     
                     # Log after streaming completes
                     query_logger.log_full_conversation(
@@ -380,12 +386,15 @@ async def chat_completions(request: Request):
         text = "".join(collected)
         
         # === SAVE ASSISTANT RESPONSE ===
-        conversation_service.add_message(
-            conversation_id=conversation_id,
-            role="assistant",
-            content=text,
-            metadata={"rid": rid, "detected_tickers": detected_tickers}
-        )
+        try:
+            conversation_service.add_message(
+                conversation_id=conversation_id,
+                role="assistant",
+                content=text,
+                metadata={"rid": rid, "detected_tickers": detected_tickers}
+            )
+        except Exception as e:
+            logger.warning(f"Failed to save conversation message (non-critical): {e}")
         
         # === LOG FULL CONVERSATION ===
         query_logger.log_full_conversation(
@@ -515,12 +524,15 @@ async def chat_completions(request: Request):
                 response_text = "".join(collected)
                 
                 # Save assistant response to conversation
-                conversation_service.add_message(
-                    conversation_id=conversation_id,
-                    role="assistant",
-                    content=response_text,
-                    metadata={"rid": rid, "detected_tickers": detected_tickers}
-                )
+                try:
+                    conversation_service.add_message(
+                        conversation_id=conversation_id,
+                        role="assistant",
+                        content=response_text,
+                        metadata={"rid": rid, "detected_tickers": detected_tickers}
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to save conversation message (non-critical): {e}")
                 
                 query_logger.log_full_conversation(
                     rid=rid,
@@ -547,12 +559,15 @@ async def chat_completions(request: Request):
     text = "".join(collected)
     
     # === SAVE ASSISTANT RESPONSE ===
-    conversation_service.add_message(
-        conversation_id=conversation_id,
-        role="assistant",
-        content=text,
-        metadata={"rid": rid, "detected_tickers": detected_tickers}
-    )
+    try:
+        conversation_service.add_message(
+            conversation_id=conversation_id,
+            role="assistant",
+            content=text,
+            metadata={"rid": rid, "detected_tickers": detected_tickers}
+        )
+    except Exception as e:
+        logger.warning(f"Failed to save conversation message (non-critical): {e}")
     
     # === LOG FULL CONVERSATION ===
     query_logger.log_full_conversation(
