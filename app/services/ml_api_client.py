@@ -15,6 +15,7 @@ from typing import List, Optional, Dict, Any
 import httpx
 from dotenv import load_dotenv
 from app.services.ml_cache import get_ml_cache
+from app.services.circuit_breaker import get_ml_circuit_breaker, get_ml_rate_limiter
 
 load_dotenv()
 
@@ -33,10 +34,11 @@ class MLAPIClient:
         base_url: Optional[str] = None,
         timeout: int = 30,
         max_retries: int = 3,
-        enable_cache: bool = True
+        enable_cache: bool = True,
+        enable_circuit_breaker: bool = True
     ):
         """
-        Initialize ML API client.
+        Initialize ML API client with circuit breaker protection.
         
         Args:
             api_key: API key for authentication (defaults to INTERNAL_ML_API_KEY env var)
@@ -44,6 +46,7 @@ class MLAPIClient:
             timeout: Request timeout in seconds (default: 30)
             max_retries: Maximum number of retries for failed requests (default: 3)
             enable_cache: Enable response caching (default: True)
+            enable_circuit_breaker: Enable circuit breaker protection (default: True)
         """
         self.api_key = api_key or os.getenv("INTERNAL_ML_API_KEY")
         self.base_url = base_url or os.getenv("ML_API_BASE_URL") or DEV_BASE_URL
@@ -51,6 +54,11 @@ class MLAPIClient:
         self.max_retries = max_retries
         self.enable_cache = enable_cache
         self.cache = get_ml_cache() if enable_cache else None
+        
+        # Circuit breaker and rate limiter
+        self.enable_circuit_breaker = enable_circuit_breaker
+        self.circuit_breaker = get_ml_circuit_breaker() if enable_circuit_breaker else None
+        self.rate_limiter = get_ml_rate_limiter() if enable_circuit_breaker else None
         
         if not self.api_key:
             logger.warning("ML API key not found. Set INTERNAL_ML_API_KEY environment variable.")
@@ -62,7 +70,8 @@ class MLAPIClient:
         )
         
         cache_status = "enabled" if enable_cache else "disabled"
-        logger.info(f"ML API client initialized with base URL: {self.base_url} (cache: {cache_status})")
+        cb_status = "enabled" if enable_circuit_breaker else "disabled"
+        logger.info(f"ML API client initialized (cache: {cache_status}, circuit_breaker: {cb_status})")
     
     def _get_headers(self) -> Dict[str, str]:
         """Get request headers with authentication."""
@@ -75,7 +84,12 @@ class MLAPIClient:
     
     def _make_request(self, endpoint: str, payload: Dict[str, Any], cache_ttl: Optional[int] = None) -> Dict[str, Any]:
         """
-        Make POST request to ML API endpoint with caching.
+        Make POST request to ML API endpoint with caching and circuit breaker protection.
+        
+        PERFORMANCE OPTIMIZED:
+        - Circuit breaker prevents cascading failures
+        - Rate limiter prevents burst requests
+        - Caching reduces redundant API calls
         
         Args:
             endpoint: API endpoint path (e.g., "/payout-rating")
@@ -94,6 +108,22 @@ class MLAPIClient:
             if cached is not None:
                 return cached
         
+        # Apply rate limiting to prevent bursts
+        if self.rate_limiter:
+            self.rate_limiter.wait_if_needed()
+        
+        # Execute request with circuit breaker protection
+        if self.enable_circuit_breaker and self.circuit_breaker:
+            return self.circuit_breaker.call(self._execute_request, endpoint, payload, cache_ttl)
+        else:
+            return self._execute_request(endpoint, payload, cache_ttl)
+    
+    def _execute_request(self, endpoint: str, payload: Dict[str, Any], cache_ttl: Optional[int] = None) -> Dict[str, Any]:
+        """
+        Execute the actual HTTP request.
+        
+        Separated from _make_request to enable circuit breaker wrapping.
+        """
         url = f"{self.base_url}{endpoint}"
         
         try:
