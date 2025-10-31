@@ -6,6 +6,11 @@ import re
 from typing import Optional, Dict, List, Tuple, Any
 
 FOLLOW_UP_PROMPTS = {
+    "ml_analysis": "Would you like to see ML-powered quality scores and sustainability ratings for {tickers}?",
+    "similar_stocks": "Interested in finding similar dividend stocks to {tickers} using ML clustering?",
+    "ml_forecasting": "Would you like ML-powered yield and growth forecasts for {tickers}?",
+    "cut_risk": "Want to check the ML-predicted dividend cut risk for {tickers}?",
+    "portfolio_optimization": "Do you own shares in any of these? I can provide ML-driven portfolio optimization suggestions.",
     "forecasting": "Would you like to see dividend growth forecasts for {tickers}?",
     "watchlist": "Would you like to add {tickers} to a watchlist to monitor dividend changes and price movements?",
     "portfolio": "Do you own shares in any of these? I can calculate your TTM (trailing twelve months) income and track performance.",
@@ -56,7 +61,7 @@ def detect_share_ownership(text: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def get_follow_up_prompts(tickers: List[str], num_prompts: int = 3, exclude: Optional[List[str]] = None) -> List[str]:
+def get_follow_up_prompts(tickers: List[str], num_prompts: int = 3, exclude: Optional[List[str]] = None, prioritize_ml: bool = True) -> List[str]:
     """
     Get relevant follow-up prompts for conversational advisor mode.
     
@@ -64,6 +69,7 @@ def get_follow_up_prompts(tickers: List[str], num_prompts: int = 3, exclude: Opt
         tickers: List of ticker symbols to include in prompts
         num_prompts: Number of prompts to return (default: 3)
         exclude: List of prompt types to exclude (optional)
+        prioritize_ml: Whether to prioritize ML-powered prompts (default: True)
     
     Returns:
         List of formatted follow-up questions
@@ -73,9 +79,21 @@ def get_follow_up_prompts(tickers: List[str], num_prompts: int = 3, exclude: Opt
     
     ticker_str = ", ".join(tickers) if tickers else "these tickers"
     
+    ml_prompt_keys = ["ml_analysis", "similar_stocks", "ml_forecasting", "cut_risk", "portfolio_optimization"]
+    
     prompts = []
+    
+    if prioritize_ml:
+        for key in ml_prompt_keys:
+            if key not in exclude and key in FOLLOW_UP_PROMPTS:
+                template = FOLLOW_UP_PROMPTS[key]
+                if "{tickers}" in template:
+                    prompts.append(template.format(tickers=ticker_str))
+                else:
+                    prompts.append(template)
+    
     for key, template in FOLLOW_UP_PROMPTS.items():
-        if key not in exclude:
+        if key not in exclude and key not in ml_prompt_keys:
             if "{tickers}" in template:
                 prompts.append(template.format(tickers=ticker_str))
             else:

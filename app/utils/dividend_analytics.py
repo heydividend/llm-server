@@ -703,13 +703,14 @@ def predict_annual_income(ticker: str, shares: int, distributions: List[Dict]) -
 
 def integrate_ml_predictions(ticker: str) -> Dict[str, Any]:
     """
-    Predictive Analytics: Call ML API for growth rate, cut risk, comprehensive scores.
+    Predictive Analytics: Call ML API for growth rate, cut risk, comprehensive scores, and payout rating.
+    Non-blocking - returns available data or gracefully degrades if ML unavailable.
     
     Args:
         ticker: Ticker symbol
         
     Returns:
-        ML predictions dict
+        ML predictions dict with all available ML insights
     """
     try:
         from app.services.ml_api_client import get_ml_client
@@ -719,41 +720,52 @@ def integrate_ml_predictions(ticker: str) -> Dict[str, Any]:
         predictions = {}
         
         try:
-            growth_response = ml_client.get_yield_forecast([ticker])
-            if growth_response.get("success") and growth_response.get("data"):
-                growth_data = growth_response["data"][0]
-                predictions["growth_rate"] = growth_data.get("predicted_growth_rate")
-                predictions["growth_confidence"] = growth_data.get("confidence")
+            yield_response = ml_client.get_yield_forecast([ticker])
+            if yield_response.get("success") and yield_response.get("data"):
+                yield_data = yield_response["data"][0] if isinstance(yield_response["data"], list) else yield_response["data"]
+                predictions["predicted_growth_rate"] = yield_data.get("predicted_growth_rate")
+                predictions["current_yield"] = yield_data.get("current_yield")
+                predictions["yield_confidence"] = yield_data.get("confidence")
         except Exception as e:
-            logger.warning(f"ML growth forecast unavailable for {ticker}: {e}")
-            predictions["growth_rate"] = None
+            logger.warning(f"ML yield forecast unavailable for {ticker}: {e}")
         
         try:
             cut_response = ml_client.get_cut_risk([ticker], include_earnings=True)
             if cut_response.get("success") and cut_response.get("data"):
-                cut_data = cut_response["data"][0]
+                cut_data = cut_response["data"][0] if isinstance(cut_response["data"], list) else cut_response["data"]
                 predictions["cut_risk_score"] = cut_data.get("cut_risk_score")
                 predictions["risk_level"] = cut_data.get("risk_level")
                 predictions["cut_risk_confidence"] = cut_data.get("confidence")
         except Exception as e:
             logger.warning(f"ML cut risk unavailable for {ticker}: {e}")
-            predictions["cut_risk_score"] = None
+        
+        try:
+            payout_response = ml_client.get_payout_rating([ticker])
+            if payout_response.get("success") and payout_response.get("data"):
+                payout_data = payout_response["data"][0] if isinstance(payout_response["data"], list) else payout_response["data"]
+                predictions["payout_rating"] = payout_data.get("payout_rating")
+                predictions["rating_label"] = payout_data.get("rating_label")
+                predictions["payout_confidence"] = payout_data.get("confidence")
+        except Exception as e:
+            logger.warning(f"ML payout rating unavailable for {ticker}: {e}")
         
         try:
             score_response = ml_client.get_comprehensive_score([ticker])
             if score_response.get("success") and score_response.get("data"):
-                score_data = score_response["data"][0]
+                score_data = score_response["data"][0] if isinstance(score_response["data"], list) else score_response["data"]
                 predictions["overall_score"] = score_data.get("overall_score")
-                predictions["recommendation"] = score_data.get("recommendation")
+                predictions["ml_grade"] = score_data.get("grade")
+                predictions["ml_recommendation"] = score_data.get("recommendation")
         except Exception as e:
             logger.warning(f"ML comprehensive score unavailable for {ticker}: {e}")
-            predictions["overall_score"] = None
+        
+        has_ml_data = any(v is not None for v in predictions.values())
         
         return {
             "ticker": ticker,
-            "has_ml_data": any(v is not None for v in predictions.values()),
+            "has_ml_data": has_ml_data,
             "predictions": predictions,
-            "source": "HeyDividend Internal ML API"
+            "source": "HeyDividend Internal ML API" if has_ml_data else "ML API unavailable"
         }
     
     except Exception as e:
@@ -815,24 +827,39 @@ def forecast_yield_trajectory(ticker: str, current_yield: float, growth_rate: Op
         }
 
 
-def recommend_action(ticker: str, analytics_data: Dict[str, Any]) -> Dict[str, Any]:
+def recommend_action(ticker: str, analytics_data: Dict[str, Any], include_ml: bool = True) -> Dict[str, Any]:
     """
-    Prescriptive Analytics: Buy/Hold/Sell/Trim recommendation.
+    Prescriptive Analytics: Buy/Hold/Sell/Trim recommendation with ML enhancement.
     
     Args:
         ticker: Ticker symbol
         analytics_data: Combined analytics data (descriptive, diagnostic, predictive)
+        include_ml: Whether to fetch and include ML predictions (default: True)
         
     Returns:
-        Action recommendation dict
+        Action recommendation dict with ML-enhanced insights
     """
     try:
+        ml_data = {}
+        if include_ml:
+            try:
+                ml_result = integrate_ml_predictions(ticker)
+                if ml_result.get("has_ml_data"):
+                    ml_data = ml_result.get("predictions", {})
+            except Exception as e:
+                logger.warning(f"ML integration failed for {ticker}, using statistical analysis only: {e}")
+        
         consistency_score = analytics_data.get("consistency_score", 50)
-        cut_risk = analytics_data.get("cut_risk_score", 0.5)
-        yield_value = analytics_data.get("current_yield", 0)
-        growth_rate = analytics_data.get("growth_rate", 0)
+        cut_risk = ml_data.get("cut_risk_score") or analytics_data.get("cut_risk_score", 0.5)
+        yield_value = ml_data.get("current_yield") or analytics_data.get("current_yield", 0)
+        growth_rate = ml_data.get("predicted_growth_rate") or analytics_data.get("growth_rate", 0)
+        ml_overall_score = ml_data.get("overall_score")
+        payout_rating = ml_data.get("payout_rating")
         
         score = 50
+        
+        if ml_overall_score is not None:
+            score = int(ml_overall_score * 0.6)
         
         if consistency_score >= 80:
             score += 15
@@ -858,20 +885,34 @@ def recommend_action(ticker: str, analytics_data: Dict[str, Any]) -> Dict[str, A
         elif growth_rate and growth_rate < -5:
             score -= 15
         
-        if score >= 75:
-            recommendation = "BUY"
-            rationale = f"Strong fundamentals with {consistency_score}% consistency, low cut risk ({cut_risk:.0%}), and attractive yield ({yield_value:.1f}%)"
-        elif score >= 60:
-            recommendation = "HOLD"
-            rationale = f"Solid performance with {consistency_score}% consistency. Monitor for dividend sustainability"
-        elif score >= 40:
-            recommendation = "TRIM"
-            rationale = f"Moderate risk with {cut_risk:.0%} cut probability. Consider reducing position size"
-        else:
-            recommendation = "SELL"
-            rationale = f"High risk: {cut_risk:.0%} cut probability with {consistency_score}% consistency. Consider alternatives"
+        if payout_rating and payout_rating > 80:
+            score += 5
         
-        return {
+        score = max(0, min(100, score))
+        
+        ml_recommendation = ml_data.get("ml_recommendation")
+        if ml_recommendation:
+            recommendation = ml_recommendation
+            rationale = f"ML-powered: {recommendation} based on {ml_overall_score:.0f}/100 score"
+            if consistency_score:
+                rationale += f", {consistency_score}% historical consistency"
+            if cut_risk is not None:
+                rationale += f", {cut_risk:.0%} cut risk"
+        else:
+            if score >= 75:
+                recommendation = "BUY"
+                rationale = f"Strong fundamentals with {consistency_score}% consistency, low cut risk ({cut_risk:.0%}), and attractive yield ({yield_value:.1f}%)"
+            elif score >= 60:
+                recommendation = "HOLD"
+                rationale = f"Solid performance with {consistency_score}% consistency. Monitor for dividend sustainability"
+            elif score >= 40:
+                recommendation = "TRIM"
+                rationale = f"Moderate risk with {cut_risk:.0%} cut probability. Consider reducing position size"
+            else:
+                recommendation = "SELL"
+                rationale = f"High risk: {cut_risk:.0%} cut probability with {consistency_score}% consistency. Consider alternatives"
+        
+        result = {
             "ticker": ticker,
             "recommendation": recommendation,
             "confidence_score": score,
@@ -883,6 +924,19 @@ def recommend_action(ticker: str, analytics_data: Dict[str, Any]) -> Dict[str, A
                 "growth_rate": growth_rate
             }
         }
+        
+        if ml_data:
+            result["ml_enhanced"] = True
+            result["ml_insights"] = {
+                "overall_score": ml_overall_score,
+                "payout_rating": payout_rating,
+                "rating_label": ml_data.get("rating_label"),
+                "ml_grade": ml_data.get("ml_grade")
+            }
+        else:
+            result["ml_enhanced"] = False
+        
+        return result
     
     except Exception as e:
         logger.error(f"Error generating recommendation for {ticker}: {e}")
@@ -891,7 +945,8 @@ def recommend_action(ticker: str, analytics_data: Dict[str, Any]) -> Dict[str, A
             "recommendation": "HOLD",
             "confidence_score": 50,
             "rationale": "Insufficient data for recommendation",
-            "key_factors": {}
+            "key_factors": {},
+            "ml_enhanced": False
         }
 
 
