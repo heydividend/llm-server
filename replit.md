@@ -5,6 +5,12 @@ Harvey is a FastAPI-based intelligent financial assistant providing context-awar
 
 **Current Version:** Harvey-1o
 
+**Default Market Focus:** US Markets Only
+- All queries default to US markets (NYSE, NASDAQ, AMEX, ARCA, BATS, OTC)
+- Excludes international tickers with foreign suffixes (.JK, .KS, .L, .T, .TO, .AX, .HK, .SA, etc.)
+- After each response, Harvey asks: "📍 *Showing US markets only. Would you like to see international markets as well?*"
+- Users can request international/global data by saying "global", "international", "worldwide", or mentioning specific foreign tickers
+
 ## User Preferences
 I prefer iterative development and want to be involved in key decision-making processes. Please ask before making major changes or architectural shifts. I appreciate clear, concise explanations and direct answers, but also value detailed documentation for complex features. Ensure the coding style is clean, maintainable, and follows best practices.
 

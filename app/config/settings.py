@@ -681,11 +681,37 @@ Handle human phrases like:
   - "price history last 7 days" → SELECT TOP 100 Ticker, Price, Bid, Ask, Volume, Trade_Timestamp_UTC, Snapshot_Timestamp FROM dbo.vPrices WHERE Ticker = 'MSFT' AND (Trade_Timestamp_UTC >= DATEADD(DAY, -7, GETDATE()) OR Snapshot_Timestamp >= DATEADD(DAY, -7, CAST(GETDATE() AS DATE))) ORDER BY Trade_Timestamp_UTC DESC, Snapshot_Timestamp DESC
   - "bid/ask spread for MSFT" → SELECT TOP 1 Ticker, Bid, Ask, (Ask - Bid) AS Spread, Trade_Timestamp_UTC, Snapshot_Timestamp FROM dbo.vPrices WHERE Ticker = 'MSFT' ORDER BY Trade_Timestamp_UTC DESC, Snapshot_Timestamp DESC
 
+*** US MARKET FILTERING (DEFAULT) ***
+**CRITICAL: By default, ALWAYS filter to US markets ONLY unless user explicitly asks for international/global data.**
+
+US Market Definition:
+- Tickers WITHOUT country/exchange suffixes (.JK, .KS, .L, .T, .TO, .AX, .HK, .SA, etc.)
+- US Exchanges: NYSE, NASDAQ, AMEX, ARCA, BATS, OTC, PINK
+- Filter: WHERE Ticker NOT LIKE '%.%' (excludes all foreign suffixes)
+
+Data Quality Filters (ALWAYS apply):
+- WHERE Dividend_Amount > 0 AND Dividend_Amount <= 1000 (excludes corrupted data)
+- WHERE Confidence_Score >= 0.7 (high-quality data only)
+
+Default Query Pattern:
+```sql
+WHERE d.Ticker NOT LIKE '%.%'  -- US markets only
+  AND d.Dividend_Amount > 0 
+  AND d.Dividend_Amount <= 1000
+  AND d.Confidence_Score >= 0.7
+```
+
+Exception Keywords (include international data):
+- User says: "global", "international", "worldwide", "all markets", "including foreign"
+- User mentions specific foreign tickers: "ASII.JK", "005930.KS", "BP.L"
+- User asks about specific country: "Japanese dividends", "UK stocks"
+→ In these cases, REMOVE the "Ticker NOT LIKE '%.%'" filter but KEEP data quality filters
+
 *** MULTI-TICKER & COMPLEX QUERIES ***
 - If multiple tickers: WHERE Ticker IN (...)
 - For rankings/comparisons: GROUP BY Ticker + aggregation logic.
 - For price comparisons: Can aggregate by Ticker and calculate average price, volume, bid/ask ranges.
-- If no tickers: return all matching rows (respect date filters).
+- If no tickers: return all matching rows (respect date filters and US market filter).
 
 *** NON-FINANCE / OUT-OF-SCOPE ***
 If unrelated → return {{"action":"chat","final_answer":"<helpful response>","sql":null}}
@@ -723,13 +749,16 @@ Q: "Compare prices of AAPL and MSFT" →
 {{"action":"sql","final_answer":null,"sql":"SELECT TOP 1 Ticker, Price, Bid, Ask, Volume, Trade_Timestamp_UTC, Snapshot_Timestamp FROM dbo.vPrices WHERE Ticker IN ('AAPL', 'MSFT') ORDER BY Ticker ASC, Trade_Timestamp_UTC DESC, Snapshot_Timestamp DESC"}}
 
 Q: "Dividends declared this week" →
-{{"action":"sql","final_answer":null,"sql":"SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Declaration_Date BETWEEN DATEADD(WEEK, DATEDIFF(WEEK, 0, GETDATE()), 0) AND GETDATE() ORDER BY Declaration_Date DESC"}}
+{{"action":"sql","final_answer":null,"sql":"SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker NOT LIKE '%.%' AND Dividend_Amount > 0 AND Dividend_Amount <= 1000 AND Declaration_Date BETWEEN DATEADD(WEEK, DATEDIFF(WEEK, 0, GETDATE()), 0) AND GETDATE() ORDER BY Declaration_Date DESC"}}
 
 Q: "What dividends will be paid next year?" →
-{{"action":"sql","final_answer":null,"sql":"SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Payment_Date BETWEEN DATEFROMPARTS(YEAR(GETDATE()) + 1, 1, 1) AND DATEFROMPARTS(YEAR(GETDATE()) + 1, 12, 31) ORDER BY Payment_Date DESC"}}
+{{"action":"sql","final_answer":null,"sql":"SELECT Ticker, Dividend_Amount, AdjDividend_Amount, Declaration_Date, Ex_Dividend_Date, Record_Date, Payment_Date FROM dbo.vDividends WHERE Ticker NOT LIKE '%.%' AND Dividend_Amount > 0 AND Dividend_Amount <= 1000 AND Payment_Date BETWEEN DATEFROMPARTS(YEAR(GETDATE()) + 1, 1, 1) AND DATEFROMPARTS(YEAR(GETDATE()) + 1, 12, 31) ORDER BY Payment_Date DESC"}}
 
 Q: "Tell me about Microsoft dividends" OR "Show AAPL dividends" OR any dividend table/list query →
-{{"action":"sql","final_answer":null,"sql":"SELECT d.Ticker, q.Price, d.Dividend_Amount AS Distribution, ROUND((d.Dividend_Amount * ISNULL(d.Distribution_Frequency, 4) / NULLIF(q.Price, 0)) * 100, 2) AS Yield, d.Declaration_Date, d.Ex_Dividend_Date, d.Payment_Date FROM dbo.vDividendsEnhanced d LEFT JOIN dbo.vQuotesEnhanced q ON d.Ticker = q.Ticker WHERE d.Ticker = 'MSFT' AND d.Confidence_Score >= 0.7 ORDER BY d.Ex_Dividend_Date DESC"}}
+{{"action":"sql","final_answer":null,"sql":"SELECT d.Ticker, q.Price, d.Dividend_Amount AS Distribution, ROUND((d.Dividend_Amount * ISNULL(d.Distribution_Frequency, 4) / NULLIF(q.Price, 0)) * 100, 2) AS Yield, d.Declaration_Date, d.Ex_Dividend_Date, d.Payment_Date FROM dbo.vDividendsEnhanced d LEFT JOIN dbo.vQuotesEnhanced q ON d.Ticker = q.Ticker WHERE d.Ticker = 'MSFT' AND d.Ticker NOT LIKE '%.%' AND d.Dividend_Amount > 0 AND d.Dividend_Amount <= 1000 AND d.Confidence_Score >= 0.7 ORDER BY d.Ex_Dividend_Date DESC"}}
+
+Q: "What are the top dividend paying stocks?" OR "Show me high dividend stocks" (no specific ticker) →
+{{"action":"sql","final_answer":null,"sql":"SELECT TOP 10 d.Ticker, q.Price, d.Dividend_Amount AS Distribution, ROUND((d.Dividend_Amount * ISNULL(d.Distribution_Frequency, 4) / NULLIF(q.Price, 0)) * 100, 2) AS Yield, d.Declaration_Date, d.Ex_Dividend_Date, d.Payment_Date FROM dbo.vDividendsEnhanced d LEFT JOIN dbo.vQuotesEnhanced q ON d.Ticker = q.Ticker WHERE d.Ticker NOT LIKE '%.%' AND d.Dividend_Amount > 0 AND d.Dividend_Amount <= 1000 AND d.Confidence_Score >= 0.7 AND q.Price IS NOT NULL ORDER BY Yield DESC"}}
 """
 
 
@@ -840,6 +869,21 @@ You are Harvey, a professional financial advisor. After providing dividend infor
 4. **Alerts**: "Would you like to set up alerts for dividend cuts, yield changes, or price targets on [tickers]?"
 5. **Income Planning**: "Interested in building a monthly income ladder with these dividend payers?"
 6. **Tax Optimization**: "Would you like me to analyze tax implications and optimization strategies for your dividend income?"
+
+**US Markets Default with International Option:**
+- When showing results (ALWAYS filtered to US markets by default), include this follow-up at the end:
+  
+  "📍 *Showing US markets only. Would you like to see international markets as well?*"
+  
+- ONLY show this message when:
+  - The query returned dividend/stock data (not for greetings, calculations, or general questions)
+  - The user did NOT explicitly ask for international/global data
+  - The results were filtered to US markets (Ticker NOT LIKE '%.%')
+  
+- DO NOT show this message when:
+  - User already asked for "global", "international", "worldwide", or specific foreign tickers
+  - The query is not about market data (e.g., "hi", "what can you do", calculations)
+  - The results already include international data
 
 **Share Ownership Detection:**
 If the user mentions owning shares (patterns: "I own", "I have", "my X shares", "200 shares of", "own 100", etc.):
