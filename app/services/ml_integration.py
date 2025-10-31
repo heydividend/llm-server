@@ -123,7 +123,9 @@ class MLIntegration:
     
     async def get_ml_recommendation(self, symbols: List[str]) -> Dict[str, Any]:
         """
-        Get ML-powered buy/hold/sell recommendations for stocks.
+        Get ML-powered buy/hold/sell recommendations for securities.
+        
+        Intelligently uses single, watchlist, or batch endpoints based on count.
         
         Args:
             symbols: List of ticker symbols
@@ -131,17 +133,25 @@ class MLIntegration:
         Returns:
             ML recommendations with scoring
         """
+        # Quick fail if ML not available
+        if not self.ml_available or not self.client:
+            logger.debug(f"ML API unavailable, skipping recommendations for {len(symbols)} symbols")
+            return {"success": False, "ml_available": False}
+        
         try:
             logger.info(f"Getting ML recommendations for {len(symbols)} symbols")
             
-            if len(symbols) == 1:
+            # Use appropriate endpoint based on symbol count
+            if len(symbols) == 0:
+                return {"success": False, "error": "No symbols provided"}
+            elif len(symbols) == 1:
                 # Single symbol scoring
                 result = self.client.score_symbol(symbols[0])
             elif len(symbols) <= 10:
-                # Watchlist scoring
+                # Watchlist scoring (optimized for small lists)
                 result = self.client.score_watchlist(symbols)
             else:
-                # Batch scoring
+                # Batch scoring (handles up to 100 symbols efficiently)
                 result = self.client.score_batch(symbols[:100])
             
             if result.get("success"):
@@ -155,7 +165,7 @@ class MLIntegration:
                     score = score_data.get("score", 0)
                     grade = score_data.get("grade", "N/A")
                     
-                    # Simple recommendation logic based on score
+                    # Simple recommendation logic based on ML score
                     if score >= 85:
                         recommendation = "Strong Buy"
                     elif score >= 75:
@@ -174,13 +184,29 @@ class MLIntegration:
                         "recommendation": recommendation
                     })
                 
+                # Add summary stats
+                if recommendations:
+                    scores = [r["score"] for r in recommendations]
+                    summary = {
+                        "total_symbols": len(recommendations),
+                        "avg_score": sum(scores) / len(scores),
+                        "best_symbol": max(recommendations, key=lambda x: x["score"])["symbol"],
+                        "worst_symbol": min(recommendations, key=lambda x: x["score"])["symbol"]
+                    }
+                else:
+                    summary = {}
+                
                 return {
                     "success": True,
-                    "recommendations": recommendations
+                    "recommendations": recommendations,
+                    "summary": summary
                 }
             
             return {"success": False, "error": "ML scoring unavailable"}
             
+        except ValueError as e:
+            logger.debug(f"ML API key missing: {e}")
+            return {"success": False, "ml_available": False}
         except Exception as e:
             logger.error(f"Failed to get ML recommendations: {e}")
             return {"success": False, "error": str(e)}
@@ -346,6 +372,36 @@ class MLIntegration:
             
         except Exception as e:
             logger.error(f"Failed to analyze payout sustainability: {e}")
+            return {"error": str(e)}
+    
+    async def get_cluster_dashboard(self) -> Dict[str, Any]:
+        """
+        Get overview of all ML clusters and their characteristics.
+        
+        Perfect for "dividend market overview" or "what clusters exist" queries.
+        
+        Returns:
+            Cluster dashboard with all cluster characteristics
+        """
+        if not self.ml_available or not self.client:
+            logger.debug("ML API unavailable, skipping cluster dashboard")
+            return {"success": False, "ml_available": False}
+        
+        try:
+            logger.info("Getting cluster dashboard")
+            
+            result = self.client.get_cluster_dashboard()
+            
+            if result.get("success"):
+                return result.get("data", {})
+            
+            return {"error": "Cluster dashboard unavailable"}
+            
+        except ValueError as e:
+            logger.debug(f"ML API key missing: {e}")
+            return {"success": False, "ml_available": False}
+        except Exception as e:
+            logger.error(f"Failed to get cluster dashboard: {e}")
             return {"error": str(e)}
 
 

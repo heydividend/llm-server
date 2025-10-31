@@ -165,6 +165,72 @@ def detect_ml_query_type(text: str) -> str:
     return "payout_rating"
 
 
+def is_batch_ml_query(text: str, tickers: List[str]) -> bool:
+    """
+    Detect if query requests batch ML scoring for multiple tickers.
+    
+    Args:
+        text: User query text
+        tickers: List of parsed ticker symbols
+        
+    Returns:
+        True if batch ML scoring requested for 2+ tickers, False otherwise
+    """
+    if len(tickers) < 2:
+        return False
+    
+    t = text.lower()
+    batch_keywords = [
+        "watchlist", "portfolio", "compare", "rank", "score", "rate",
+        "best", "worst", "top", "which", "analyze", "evaluate"
+    ]
+    
+    return any(kw in t for kw in batch_keywords)
+
+
+def is_portfolio_optimization_query(text: str) -> bool:
+    """
+    Detect if query requests portfolio optimization.
+    
+    Args:
+        text: User query text
+        
+    Returns:
+        True if portfolio optimization requested, False otherwise
+    """
+    t = text.lower()
+    optimization_keywords = [
+        "optimize portfolio", "optimize my portfolio", "improve diversification",
+        "rebalance", "portfolio optimization", "diversify", "improve portfolio",
+        "portfolio allocation", "asset allocation", "portfolio mix",
+        "should i buy", "should i sell", "portfolio suggestions",
+        "portfolio recommendations"
+    ]
+    
+    return any(kw in t for kw in optimization_keywords)
+
+
+def is_cluster_dashboard_query(text: str) -> bool:
+    """
+    Detect if query requests cluster dashboard / market overview.
+    
+    Args:
+        text: User query text
+        
+    Returns:
+        True if cluster dashboard requested, False otherwise
+    """
+    t = text.lower()
+    cluster_keywords = [
+        "dividend market overview", "market overview", "what clusters",
+        "dividend categories", "dividend clusters", "cluster", "categories",
+        "dividend types", "dividend classes", "market segments",
+        "dividend landscape", "dividend groups", "types of dividend"
+    ]
+    
+    return any(kw in t for kw in cluster_keywords)
+
+
 def format_ml_payout_rating(data: List[Dict]) -> str:
     """Format payout rating response as markdown."""
     if not data:

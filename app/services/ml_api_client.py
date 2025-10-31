@@ -14,6 +14,7 @@ import logging
 from typing import List, Optional, Dict, Any
 import httpx
 from dotenv import load_dotenv
+from app.services.ml_cache import get_ml_cache
 
 load_dotenv()
 
@@ -31,7 +32,8 @@ class MLAPIClient:
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
         timeout: int = 30,
-        max_retries: int = 3
+        max_retries: int = 3,
+        enable_cache: bool = True
     ):
         """
         Initialize ML API client.
@@ -41,11 +43,14 @@ class MLAPIClient:
             base_url: Base URL for API (defaults to ML_API_BASE_URL env var or DEV URL)
             timeout: Request timeout in seconds (default: 30)
             max_retries: Maximum number of retries for failed requests (default: 3)
+            enable_cache: Enable response caching (default: True)
         """
         self.api_key = api_key or os.getenv("INTERNAL_ML_API_KEY")
         self.base_url = base_url or os.getenv("ML_API_BASE_URL") or DEV_BASE_URL
         self.timeout = timeout
         self.max_retries = max_retries
+        self.enable_cache = enable_cache
+        self.cache = get_ml_cache() if enable_cache else None
         
         if not self.api_key:
             logger.warning("ML API key not found. Set INTERNAL_ML_API_KEY environment variable.")
@@ -56,7 +61,8 @@ class MLAPIClient:
             transport=httpx.HTTPTransport(retries=max_retries)
         )
         
-        logger.info(f"ML API client initialized with base URL: {self.base_url}")
+        cache_status = "enabled" if enable_cache else "disabled"
+        logger.info(f"ML API client initialized with base URL: {self.base_url} (cache: {cache_status})")
     
     def _get_headers(self) -> Dict[str, str]:
         """Get request headers with authentication."""
@@ -67,13 +73,14 @@ class MLAPIClient:
             "Content-Type": "application/json"
         }
     
-    def _make_request(self, endpoint: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def _make_request(self, endpoint: str, payload: Dict[str, Any], cache_ttl: Optional[int] = None) -> Dict[str, Any]:
         """
-        Make POST request to ML API endpoint.
+        Make POST request to ML API endpoint with caching.
         
         Args:
             endpoint: API endpoint path (e.g., "/payout-rating")
             payload: Request payload
+            cache_ttl: Cache TTL in seconds (uses default if None)
             
         Returns:
             Parsed JSON response
@@ -81,6 +88,12 @@ class MLAPIClient:
         Raises:
             Exception: On API errors
         """
+        # Check cache first
+        if self.enable_cache and self.cache:
+            cached = self.cache.get(endpoint, payload)
+            if cached is not None:
+                return cached
+        
         url = f"{self.base_url}{endpoint}"
         
         try:
@@ -118,6 +131,10 @@ class MLAPIClient:
                 error_msg = data.get("error", "Unknown error")
                 logger.error(f"ML API returned error: {error_msg}")
                 raise Exception(f"ML API error: {error_msg}")
+            
+            # Cache successful response
+            if self.enable_cache and self.cache:
+                self.cache.set(endpoint, payload, data, ttl=cache_ttl)
             
             logger.info(f"ML API request successful: {endpoint}")
             return data
@@ -712,6 +729,22 @@ class MLAPIClient:
                 "status": "unhealthy",
                 "error": str(e)
             }
+    
+    def get_cache_stats(self) -> Dict[str, Any]:
+        """
+        Get ML cache statistics.
+        
+        Returns:
+            Cache stats if caching enabled, empty dict otherwise
+        """
+        if self.enable_cache and self.cache:
+            return self.cache.get_stats()
+        return {"cache_enabled": False}
+    
+    def clear_cache(self):
+        """Clear the ML cache."""
+        if self.enable_cache and self.cache:
+            self.cache.clear()
     
     def close(self):
         """Close the HTTP client connection pool."""
