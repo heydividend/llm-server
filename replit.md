@@ -4,7 +4,7 @@
 Harvey is a FastAPI-based intelligent financial assistant providing context-aware responses on dividends, stock prices, tickers, and company insights. It is an AI-powered tool for financial analysis and passive income planning, focusing on dividend investing and market data with an emphasis on real-time data, personalized recommendations, and a robust, self-healing architecture. The default market focus is US markets, with an option for users to request international data. Harvey aims to be a professional-grade solution for financial analysis.
 
 ## Recent Changes
-**November 1, 2025 - Production Deployment & Training Automation Complete**
+**November 1, 2025 - ML Training Pipeline Built & Ready for Deployment**
 - ✅ Harvey backend successfully deployed to Azure VM (20.81.210.213) on port 8000
 - ✅ **Harvey Intelligence Engine** deployed and running on port 9000 with 22+ ML endpoints (formerly "ML API")
 - ✅ Nginx reverse proxy configured and routing traffic on port 80
@@ -13,12 +13,14 @@ Harvey is a FastAPI-based intelligent financial assistant providing context-awar
 - ✅ Self-healing architecture handling database connection issues gracefully
 - ✅ Proactive dividend alert suggestions with confidence filtering deployed
 - ✅ Comprehensive documentation created: `HARVEY_INTELLIGENCE_ENGINE.md` (API contract, authentication, monitoring)
-- ✅ **Nightly training automation PRODUCTION-READY**: `TRAINING_AUTOMATION.md` with VM-based systemd timer solution
-- ✅ Training automation includes: backup/validation/rollback, Slack alerts, 5-minute deployment (files in `deploy/training_automation/`)
-- ✅ Rename script ready: `RENAME_TO_INTELLIGENCE_ENGINE.sh` (for Azure VM service renaming)
+- ✅ **Nightly training automation infrastructure READY**: `TRAINING_AUTOMATION.md` with VM-based systemd timer (active, waiting for training scripts)
+- ✅ Training automation includes: backup/validation/rollback, Slack alerts, systemd timer at 2 AM UTC
+- ✅ **COMPLETE ML TRAINING PIPELINE BUILT**: 7 models (dividend scorer, yield predictor, growth predictor, payout predictor, cut risk analyzer, anomaly detector, stock clusterer)
+- ✅ Training scripts ready in `ml_training/` with data extraction, model definitions, validation
+- ✅ Deployment automation ready: `deploy/deploy_ml_training.sh` for one-command deployment
+- ✅ Comprehensive deployment guide: `ML_TRAINING_DEPLOYMENT.md`
 - 🔧 FreeTDS ODBC driver installation pending (non-blocking due to self-healing fallbacks)
-- 🔧 Intelligence Engine models loaded: 0 (ready to load from Azure Blob Storage)
-- 📋 Deploy training automation: Transfer `deploy/training_automation/` to VM and run `setup_training_automation.sh`
+- 📋 **NEXT STEP**: Deploy ML training to Azure VM, run initial training, verify models loaded into Intelligence Engine
 
 ## User Preferences
 I prefer iterative development and want to be involved in key decision-making processes. Please ask before making major changes or architectural shifts. I appreciate clear, concise explanations and direct answers, but also value detailed documentation for complex features. Ensure the coding style is clean, maintainable, and follows best practices.
