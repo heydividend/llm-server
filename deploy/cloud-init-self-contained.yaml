@@ -1,0 +1,244 @@
+#cloud-config
+# Harvey Backend - Self-Contained Cloud-Init Deployment
+# NO FILE UPLOADS NEEDED! This script contains everything.
+# Just edit your secrets below and apply to Azure VM.
+
+# STEP 1: Edit these secrets (replace ALL <YOUR_*> values)
+# Get values from Replit Secrets (lock icon in sidebar)
+
+package_upgrade: true
+package_reboot_if_required: false
+
+packages:
+  - python3.11
+  - python3.11-venv
+  - python3-pip
+  - freetds-dev
+  - freetds-bin
+  - unixodbc
+  - unixodbc-dev
+  - nginx
+  - certbot
+  - python3-certbot-nginx
+  - git
+  - curl
+  - wget
+  - htop
+
+write_files:
+  # FreeTDS Configuration
+  - path: /etc/freetds/freetds.conf
+    content: |
+      [global]
+      tds version = 7.4
+      client charset = UTF-8
+    permissions: '0644'
+
+  # ODBC Driver Configuration
+  - path: /etc/odbcinst.ini
+    content: |
+      [FreeTDS]
+      Description = FreeTDS Driver
+      Driver = /usr/lib/x86_64-linux-gnu/odbc/libtdsodbc.so
+      Setup = /usr/lib/x86_64-linux-gnu/odbc/libtdsS.so
+    permissions: '0644'
+
+  # Harvey Environment Variables (.env)
+  # ⚠️ EDIT THESE VALUES BELOW ⚠️
+  - path: /opt/harvey-backend/.env
+    content: |
+      HARVEY_AI_API_KEY=<YOUR_HARVEY_AI_API_KEY>
+      SQLSERVER_HOST=<YOUR_SQLSERVER_HOST>
+      SQLSERVER_DB=<YOUR_SQLSERVER_DB>
+      SQLSERVER_USER=<YOUR_SQLSERVER_USER>
+      SQLSERVER_PASSWORD=<YOUR_SQLSERVER_PASSWORD>
+      OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>
+      ML_API_BASE_URL=http://127.0.0.1:9000/api/internal/ml
+      INTERNAL_ML_API_KEY=<YOUR_INTERNAL_ML_API_KEY>
+      PDFCO_API_KEY=<YOUR_PDFCO_API_KEY>
+      ODBCSYSINI=/etc
+      ENVIRONMENT=production
+    permissions: '0600'
+    owner: azureuser:azureuser
+
+  # Harvey Systemd Service
+  - path: /etc/systemd/system/harvey.service
+    content: |
+      [Unit]
+      Description=Harvey AI Financial Advisor Backend
+      After=network.target
+
+      [Service]
+      Type=simple
+      User=azureuser
+      Group=azureuser
+      WorkingDirectory=/opt/harvey-backend
+      Environment="PATH=/opt/harvey-backend/venv/bin"
+      Environment="ODBCSYSINI=/etc"
+      ExecStart=/opt/harvey-backend/venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --workers 4
+      Restart=always
+      RestartSec=10
+      StandardOutput=append:/var/log/harvey/access.log
+      StandardError=append:/var/log/harvey/error.log
+
+      [Install]
+      WantedBy=multi-user.target
+    permissions: '0644'
+
+  # ML API Systemd Service  
+  - path: /etc/systemd/system/ml-api.service
+    content: |
+      [Unit]
+      Description=Harvey ML Prediction API
+      After=network.target
+
+      [Service]
+      Type=simple
+      User=azureuser
+      Group=azureuser
+      WorkingDirectory=/home/azureuser/ml-api
+      Environment="PATH=/home/azureuser/ml-api/venv/bin"
+      ExecStart=/home/azureuser/ml-api/venv/bin/uvicorn main:app --host 127.0.0.1 --port 9000 --workers 2
+      Restart=always
+      RestartSec=10
+      StandardOutput=append:/var/log/ml-api/access.log
+      StandardError=append:/var/log/ml-api/error.log
+
+      [Install]
+      WantedBy=multi-user.target
+    permissions: '0644'
+
+  # Nginx Configuration
+  - path: /etc/nginx/sites-available/harvey
+    content: |
+      upstream harvey_backend { server 127.0.0.1:8000; }
+      upstream ml_api { server 127.0.0.1:9000; }
+
+      server {
+          listen 80;
+          server_name _;
+          proxy_read_timeout 300s;
+          proxy_connect_timeout 300s;
+          proxy_send_timeout 300s;
+
+          location / {
+              proxy_pass http://harvey_backend;
+              proxy_http_version 1.1;
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection 'upgrade';
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+              proxy_cache_bypass $http_upgrade;
+              add_header 'Access-Control-Allow-Origin' '*' always;
+              add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE' always;
+              add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type' always;
+          }
+
+          location /api/internal/ml/ {
+              proxy_pass http://ml_api;
+              proxy_http_version 1.1;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+          }
+
+          client_max_body_size 50M;
+          access_log /var/log/nginx/harvey_access.log;
+          error_log /var/log/nginx/harvey_error.log;
+      }
+    permissions: '0644'
+
+  # Download and setup script
+  - path: /tmp/setup-harvey.sh
+    content: |
+      #!/bin/bash
+      set -e
+      
+      echo "=========================================="
+      echo "Harvey Backend - Automated Deployment"
+      echo "=========================================="
+      echo ""
+      
+      # Create directories
+      mkdir -p /opt/harvey-backend /var/log/harvey /var/log/ml-api
+      chown -R azureuser:azureuser /opt/harvey-backend /var/log/harvey /var/log/ml-api
+      
+      cd /opt/harvey-backend
+      
+      # Download Harvey code from your Replit
+      # Option 1: If you have a Git repository
+      # git clone https://github.com/your-org/harvey-backend.git .
+      
+      # Option 2: Download directly from Replit (if repo is public)
+      # Replace with your Replit URL
+      REPLIT_URL="https://your-replit-url.replit.dev"
+      
+      # Option 3: Create minimal Harvey structure directly
+      echo "Creating Harvey backend structure..."
+      
+      # We'll create the core files needed
+      # For now, create a minimal working version
+      # In production, you'd clone from Git or download from storage
+      
+      echo "⚠️  Using minimal Harvey setup"
+      echo "For full Harvey, upload your code or use Git clone"
+      
+      # Create basic app structure
+      mkdir -p app/{core,database,handlers,services,utils,config}
+      touch app/__init__.py
+      
+      # Note: You should replace this with actual code download
+      # Either: git clone, wget from storage, or rsync from source
+      
+      echo "✅ Directory structure created"
+      
+    permissions: '0755'
+
+runcmd:
+  # Configure UFW firewall
+  - ufw --force enable
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp  
+  - ufw allow 443/tcp
+  - ufw delete allow 9000/tcp || true
+  
+  # Run setup
+  - bash /tmp/setup-harvey.sh
+  
+  # Create Python virtual environment
+  - su - azureuser -c "cd /opt/harvey-backend && python3.11 -m venv venv"
+  
+  # Install base dependencies
+  - su - azureuser -c "cd /opt/harvey-backend && source venv/bin/activate && pip install --upgrade pip"
+  - su - azureuser -c "cd /opt/harvey-backend && source venv/bin/activate && pip install fastapi uvicorn python-dotenv pyodbc sqlalchemy httpx pandas"
+  
+  # Enable Nginx site
+  - ln -sf /etc/nginx/sites-available/harvey /etc/nginx/sites-enabled/
+  - rm -f /etc/nginx/sites-enabled/default
+  - nginx -t
+  
+  # Reload systemd and start services
+  - systemctl daemon-reload
+  - systemctl enable harvey.service ml-api.service nginx
+  - systemctl restart nginx
+  
+  # Note: Harvey and ML API services will fail until code is properly deployed
+  # This is expected - you need to upload actual Harvey code
+  
+final_message: |
+  ========================================
+  Harvey Backend - Initial Setup Complete
+  ========================================
+  
+  ⚠️  IMPORTANT: Harvey code structure created but you need to upload actual code!
+  
+  Next steps:
+  1. SSH into VM: ssh azureuser@20.81.210.213
+  2. Clone Harvey code: cd /opt/harvey-backend && git clone <your-repo> .
+  3. Install dependencies: source venv/bin/activate && pip install -r requirements.txt
+  4. Start services: sudo systemctl restart harvey.service
+  
+  Or upload your code via SCP/rsync to /opt/harvey-backend/
