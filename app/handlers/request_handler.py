@@ -19,7 +19,8 @@ from app.utils.metrics import compute_dividend_metrics
 from app.utils.markdown_formatter import ProfessionalMarkdownFormatter
 from app.utils.conversational_prompts import (
     detect_share_ownership, get_follow_up_prompts, format_ttm_message,
-    is_dividend_query, should_show_conversational_prompts
+    is_dividend_query, should_show_conversational_prompts,
+    is_dividend_distribution_query, format_next_dividend_alert_suggestion
 )
 from app.utils.ttm_calculator import (
     calculate_ttm_distributions, format_ttm_result, format_ttm_summary
@@ -492,6 +493,24 @@ def handle_request(question: str, user_system_all: str, overrides: Dict[str, str
                 
             except Exception as e:
                 logger.error(f"Error in 4-tier analytics: {e}")
+        
+        # b1.4) Proactive Dividend Declaration Alert Suggestion
+        if is_dividend_distribution_query(question) and is_dividend_query and cnt > 0 and parsed_tickers:
+            try:
+                ticker = parsed_tickers[0]
+                # Convert rows_buffer to list of dicts
+                distributions = []
+                for row in rows_buffer:
+                    row_dict = {}
+                    for i, col in enumerate(columns):
+                        row_dict[col] = row[i]
+                    distributions.append(row_dict)
+                
+                alert_suggestion = format_next_dividend_alert_suggestion(ticker, distributions)
+                if alert_suggestion:
+                    yield alert_suggestion
+            except Exception as e:
+                logger.warning(f"Error generating dividend alert suggestion: {e}")
         
         # b1.5) ML Intelligence Section (optional, non-blocking)
         if is_dividend_query and cnt > 0 and parsed_tickers and len(parsed_tickers) > 0:

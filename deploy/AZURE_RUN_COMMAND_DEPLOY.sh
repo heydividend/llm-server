@@ -13,14 +13,15 @@ echo ""
 # ============================================
 # STEP 1: EDIT YOUR SECRETS HERE
 # ============================================
-# Replace ALL <YOUR_*> values with actual secrets from Replit
+# IMPORTANT: Add your OPENAI_API_KEY below (currently empty)
+# All other secrets are pre-filled from Replit environment
 
 HARVEY_AI_API_KEY=hd_live_abc123xyz789
 SQLSERVER_HOST=hey-dividend-sql-server.database.windows.net
 SQLSERVER_DB=HeyDividend-Main-DB
 SQLSERVER_USER=Hey-dividend
 SQLSERVER_PASSWORD=qUrkac-medqe7-sixvis
-OPENAI_API_KEY=
+OPENAI_API_KEY=<YOUR_OPENAI_API_KEY_HERE>
 ML_API_BASE_URL=http://20.81.210.213:9000/api/internal/ml
 INTERNAL_ML_API_KEY=hd_live_2r7TVaWMQ9q4QEjGE_internal_ml_api_key
 PDFCO_API_KEY=dev@heydividend.com_z7X3c3xEvoPZHfonkI1Xr7Rq4ujl3XWb1jMUhbKjEgQPMu4OWc1XBZFo4kITEPMN
@@ -69,77 +70,27 @@ EOF
 echo "✅ Database drivers configured"
 
 # ============================================
-# STEP 4: Create Harvey Directory Structure
+# STEP 4: Clone Harvey from GitHub
 # ============================================
 
-echo "📁 Creating Harvey backend directory..."
+echo "📁 Cloning Harvey backend from GitHub..."
 
-mkdir -p /opt/harvey-backend/{app/{core,database,handlers,services,utils,config},static,templates}
-mkdir -p /var/log/harvey /var/log/ml-api
+# Remove old installation if exists
+rm -rf /opt/harvey-backend
 
-chown -R azureuser:azureuser /opt/harvey-backend /var/log/harvey /var/log/ml-api
+# Clone the repository
+cd /opt
+git clone https://github.com/heydividend/llm-server.git harvey-backend
+
+cd /opt/harvey-backend
+
+echo "✅ Harvey repository cloned"
 
 # ============================================
-# STEP 5: Create Harvey Application Files
+# STEP 5: Create Environment File
 # ============================================
 
-echo "📝 Creating Harvey application files..."
-
-# Create main.py (FastAPI entry point)
-cat > /opt/harvey-backend/main.py <<'MAINPY'
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI(title="Harvey AI Financial Advisor")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.get("/")
-async def root():
-    return {
-        "message": "Harvey AI Financial Advisor API",
-        "version": "1.0",
-        "status": "running"
-    }
-
-@app.get("/healthz")
-async def health():
-    return {"status": "healthy"}
-
-@app.get("/v1/ml/health")
-async def ml_health():
-    return {
-        "status": "healthy",
-        "ml_api_configured": True,
-        "message": "ML API integration ready"
-    }
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-MAINPY
-
-# Create requirements.txt
-cat > /opt/harvey-backend/requirements.txt <<'EOF'
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
-python-dotenv==1.0.0
-pyodbc==5.0.1
-sqlalchemy==2.0.23
-httpx==0.25.1
-pandas==2.1.3
-pydantic==2.5.0
-python-multipart==0.0.6
-aiofiles==23.2.1
-tiktoken==0.5.1
-openai==1.3.5
-EOF
+echo "📝 Creating .env file with secrets..."
 
 # Create .env file with secrets
 cat > /opt/harvey-backend/.env <<EOF
@@ -157,12 +108,13 @@ ENVIRONMENT=production
 EOF
 
 chmod 600 /opt/harvey-backend/.env
-chown azureuser:azureuser /opt/harvey-backend/.env
+chown -R azureuser:azureuser /opt/harvey-backend
 
-# Create basic app/__init__.py
-touch /opt/harvey-backend/app/__init__.py
+# Create log directories
+mkdir -p /var/log/harvey /var/log/ml-api
+chown -R azureuser:azureuser /var/log/harvey /var/log/ml-api
 
-echo "✅ Harvey application files created"
+echo "✅ Environment configured"
 
 # ============================================
 # STEP 6: Create Python Virtual Environment
@@ -342,15 +294,21 @@ echo "=========================================="
 echo "✅ Harvey Deployment Complete!"
 echo "=========================================="
 echo ""
-echo "Access Harvey at: http://$(curl -s ifconfig.me)/"
+echo "🌐 Access Harvey at: http://$(curl -s ifconfig.me)/"
 echo ""
-echo "Useful commands:"
-echo "  View logs:    journalctl -u harvey.service -f"
-echo "  Restart:      systemctl restart harvey.service"
-echo "  Status:       systemctl status harvey.service"
+echo "📊 Service Status:"
+systemctl is-active harvey.service && echo "  ✅ Harvey Backend: Running" || echo "  ❌ Harvey Backend: Failed"
+systemctl is-active nginx && echo "  ✅ Nginx: Running" || echo "  ❌ Nginx: Failed"
+if [ -f "/etc/systemd/system/ml-api.service" ]; then
+    systemctl is-active ml-api.service && echo "  ✅ ML API: Running" || echo "  ⚠️  ML API: Not running"
+fi
 echo ""
-echo "⚠️  Note: This is a minimal Harvey deployment."
-echo "To deploy full Harvey with all features:"
-echo "1. Clone your Harvey Git repository to /opt/harvey-backend/"
-echo "2. Run: sudo systemctl restart harvey.service"
+echo "📝 Useful commands:"
+echo "  View Harvey logs:     journalctl -u harvey.service -f"
+echo "  View ML API logs:     journalctl -u ml-api.service -f"
+echo "  Restart Harvey:       systemctl restart harvey.service"
+echo "  Check status:         systemctl status harvey.service"
+echo "  Update from GitHub:   cd /opt/harvey-backend && git pull && systemctl restart harvey.service"
+echo ""
+echo "🔐 Environment file: /opt/harvey-backend/.env"
 echo ""

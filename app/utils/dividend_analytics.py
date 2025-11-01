@@ -1266,3 +1266,114 @@ def _detect_frequency(dates: List[dt.date]) -> str:
         return "annual"
     else:
         return "irregular"
+
+
+def calculate_next_declaration_date(distributions: List[Dict], ticker: str) -> Optional[Dict[str, Any]]:
+    """
+    Calculate the next expected declaration/ex-dividend date based on payment history.
+    
+    Args:
+        distributions: List of distribution records with date fields
+        ticker: Ticker symbol for logging
+        
+    Returns:
+        Dict containing:
+            - has_prediction: bool, whether we could predict next date
+            - next_ex_date: predicted next ex-dividend date (date object)
+            - next_ex_date_str: formatted date string
+            - frequency: payment frequency
+            - confidence: "high", "medium", or "low" based on consistency
+            - alert_suggestion: text for suggesting alert setup
+        Or None if insufficient data
+    """
+    if not distributions or len(distributions) < 3:
+        logger.info(f"[{ticker}] Insufficient data for next date prediction (need at least 3 distributions)")
+        return None
+    
+    try:
+        dates = []
+        declaration_dates = []
+        
+        for dist in distributions[:12]:
+            ex_date = dist.get('Ex_Dividend_Date') or dist.get('Ex_Date')
+            decl_date = dist.get('Declaration_Date')
+            
+            if ex_date:
+                if isinstance(ex_date, str):
+                    ex_date = dt.datetime.fromisoformat(ex_date.replace('Z', '+00:00')).date()
+                elif isinstance(ex_date, dt.datetime):
+                    ex_date = ex_date.date()
+                dates.append(ex_date)
+            
+            if decl_date:
+                if isinstance(decl_date, str):
+                    decl_date = dt.datetime.fromisoformat(decl_date.replace('Z', '+00:00')).date()
+                elif isinstance(decl_date, dt.datetime):
+                    decl_date = decl_date.date()
+                declaration_dates.append(decl_date)
+        
+        if len(dates) < 3:
+            logger.info(f"[{ticker}] Insufficient date data for prediction")
+            return None
+        
+        sorted_dates = sorted(dates, reverse=True)
+        latest_date = sorted_dates[0]
+        
+        frequency = _detect_frequency(dates)
+        
+        if frequency == "irregular":
+            logger.info(f"[{ticker}] Payment frequency is irregular, cannot predict reliably")
+            return {
+                "has_prediction": False,
+                "frequency": frequency,
+                "confidence": "low",
+                "alert_suggestion": None
+            }
+        
+        intervals = [(sorted_dates[i] - sorted_dates[i+1]).days for i in range(len(sorted_dates)-1)]
+        avg_interval = statistics.mean(intervals) if intervals else 0
+        std_dev = statistics.stdev(intervals) if len(intervals) > 1 else 0
+        
+        confidence = "high" if std_dev < 7 else "medium" if std_dev < 14 else "low"
+        
+        # Only suggest alerts for medium or high confidence predictions
+        if confidence == "low":
+            logger.info(f"[{ticker}] Payment pattern too irregular (confidence: low), skipping alert suggestion")
+            return {
+                "has_prediction": False,
+                "frequency": frequency,
+                "confidence": confidence,
+                "alert_suggestion": None
+            }
+        
+        next_ex_date = latest_date + dt.timedelta(days=int(avg_interval))
+        
+        today = dt.date.today()
+        if next_ex_date <= today:
+            days_to_add = int(avg_interval)
+            while next_ex_date <= today:
+                next_ex_date = next_ex_date + dt.timedelta(days=days_to_add)
+        
+        next_ex_date_str = next_ex_date.strftime("%B %d, %Y")
+        
+        alert_suggestion = (
+            f"{ticker} is scheduled to declare its next dividend with an ex-date around **{next_ex_date_str}** "
+            f"(based on {frequency} payment pattern, {confidence} confidence). Would you like to set up an alert to receive the "
+            f"announcement once it's declared?"
+        )
+        
+        logger.info(f"[{ticker}] Predicted next ex-date: {next_ex_date_str} (confidence: {confidence})")
+        
+        return {
+            "has_prediction": True,
+            "next_ex_date": next_ex_date,
+            "next_ex_date_str": next_ex_date_str,
+            "frequency": frequency,
+            "confidence": confidence,
+            "alert_suggestion": alert_suggestion,
+            "days_until": (next_ex_date - today).days
+        }
+    
+    except Exception as e:
+        logger.error(f"[{ticker}] Error calculating next declaration date: {e}")
+        return None
