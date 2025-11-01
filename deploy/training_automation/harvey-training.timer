@@ -1,0 +1,16 @@
+[Unit]
+Description=Harvey Intelligence Engine - Daily Training Timer
+Requires=harvey-training.service
+
+[Timer]
+# Run daily at 2:00 AM UTC (after market close + data processing)
+OnCalendar=*-*-* 02:00:00
+
+# If system was down, run once when it comes back up
+Persistent=true
+
+# Randomize start time by up to 10 minutes to avoid system load spikes
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

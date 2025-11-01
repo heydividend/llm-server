@@ -21,7 +21,7 @@ SQLSERVER_HOST=hey-dividend-sql-server.database.windows.net
 SQLSERVER_DB=HeyDividend-Main-DB
 SQLSERVER_USER=Hey-dividend
 SQLSERVER_PASSWORD=qUrkac-medqe7-sixvis
-OPENAI_API_KEY=<YOUR_OPENAI_API_KEY_HERE>
+OPENAI_API_KEY=
 ML_API_BASE_URL=http://20.81.210.213:9000/api/internal/ml
 INTERNAL_ML_API_KEY=hd_live_2r7TVaWMQ9q4QEjGE_internal_ml_api_key
 PDFCO_API_KEY=dev@heydividend.com_z7X3c3xEvoPZHfonkI1Xr7Rq4ujl3XWb1jMUhbKjEgQPMu4OWc1XBZFo4kITEPMN
@@ -31,7 +31,8 @@ PDFCO_API_KEY=dev@heydividend.com_z7X3c3xEvoPZHfonkI1Xr7Rq4ujl3XWb1jMUhbKjEgQPMu
 # ============================================
 
 echo "📦 Installing system dependencies..."
-apt-get update -qq
+echo "This may take 2-3 minutes..."
+apt-get update -qq 2>&1 | tail -5
 apt-get install -y \
     python3.11 \
     python3.11-venv \
@@ -44,7 +45,7 @@ apt-get install -y \
     git \
     curl \
     wget \
-    htop
+    htop 2>&1 | grep -E "(Setting up|Processing)"
 
 echo "✅ Dependencies installed"
 
@@ -74,16 +75,19 @@ echo "✅ Database drivers configured"
 # ============================================
 
 echo "📁 Cloning Harvey backend from GitHub..."
+echo "Repository: https://github.com/heydividend/llm-server.git"
 
 # Remove old installation if exists
+echo "Removing old installation..."
 rm -rf /opt/harvey-backend
 
 # Clone the repository
+echo "Cloning repository (this may take 1-2 minutes)..."
 cd /opt
-git clone https://github.com/heydividend/llm-server.git harvey-backend
+git clone https://github.com/heydividend/llm-server.git harvey-backend 2>&1 | grep -E "(Cloning|Receiving|Resolving)"
 
 cd /opt/harvey-backend
-
+echo "Current commit: $(git rev-parse --short HEAD)"
 echo "✅ Harvey repository cloned"
 
 # ============================================
@@ -121,11 +125,14 @@ echo "✅ Environment configured"
 # ============================================
 
 echo "🐍 Creating Python virtual environment..."
+echo "This may take 3-5 minutes to install all packages..."
 
 cd /opt/harvey-backend
 sudo -u azureuser python3.11 -m venv venv
-sudo -u azureuser /opt/harvey-backend/venv/bin/pip install --upgrade pip
-sudo -u azureuser /opt/harvey-backend/venv/bin/pip install -r requirements.txt
+echo "Installing pip..."
+sudo -u azureuser /opt/harvey-backend/venv/bin/pip install --upgrade pip -q
+echo "Installing Harvey dependencies (progress will show below)..."
+sudo -u azureuser /opt/harvey-backend/venv/bin/pip install -r requirements.txt 2>&1 | grep -E "(Successfully installed|Collecting)"
 
 echo "✅ Virtual environment created and dependencies installed"
 
@@ -256,8 +263,10 @@ echo "✅ Firewall configured"
 # ============================================
 
 echo "🚀 Starting services..."
+echo "Reloading systemd daemon..."
 
 systemctl daemon-reload
+echo "Enabling services..."
 systemctl enable harvey.service nginx
 
 if [ -f "/etc/systemd/system/ml-api.service" ]; then
@@ -311,4 +320,33 @@ echo "  Check status:         systemctl status harvey.service"
 echo "  Update from GitHub:   cd /opt/harvey-backend && git pull && systemctl restart harvey.service"
 echo ""
 echo "🔐 Environment file: /opt/harvey-backend/.env"
-echo ""
+echo ""total 16
+drwxr-xr-x 2 root root 4096 Oct 18 07:29 .
+drwxr-xr-x 8 root root 4096 Sep  2 07:16 ..
+-rw-r--r-- 1 root root 2412 May 30  2023 default
+-rw-r--r-- 1 root root  387 Oct 18 07:56 fastapi.conf
+total 8
+drwxr-xr-x 2 root root 4096 Oct 18 07:56 .
+drwxr-xr-x 8 root root 4096 Sep  2 07:16 ..
+lrwxrwxrwx 1 root root   39 Oct 18 07:56 fastapi.conf -> /etc/nginx/sites-available/fastapi.conf
+total 600
+drwxr-xr-x 10 azureuser azureuser   4096 Nov  1 20:11 .
+drwxr-xr-x  7 root      root        4096 Oct 31 05:46 ..
+-rw-------  1 azureuser azureuser    509 Nov  1 20:02 .env
+drwxrwxr-x  8 azureuser azureuser   4096 Oct 31 05:48 .git
+-rw-rw-r--  1 azureuser azureuser    224 Oct 31 05:48 .gitignore
+-rw-rw-r--  1 azureuser azureuser  29698 Oct 31 05:48 API_DOCUMENTATION.md
+-rw-rw-r--  1 azureuser azureuser   2426 Oct 31 05:48 AZURE_VM_QUICK_START.md
+-rw-rw-r--  1 azureuser azureuser   9551 Oct 31 05:48 AZURE_VM_SETUP.md
+-rw-rw-r--  1 azureuser azureuser  18309 Oct 31 05:48 DATABASE_SCHEMA.md
+-rw-rw-r--  1 azureuser azureuser   4808 Oct 31 05:48 DATA_QUALITY_FINDINGS.md
+-rw-rw-r--  1 azureuser azureuser   5655 Oct 31 05:48 IMPLEMENTATION_COMPLETE.md
+-rw-rw-r--  1 azureuser azureuser   8243 Oct 31 05:48 PERFORMANCE_IMPROVEMENTS_SUMMARY.md
+-rw-rw-r--  1 azureuser azureuser   4332 Oct 31 05:48 README.md
+-rw-rw-r--  1 azureuser azureuser   8977 Oct 31 05:48 SELF_HEALING.md
+-rw-rw-r--  1 azureuser azureuser   5817 Oct 31 05:48 US_MARKET_FILTERING_SUMMARY.md
+drwxrwxr-x  2 azureuser azureuser   4096 Nov  1 19:48 __pycache__
+drwxrwxr-x 13 azureuser azureuser   4096 Nov  1 20:18 app
+drwxrwxr-x  2 azureuser azureuser   4096 Oct 31 05:48 attached_assets
+-rw-rw-r--  1 azureuser azureuser   7911 Oct 31 05:48 data_quality_report_20251031.txt
+head: cannot open '/opt/harvey-backend/deploy/AZURE_RUN_COMMAND_DEPLOY.sh' for reading: No such file or directory
