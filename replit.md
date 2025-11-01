@@ -3,6 +3,23 @@
 ## Overview
 Harvey is a FastAPI-based intelligent financial assistant providing context-aware responses on dividends, stock prices, tickers, and company insights. It is an AI-powered tool for financial analysis and passive income planning, focusing on dividend investing and market data with an emphasis on real-time data, personalized recommendations, and a robust, self-healing architecture. The default market focus is US markets, with an option for users to request international data. Harvey aims to be a professional-grade solution for financial analysis.
 
+## Recent Changes
+**November 1, 2025 - Production Deployment & Training Automation Complete**
+- ✅ Harvey backend successfully deployed to Azure VM (20.81.210.213) on port 8000
+- ✅ **Harvey Intelligence Engine** deployed and running on port 9000 with 22+ ML endpoints (formerly "ML API")
+- ✅ Nginx reverse proxy configured and routing traffic on port 80
+- ✅ Systemd services configured for both Harvey and Intelligence Engine with auto-restart on failure
+- ✅ All dependencies installed in Python 3.11 venv at /opt/harvey-backend/venv
+- ✅ Self-healing architecture handling database connection issues gracefully
+- ✅ Proactive dividend alert suggestions with confidence filtering deployed
+- ✅ Comprehensive documentation created: `HARVEY_INTELLIGENCE_ENGINE.md` (API contract, authentication, monitoring)
+- ✅ **Nightly training automation PRODUCTION-READY**: `TRAINING_AUTOMATION.md` with VM-based systemd timer solution
+- ✅ Training automation includes: backup/validation/rollback, Slack alerts, 5-minute deployment (files in `deploy/training_automation/`)
+- ✅ Rename script ready: `RENAME_TO_INTELLIGENCE_ENGINE.sh` (for Azure VM service renaming)
+- 🔧 FreeTDS ODBC driver installation pending (non-blocking due to self-healing fallbacks)
+- 🔧 Intelligence Engine models loaded: 0 (ready to load from Azure Blob Storage)
+- 📋 Deploy training automation: Transfer `deploy/training_automation/` to VM and run `setup_training_automation.sh`
+
 ## User Preferences
 I prefer iterative development and want to be involved in key decision-making processes. Please ask before making major changes or architectural shifts. I appreciate clear, concise explanations and direct answers, but also value detailed documentation for complex features. Ensure the coding style is clean, maintainable, and follows best practices.
 
@@ -15,7 +32,7 @@ A separate Next.js frontend provides a professional, financial-grade chat interf
 **Technical Implementations & Feature Specifications:**
 - **Query Classification:** Routes queries to appropriate handlers (SQL, chat, web search, passive income planning, ML predictions, multipart).
 - **SQL Generation:** Generates and executes SQL queries against the financial database.
-- **Comprehensive ML API Integration:** Full integration with HeyDividend's Internal ML API offering 22+ endpoints for scoring, predictions, clustering, optimization, and advanced insights. ML intelligence is automatically added to dividend responses, and the system is designed for graceful degradation.
+- **Harvey Intelligence Engine Integration:** Full integration with Harvey's internal Intelligence Engine offering 22+ ML endpoints for scoring, predictions, clustering, optimization, and advanced insights. ML intelligence is automatically added to dividend responses, and the system is designed for graceful degradation with health monitoring.
 - **Conversational Memory:** Stores entire conversation history with automatic session and thread management, token-aware context loading, and integrates seamlessly with streaming chat responses.
 - **Income Ladder Builder:** AI-powered algorithm to select diversified monthly dividend payers, calculate capital needs, and manage risk-adjusted portfolios.
 - **Tax Optimization AI:** Provides intelligent tax strategies such as qualified vs. ordinary dividend analysis, tax-loss harvesting, and replacement ticker suggestions.
@@ -46,9 +63,9 @@ A separate Next.js frontend provides a professional, financial-grade chat interf
 
 **Deployment Model:**
 - **Development:** Replit environment for rapid iteration
-- **Production:** Azure VM running Harvey backend + ML API behind Nginx
+- **Production:** Azure VM running Harvey backend + Intelligence Engine behind Nginx
 - **Deployment Method:** Azure Run Command (no SSH required) via `deploy/AZURE_RUN_COMMAND_DEPLOY.sh`
-- **Infrastructure:** Single Azure VM hosts both Harvey backend (port 8000) and ML API (port 9000), fronted by Nginx on port 80/443
+- **Infrastructure:** Single Azure VM hosts both Harvey backend (port 8000) and Intelligence Engine (port 9000), fronted by Nginx on port 80/443
 
 ## External Dependencies
 - **Database:** Azure SQL Server (all schemas are SQL Server-specific using DATEADD, BIT, DATETIME, GO batches)

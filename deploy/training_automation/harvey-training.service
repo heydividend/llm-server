@@ -1,0 +1,23 @@
+[Unit]
+Description=Harvey Intelligence Engine - Daily Model Training
+After=network.target
+
+[Service]
+Type=oneshot
+User=azureuser
+WorkingDirectory=/home/azureuser/ml-prediction-api
+ExecStart=/opt/harvey-intelligence/train_daily.sh
+StandardOutput=journal
+StandardError=journal
+
+# Environment variables
+Environment="PATH=/home/azureuser/miniconda3/envs/llm/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# Timeout after 2 hours (training can take a while)
+TimeoutSec=7200
+
+# Restart policy (don't restart on failure for scheduled jobs)
+Restart=no
+
+[Install]
+WantedBy=multi-user.target
