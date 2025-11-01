@@ -12,13 +12,50 @@ import numpy as np
 import logging
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
+from sqlalchemy import create_engine
+from urllib.parse import quote_plus
+from dotenv import load_dotenv
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from app.core.database import engine
+# Load environment variables
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+
+def create_database_engine():
+    """Create database engine from environment variables."""
+    HOST = os.getenv("SQLSERVER_HOST", "")
+    PORT = os.getenv("SQLSERVER_PORT", "1433")
+    DB = os.getenv("SQLSERVER_DB", "")
+    USER = os.getenv("SQLSERVER_USER", "")
+    PWD = os.getenv("SQLSERVER_PASSWORD", "")
+    DRV = os.getenv("ODBC_DRIVER", "FreeTDS")
+    LOGIN_TIMEOUT = os.getenv("SQLSERVER_LOGIN_TIMEOUT", "10")
+    CONN_TIMEOUT = os.getenv("SQLSERVER_CONN_TIMEOUT", "20")
+    
+    params = {
+        "driver": DRV,
+        "TDS_Version": "7.3",
+        "Encrypt": "yes",
+        "TrustServerCertificate": "no",
+        "LoginTimeout": LOGIN_TIMEOUT,
+        "Connection Timeout": CONN_TIMEOUT,
+        "AUTOCOMMIT": "True",
+    }
+    param_str = "&".join([f"{k}={quote_plus(v)}" for k, v in params.items()])
+    ENGINE_URL = f"mssql+pyodbc://{quote_plus(USER)}:{quote_plus(PWD)}@{HOST}:{PORT}/{quote_plus(DB)}?{param_str}"
+    
+    return create_engine(
+        ENGINE_URL,
+        isolation_level="AUTOCOMMIT",
+        fast_executemany=True,
+        pool_pre_ping=True,
+        pool_size=5,
+        max_overflow=10,
+        pool_recycle=3600,
+        pool_timeout=30,
+    )
 
 
 class DataExtractor:
@@ -26,8 +63,8 @@ class DataExtractor:
     
     def __init__(self):
         """Initialize data extractor with database engine."""
-        self.engine = engine
-        logger.info("DataExtractor initialized with existing database connection")
+        self.engine = create_database_engine()
+        logger.info("DataExtractor initialized with standalone database connection")
     
     def load_dividend_history(self, limit: Optional[int] = None) -> pd.DataFrame:
         """
