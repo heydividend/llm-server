@@ -17,6 +17,7 @@ from app.routes import tax_optimization
 from app.routes import alerts
 from app.routes import insights
 from app.routes import azure_vm
+from app.routes import feedback
 from app.routers import data_quality
 from app.core.database import engine
 from app.core.auth import verify_api_key
@@ -62,6 +63,7 @@ app.include_router(tax_optimization.router, prefix="/v1", tags=["Tax Optimizatio
 app.include_router(alerts.router, prefix="/v1", tags=["Alerts"])
 app.include_router(insights.router, prefix="/v1", tags=["Insights"])
 app.include_router(azure_vm.router, prefix="/v1", tags=["Azure VM"])
+app.include_router(feedback.router, prefix="/v1", tags=["Feedback & Learning"])
 app.include_router(data_quality.router, prefix="/v1", tags=["Data Quality"])
 
 # Mount static files
@@ -70,6 +72,40 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 @app.get("/healthz")
 def healthz():
     return {"ok": True}
+
+
+@app.get("/v1/pdfco/health")
+def pdfco_health_status():
+    """
+    Get PDF.co service health status and capabilities.
+    
+    Returns:
+        Health status including API availability and credits
+    """
+    try:
+        from app.services.pdfco_service import pdfco_service
+        
+        health_status = pdfco_service.health_check()
+        
+        return JSONResponse({
+            "success": True,
+            "pdfco_status": health_status,
+            "capabilities": {
+                "pdf_to_text": health_status.get("enabled", False),
+                "pdf_to_excel": health_status.get("enabled", False),
+                "pdf_to_csv": health_status.get("enabled", False),
+                "table_extraction": health_status.get("enabled", False),
+                "financial_document_parsing": health_status.get("enabled", False),
+                "ocr": health_status.get("enabled", False)
+            }
+        })
+    except Exception as e:
+        logger.error(f"Failed to get PDF.co health status: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": str(e),
+            "pdfco_status": {"status": "error", "enabled": False}
+        })
 
 
 @app.get("/v1/ml/health")

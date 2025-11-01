@@ -32,13 +32,15 @@ class QueryResponseLogger:
     def _get_daily_conversation_file(self) -> Path:
         return self.conversations_dir / f"conversations_{self._get_date_str()}.txt"
 
-    def log_query(self, rid: str, query: str, metadata: dict = None) -> str:
+    def log_query(self, rid: str, query: str, metadata: dict = None, response_id: str = None) -> str:
         filepath = self._get_daily_query_file()
         timestamp = self._get_timestamp()
 
         separator = "=" * 80
         entry = f"\n{separator}\n"
         entry += f"[{timestamp}] Request ID: {rid}\n"
+        if response_id:
+            entry += f"Response ID: {response_id}\n"
         entry += f"{separator}\nQUERY:\n{query}\n"
 
         if metadata:
@@ -74,7 +76,7 @@ class QueryResponseLogger:
             return ''.join(clean_text)
         return response
 
-    def log_full_conversation(self, rid: str, query: str, response: str, metadata: dict = None, error: str = None) -> str:
+    def log_full_conversation(self, rid: str, query: str, response: str, metadata: dict = None, error: str = None, response_id: str = None) -> str:
         filepath = self._get_daily_conversation_file()
         timestamp = self._get_timestamp()
         clean_response = self._clean_response(response)
@@ -82,9 +84,13 @@ class QueryResponseLogger:
         separator = "=" * 80
         sub_separator = "-" * 80
         entry = (
-            f"\n{separator}\n[{timestamp}] Request ID: {rid}\n{separator}\n\n"
-            f"QUERY:\n{sub_separator}\n{query}\n{sub_separator}\n\n"
+            f"\n{separator}\n[{timestamp}] Request ID: {rid}\n"
         )
+        
+        if response_id:
+            entry += f"Response ID: {response_id}\n"
+        
+        entry += f"{separator}\n\nQUERY:\n{sub_separator}\n{query}\n{sub_separator}\n\n"
 
         if metadata:
             entry += "METADATA:\n" + sub_separator + "\n"

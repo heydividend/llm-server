@@ -32,8 +32,8 @@ class MLAPIClient:
         self,
         api_key: Optional[str] = None,
         base_url: Optional[str] = None,
-        timeout: int = 30,
-        max_retries: int = 3,
+        timeout: int = 5,
+        max_retries: int = 1,
         enable_cache: bool = True,
         enable_circuit_breaker: bool = True
     ):
@@ -43,8 +43,8 @@ class MLAPIClient:
         Args:
             api_key: API key for authentication (defaults to INTERNAL_ML_API_KEY env var)
             base_url: Base URL for API (defaults to ML_API_BASE_URL env var or DEV URL)
-            timeout: Request timeout in seconds (default: 30)
-            max_retries: Maximum number of retries for failed requests (default: 3)
+            timeout: Request timeout in seconds (default: 5 for dev, prevents hanging)
+            max_retries: Maximum number of retries for failed requests (default: 1 for dev)
             enable_cache: Enable response caching (default: True)
             enable_circuit_breaker: Enable circuit breaker protection (default: True)
         """

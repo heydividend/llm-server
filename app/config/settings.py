@@ -10,6 +10,10 @@ TODAY_ISO    = TODAY.isoformat()  # e.g., '2025-10-08'
 AUTO_WEB_FALLBACK = os.getenv("AUTO_WEB_FALLBACK", "true").lower() in ("1", "true", "yes")
 FAST_WEB_MAX_PAGES = int(os.getenv("FAST_WEB_MAX_PAGES", "5"))
 
+# PDF.co API configuration for advanced PDF processing
+PDFCO_API_KEY = os.getenv("PDFCO_API_KEY")
+PDFCO_API_ENABLED = bool(PDFCO_API_KEY)
+
 
 OFFICIAL_DOMAINS = {
   

@@ -20,6 +20,8 @@ from app.utils.extract_tickers import extract_tickers_function
 
 from app.logger_module import QueryResponseLogger
 from app.services import conversation_service
+from app.services.pdfco_service import pdfco_service
+from app.services.portfolio_parser import portfolio_parser
 
 logging.basicConfig(
     level=logging.INFO,
@@ -287,14 +289,103 @@ async def chat_completions(request: Request):
                 logger.exception(f"[{rid}] reading upload failed: {e}")
                 return JSONResponse({"error": "failed to read uploaded file"}, status_code=400)
 
-            extracted_text = extract_text_via_node(up_name, up_bytes, up_ct, rid=rid)
+            extracted_text = ""
+            extraction_method = "none"
+            
+            is_pdf = up_name.lower().endswith('.pdf') or 'pdf' in up_ct.lower()
+            is_csv = up_name.lower().endswith('.csv') or 'csv' in up_ct.lower()
+            is_excel = up_name.lower().endswith(('.xlsx', '.xls')) or 'spreadsheet' in up_ct.lower() or 'excel' in up_ct.lower()
+            
+            # Handle CSV files directly
+            if is_csv:
+                try:
+                    csv_text = up_bytes.decode('utf-8', errors='ignore')
+                    logger.info(f"[{rid}] Processing CSV file directly")
+                    extracted_text = csv_text
+                    extraction_method = "csv_direct"
+                except Exception as e:
+                    logger.warning(f"[{rid}] Failed to decode CSV as UTF-8: {e}")
+                    is_csv = False
+            
+            if is_pdf and pdfco_service.enabled and not is_csv:
+                logger.info(f"[{rid}] Attempting PDF.co advanced extraction for PDF file")
+                financial_data = pdfco_service.extract_financial_data(
+                    file_bytes=up_bytes,
+                    file_name=up_name,
+                    rid=rid
+                )
+                
+                if financial_data.get("success"):
+                    extracted_text = financial_data.get("extracted_text", "")
+                    tables = financial_data.get("tables", [])
+                    portfolio = financial_data.get("portfolio", [])
+                    dividends = financial_data.get("dividends", [])
+                    
+                    if tables:
+                        table_summary = f"\n\n**EXTRACTED TABLES ({len(tables)} found):**\n"
+                        for i, table in enumerate(tables[:3], 1):
+                            table_summary += f"\nTable {i}:\n"
+                            rows = table.get("rows", [])[:5]
+                            for row in rows:
+                                cells = row.get("cells", [])
+                                row_text = " | ".join([cell.get("text", "") for cell in cells])
+                                table_summary += f"  {row_text}\n"
+                        extracted_text += table_summary
+                    
+                    if portfolio:
+                        portfolio_summary = f"\n\n**PORTFOLIO HOLDINGS ({len(portfolio)} detected):**\n"
+                        for holding in portfolio:
+                            portfolio_summary += f"- {holding['ticker']}: {holding['shares']} shares\n"
+                        extracted_text += portfolio_summary
+                    
+                    if dividends:
+                        dividend_summary = f"\n\n**DIVIDEND DATA ({len(dividends)} detected):**\n"
+                        for div in dividends:
+                            dividend_summary += f"- {div['ticker']}: ${div['amount']}\n"
+                        extracted_text += dividend_summary
+                    
+                    extraction_method = "pdfco_advanced"
+                    logger.info(f"[{rid}] PDF.co extraction successful: {len(extracted_text)} chars, {len(tables)} tables, {len(portfolio)} holdings")
+                else:
+                    logger.warning(f"[{rid}] PDF.co extraction failed: {financial_data.get('error')}, falling back to Node service")
+                    extraction_method = "pdfco_failed"
+            
+            if not extracted_text:
+                logger.info(f"[{rid}] Using Node service for text extraction")
+                extracted_text = extract_text_via_node(up_name, up_bytes, up_ct, rid=rid)
+                extraction_method = "node_service"
 
             if extracted_text:
                 extracted_text = _maybe_flatten_vision_json(extracted_text)
-                MAX_PREPEND = 4000
-                if len(extracted_text) > MAX_PREPEND:
-                    extracted_text = extracted_text[:MAX_PREPEND] + f"\n\n...[truncated] (orig={len(extracted_text)} chars)..."
-                overrides["prepend_user"] = (f"FILE_TEXT (OCR/DI extract):\n{extracted_text}\n\n" + overrides["prepend_user"]).strip()
+                
+                # Attempt to parse portfolio data from extracted text
+                portfolio_holdings = portfolio_parser.parse_extracted_text(extracted_text, rid=rid)
+                
+                if portfolio_holdings:
+                    logger.info(f"[{rid}] Detected {len(portfolio_holdings)} portfolio holdings")
+                    portfolio_summary = portfolio_parser.format_holdings_summary(portfolio_holdings)
+                    ticker_list = portfolio_parser.extract_tickers_list(portfolio_holdings)
+                    
+                    # Prepend structured portfolio data
+                    portfolio_context = f"PORTFOLIO DATA EXTRACTED ({len(portfolio_holdings)} holdings):\n\n"
+                    portfolio_context += portfolio_summary + "\n\n"
+                    portfolio_context += f"TICKERS DETECTED: {', '.join(ticker_list)}\n\n"
+                    
+                    # Add original text as backup
+                    MAX_PREPEND = 2000
+                    if len(extracted_text) > MAX_PREPEND:
+                        extracted_text = extracted_text[:MAX_PREPEND] + f"\n...[truncated]..."
+                    
+                    extraction_prefix = f"{portfolio_context}ORIGINAL EXTRACTED TEXT ({extraction_method}):\n{extracted_text}\n\n"
+                else:
+                    # No portfolio structure detected, use raw text
+                    MAX_PREPEND = 4000
+                    if len(extracted_text) > MAX_PREPEND:
+                        extracted_text = extracted_text[:MAX_PREPEND] + f"\n\n...[truncated] (orig={len(extracted_text)} chars)..."
+                    extraction_prefix = f"FILE_TEXT ({extraction_method}):\n{extracted_text}\n\n"
+                
+                overrides["prepend_user"] = (extraction_prefix + overrides["prepend_user"]).strip()
+                logger.info(f"[{rid}] Text extraction successful via {extraction_method}: {len(extracted_text)} chars")
 
         # === CONVERSATION MEMORY ===
         session_id_raw = (form.get("session_id") or "").strip()

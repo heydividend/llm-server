@@ -4,6 +4,7 @@ __pycache__/
 *.pyo
 *.pyd
 *.sqlite3
+.pythonlibs/
 
 # Virtual envs
 .venv/
@@ -21,3 +22,31 @@ env/
 .env
 .env.*
 !.env.example  # allow an example file
+
+# Logs
+logs/
+*.log
+runlog.jsonl
+runlogger.jsonl
+/tmp/
+
+# Replit specific
+.replit
+.config/
+.cache/
+.upm/
+.breakpoints
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+*~
+.nix
+
+# Data files (large/generated)
+data_quality_report_*.txt
+tickers.csv
+
+# Attached assets (if large)
+attached_assets/
