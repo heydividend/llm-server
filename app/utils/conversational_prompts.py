@@ -4,6 +4,7 @@ Conversational AI prompts and utilities to make Harvey proactive and advisor-lik
 
 import re
 from typing import Optional, Dict, List, Tuple, Any
+from app.utils.dividend_analytics import calculate_next_declaration_date
 
 FOLLOW_UP_PROMPTS = {
     "ml_analysis": "Would you like to see ML-powered quality scores and sustainability ratings for {tickers}?",
@@ -141,6 +142,69 @@ def is_dividend_query(text: str) -> bool:
     
     text_lower = text.lower()
     return any(keyword in text_lower for keyword in dividend_keywords)
+
+
+def is_dividend_distribution_query(text: str) -> bool:
+    """
+    Detect if the query is specifically about dividend distribution/declaration dates.
+    
+    Args:
+        text: User query text
+    
+    Returns:
+        True if asking about dividend distribution/declaration, False otherwise
+    """
+    distribution_patterns = [
+        r"what.*is.*(?:the\s+)?dividend(?:\s+distribution)?",
+        r"when.*(?:is|does|will).*(?:dividend|distribution|payout)",
+        r"(?:dividend|distribution).*(?:schedule|date|timing)",
+        r"(?:next|upcoming).*(?:dividend|distribution|ex-div|ex date)",
+        r"declaration.*date",
+        r"when.*(?:declare|announcing|announce).*dividend"
+    ]
+    
+    text_lower = text.lower()
+    return any(re.search(pattern, text_lower) for pattern in distribution_patterns)
+
+
+def format_next_dividend_alert_suggestion(
+    ticker: str,
+    distributions: List[Dict],
+    include_declaration_info: bool = True
+) -> Optional[str]:
+    """
+    Generate proactive alert suggestion for next dividend declaration.
+    
+    Args:
+        ticker: Ticker symbol
+        distributions: List of distribution records
+        include_declaration_info: Whether to include declaration date info
+    
+    Returns:
+        Formatted alert suggestion string, or None if unable to predict
+    """
+    if not distributions:
+        return None
+    
+    next_div_info = calculate_next_declaration_date(distributions, ticker)
+    
+    if not next_div_info or not next_div_info.get("has_prediction"):
+        return None
+    
+    if not include_declaration_info:
+        return f"💡 **Tip:** Would you like to set up an alert for {ticker}'s next dividend announcement?"
+    
+    alert_text = next_div_info.get("alert_suggestion", "")
+    
+    days_until = next_div_info.get("days_until", 0)
+    if days_until <= 7:
+        urgency = "🔔 **Coming Soon!** "
+    elif days_until <= 30:
+        urgency = "📅 "
+    else:
+        urgency = ""
+    
+    return f"\n\n---\n\n{urgency}{alert_text}"
 
 
 def should_show_conversational_prompts(text: str, has_dividend_data: bool) -> bool:
