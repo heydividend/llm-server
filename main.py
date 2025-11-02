@@ -11,6 +11,10 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
 from sqlalchemy import text
+
+# Import centralized logging configuration FIRST
+from app.core.logging_config import get_logger, setup_all_loggers
+
 from app.routes import chat as ai_routes
 from app.routes import income_ladder
 from app.routes import tax_optimization
@@ -18,6 +22,8 @@ from app.routes import alerts
 from app.routes import insights
 from app.routes import azure_vm
 from app.routes import feedback
+from app.routes import harvey_status
+from app.routes import dividend_strategies
 from app.routers import data_quality
 from app.core.database import engine
 from app.core.auth import verify_api_key
@@ -25,9 +31,9 @@ from app.services.scheduler_service import scheduler
 from financial_models.api.endpoints import router as financial_router
 
 
-# Setup logging before anything else
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger("app")
+# Setup logging using centralized configuration
+setup_all_loggers()
+logger = get_logger("harvey")
 
 # Initialize FastAPI
 app = FastAPI(title="Chat + SQL Server (Streaming) + Enhanced Web Search")
@@ -65,6 +71,8 @@ app.include_router(alerts.router, prefix="/v1", tags=["Alerts"])
 app.include_router(insights.router, prefix="/v1", tags=["Insights"])
 app.include_router(azure_vm.router, prefix="/v1", tags=["Azure VM"])
 app.include_router(feedback.router, prefix="/v1", tags=["Feedback & Learning"])
+app.include_router(harvey_status.router, prefix="/v1", tags=["Harvey Intelligence"])
+app.include_router(dividend_strategies.router, prefix="/v1", tags=["Dividend Strategies"])
 app.include_router(data_quality.router, prefix="/v1", tags=["Data Quality"])
 app.include_router(financial_router, tags=["Financial Models"])
 

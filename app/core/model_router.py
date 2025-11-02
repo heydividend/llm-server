@@ -42,6 +42,7 @@ class QueryType(Enum):
     CHART_ANALYSIS = "chart_analysis"
     FX_TRADING = "fx_trading"
     DIVIDEND_SCORING = "dividend_scoring"
+    DIVIDEND_STRATEGY = "dividend_strategy"  # New: Advanced dividend strategies
     QUANTITATIVE_ANALYSIS = "quantitative_analysis"
     FAST_QUERY = "fast_query"
     COMPLEX_ANALYSIS = "complex_analysis"
@@ -121,6 +122,17 @@ class QueryRouter:
                 r'\b(payout\s+ratio|dividend\s+growth|yield\s+prediction)\b',
                 r'\b(cut\s+risk|dividend\s+safety|income\s+reliability)\b',
                 r'\b(rate\s+this\s+dividend|score\s+[A-Z]{1,5}\s+dividend)\b'
+            ],
+            QueryType.DIVIDEND_STRATEGY: [
+                r'\b(margin\s+(buying|trading|leverage)|leverag(e|ing)\s+dividend)\b',
+                r'\b(drip|dividend\s+reinvest|reinvestment\s+plan)\b',
+                r'\b(dividend\s+capture|capture\s+strateg|ex(-|\s)date\s+play)\b',
+                r'\b(ex(-|\s)dividend\s+(dip|drop|buying|strategy))\b',
+                r'\b(declaration\s+(play|strateg|buying))\b',
+                r'\b(covered\s+call|sell\s+call|option\s+income)\b',
+                r'\b(cash(-|\s)secured\s+put|put\s+writing|sell\s+put)\b',
+                r'\b(when\s+(to|should)\s+(buy|sell).*(dividend|ex(-|\s)date))\b',
+                r'\b(buy\s+before\s+ex|sell\s+after\s+(ex|record))\b'
             ],
             QueryType.QUANTITATIVE_ANALYSIS: [
                 r'\b(portfolio\s+optimization|optimize\s+my\s+portfolio)\b',

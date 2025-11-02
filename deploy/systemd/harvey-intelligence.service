@@ -1,0 +1,44 @@
+[Unit]
+Description=Harvey Intelligence Engine (ML Service)
+Documentation=https://github.com/yourusername/harvey
+After=network.target harvey-backend.service
+
+[Service]
+Type=exec
+User=azureuser
+Group=azureuser
+WorkingDirectory=/opt/harvey-intelligence
+
+# Environment variables
+EnvironmentFile=/etc/harvey/harvey.env
+Environment="PYTHONUNBUFFERED=1"
+Environment="ENVIRONMENT=production"
+
+# Start command
+ExecStart=/usr/bin/python3 -u ml_engine.py
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=600
+StartLimitBurst=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=harvey-intelligence
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=4G
+CPUQuota=400%
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/harvey-intelligence/logs /var/log/harvey
+
+[Install]
+WantedBy=multi-user.target
