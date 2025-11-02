@@ -13,7 +13,7 @@ class ProfessionalMarkdownFormatter:
     """Formats financial data into clean, professional markdown tables."""
     
     @staticmethod
-    def format_dividend_table(data: List[Dict[str, Any]]) -> str:
+    def format_dividend_table(data: List[Dict[str, Any]], use_context: bool = False) -> str:
         """
         Format dividend data into a professional table with standardized columns.
         
@@ -29,6 +29,7 @@ class ProfessionalMarkdownFormatter:
         
         Args:
             data: List of dividend data dictionaries
+            use_context: If True and data contains 'context' metadata, use context-aware rendering
             
         Returns:
             Formatted markdown table string with proper header separators
@@ -36,7 +37,29 @@ class ProfessionalMarkdownFormatter:
         if not data:
             return "No dividend data available."
         
+        has_context = use_context and any(item.get('context') for item in data)
+        
+        show_declaration = True
+        show_ex_date = True
+        show_pay_date = True
+        
+        if has_context:
+            has_declared_today = any(
+                item.get('context', {}).get('declared_today', False) 
+                for item in data
+            )
+            
+            if not has_declared_today:
+                all_standard = all(
+                    item.get('context', {}).get('state') == 'standard' 
+                    for item in data if item.get('context')
+                )
+                if all_standard:
+                    show_declaration = False
+        
         formatted_data = []
+        next_prediction_info = None
+        
         for item in data:
             # Handle various column name variations (case-insensitive matching)
             item_lower = {k.lower(): v for k, v in item.items()}
@@ -104,17 +127,37 @@ class ProfessionalMarkdownFormatter:
                        item_lower.get("pay_date") or item_lower.get("paydate") or
                        item_lower.get("payment_date"))
             
-            # Create formatted row with standardized 8-column schema
+            context = item.get('context', {}) if has_context else {}
+            declared_today = context.get('declared_today', False)
+            
+            formatted_decl_date = ProfessionalMarkdownFormatter._format_date(decl_date)
+            if declared_today and formatted_decl_date != "N/A":
+                formatted_decl_date = f"{formatted_decl_date} ✓"
+            
+            if context.get('next_decl_date_str') and not next_prediction_info:
+                next_prediction_info = {
+                    'ticker': ticker,
+                    'next_date': context.get('next_decl_date_str'),
+                    'confidence': context.get('prediction_confidence', 'medium')
+                }
+            
             formatted_row = {
                 "Ticker": str(ticker) if ticker and ticker != "N/A" else "N/A",
                 "Price": ProfessionalMarkdownFormatter._format_price(price),
                 "Distribution": ProfessionalMarkdownFormatter._format_currency(distribution),
                 "Yield": ProfessionalMarkdownFormatter._format_percentage(yield_val),
                 "Payout Ratio": ProfessionalMarkdownFormatter._format_percentage(payout),
-                "Declaration": ProfessionalMarkdownFormatter._format_date(decl_date),
-                "Ex-Date": ProfessionalMarkdownFormatter._format_date(ex_date),
-                "Pay Date": ProfessionalMarkdownFormatter._format_date(pay_date)
             }
+            
+            if show_declaration:
+                formatted_row["Declaration"] = formatted_decl_date
+            
+            if show_ex_date:
+                formatted_row["Ex-Date"] = ProfessionalMarkdownFormatter._format_date(ex_date)
+            
+            if show_pay_date:
+                formatted_row["Pay Date"] = ProfessionalMarkdownFormatter._format_date(pay_date)
+            
             formatted_data.append(formatted_row)
         
         # Generate markdown table (py-markdown-table automatically adds header separators)
@@ -124,8 +167,18 @@ class ProfessionalMarkdownFormatter:
         ).get_markdown()
         
         # Don't use clean_markdown here as mdformat can sometimes break table formatting
-        # Just remove emojis if present
-        table = ProfessionalMarkdownFormatter._remove_emojis(table)
+        # Remove emojis only if not using context (to preserve checkmarks and other intentional symbols)
+        if not has_context:
+            table = ProfessionalMarkdownFormatter._remove_emojis(table)
+        
+        if next_prediction_info:
+            confidence_label = {
+                'high': 'High confidence',
+                'medium': 'Medium confidence',
+                'low': 'Low confidence'
+            }.get(next_prediction_info['confidence'], 'Medium confidence')
+            
+            table += f"\n\n**Next Expected Declaration:** {next_prediction_info['next_date']} ({confidence_label})"
         
         return table
     

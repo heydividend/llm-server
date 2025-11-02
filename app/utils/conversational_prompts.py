@@ -22,6 +22,34 @@ FOLLOW_UP_PROMPTS = {
     "tax_optimization": "Would you like me to analyze tax implications and optimization strategies for your dividend income?"
 }
 
+DIVIDEND_DATE_CONTEXT_TEMPLATES = {
+    "declared_today": {
+        "emphasis": "The dividend was just declared today!",
+        "focus_dates": ["Ex-Dividend Date", "Payment Date"],
+        "prompt": "This dividend was announced today. The ex-dividend date is {ex_date} and payment date is {pay_date}."
+    },
+    "upcoming_ex_date": {
+        "emphasis": "The ex-dividend date is coming soon.",
+        "focus_dates": ["Ex-Dividend Date"],
+        "prompt": "To receive this dividend, you need to own the stock before the ex-dividend date of {ex_date}."
+    },
+    "upcoming_payment": {
+        "emphasis": "Payment date is approaching.",
+        "focus_dates": ["Payment Date"],
+        "prompt": "If you already own shares, you'll receive payment on {pay_date}."
+    },
+    "next_expected_declaration": {
+        "emphasis": "Based on the historical pattern, the next declaration is expected soon.",
+        "focus_dates": ["Estimated Next Declaration"],
+        "prompt": "Based on {frequency} payment history, the next dividend is expected to be declared around {next_date} ({confidence} confidence)."
+    },
+    "standard": {
+        "emphasis": "Standard dividend information.",
+        "focus_dates": ["Ex-Dividend Date", "Payment Date"],
+        "prompt": "Ex-dividend date: {ex_date}. Payment date: {pay_date}."
+    }
+}
+
 SHARE_OWNERSHIP_PATTERNS = [
     r"(?:I\s+)?(?:own|have|hold|holding)\s+(\d+)\s+(?:shares?\s+(?:of\s+)?)?([A-Z]{1,5})",
     r"(\d+)\s+shares?\s+(?:of\s+)?([A-Z]{1,5})",
@@ -225,3 +253,69 @@ def should_show_conversational_prompts(text: str, has_dividend_data: bool) -> bo
         return True
     
     return False
+
+
+def get_date_context_prompt(context_state: str, **kwargs) -> Optional[str]:
+    """
+    Get a context-aware date prompt based on dividend state.
+    
+    Args:
+        context_state: State of the dividend ("declared_today", "upcoming_ex_date", etc.)
+        **kwargs: Additional data to format the prompt (ex_date, pay_date, next_date, etc.)
+    
+    Returns:
+        Formatted prompt string or None if context_state not recognized
+    """
+    template = DIVIDEND_DATE_CONTEXT_TEMPLATES.get(context_state)
+    if not template:
+        return None
+    
+    try:
+        prompt_template = template.get("prompt", "")
+        return prompt_template.format(**kwargs)
+    except KeyError as e:
+        return None
+
+
+def format_dividend_date_context(dividend_context: Dict[str, Any]) -> str:
+    """
+    Format dividend date context into a human-readable message.
+    
+    Args:
+        dividend_context: Context dict from DividendContextService with state, dates, etc.
+    
+    Returns:
+        Formatted context message
+    """
+    state = dividend_context.get('state', 'standard')
+    
+    if state == 'declared_today':
+        ex_date = dividend_context.get('ex_date')
+        pay_date = dividend_context.get('pay_date')
+        ex_date_str = ex_date.strftime('%B %d, %Y') if ex_date else 'TBD'
+        pay_date_str = pay_date.strftime('%B %d, %Y') if pay_date else 'TBD'
+        
+        return get_date_context_prompt('declared_today', ex_date=ex_date_str, pay_date=pay_date_str) or ""
+    
+    elif state == 'upcoming_announcement':
+        next_date = dividend_context.get('next_decl_date_str', 'unknown')
+        confidence = dividend_context.get('prediction_confidence', 'medium')
+        frequency = dividend_context.get('frequency', 'quarterly')
+        
+        return get_date_context_prompt('next_expected_declaration', 
+                                      next_date=next_date, 
+                                      confidence=confidence,
+                                      frequency=frequency) or ""
+    
+    elif state == 'standard':
+        ex_date = dividend_context.get('ex_date')
+        pay_date = dividend_context.get('pay_date')
+        
+        if ex_date:
+            ex_date_str = ex_date.strftime('%B %d, %Y')
+            return get_date_context_prompt('upcoming_ex_date', ex_date=ex_date_str) or ""
+        elif pay_date:
+            pay_date_str = pay_date.strftime('%B %d, %Y')
+            return get_date_context_prompt('upcoming_payment', pay_date=pay_date_str) or ""
+    
+    return ""
