@@ -30,21 +30,28 @@ def create_database_engine():
     DB = os.getenv("SQLSERVER_DB", "")
     USER = os.getenv("SQLSERVER_USER", "")
     PWD = os.getenv("SQLSERVER_PASSWORD", "")
-    DRV = os.getenv("ODBC_DRIVER", "FreeTDS")
-    LOGIN_TIMEOUT = os.getenv("SQLSERVER_LOGIN_TIMEOUT", "10")
-    CONN_TIMEOUT = os.getenv("SQLSERVER_CONN_TIMEOUT", "20")
+    USE_PYMSSQL = os.getenv("USE_PYMSSQL", "false").lower() == "true"
     
-    params = {
-        "driver": DRV,
-        "TDS_Version": "7.3",
-        "Encrypt": "yes",
-        "TrustServerCertificate": "no",
-        "LoginTimeout": LOGIN_TIMEOUT,
-        "Connection Timeout": CONN_TIMEOUT,
-        "AUTOCOMMIT": "True",
-    }
-    param_str = "&".join([f"{k}={quote_plus(v)}" for k, v in params.items()])
-    ENGINE_URL = f"mssql+pyodbc://{quote_plus(USER)}:{quote_plus(PWD)}@{HOST}:{PORT}/{quote_plus(DB)}?{param_str}"
+    if USE_PYMSSQL:
+        ENGINE_URL = f"mssql+pymssql://{quote_plus(USER)}:{quote_plus(PWD)}@{HOST}:{PORT}/{quote_plus(DB)}"
+        logger.info("Using pymssql driver (no ODBC required)")
+    else:
+        DRV = os.getenv("ODBC_DRIVER", "FreeTDS")
+        LOGIN_TIMEOUT = os.getenv("SQLSERVER_LOGIN_TIMEOUT", "10")
+        CONN_TIMEOUT = os.getenv("SQLSERVER_CONN_TIMEOUT", "20")
+        
+        params = {
+            "driver": DRV,
+            "TDS_Version": "7.3",
+            "Encrypt": "yes",
+            "TrustServerCertificate": "no",
+            "LoginTimeout": LOGIN_TIMEOUT,
+            "Connection Timeout": CONN_TIMEOUT,
+            "AUTOCOMMIT": "True",
+        }
+        param_str = "&".join([f"{k}={quote_plus(v)}" for k, v in params.items()])
+        ENGINE_URL = f"mssql+pyodbc://{quote_plus(USER)}:{quote_plus(PWD)}@{HOST}:{PORT}/{quote_plus(DB)}?{param_str}"
+        logger.info(f"Using pyodbc driver: {DRV}")
     
     return create_engine(
         ENGINE_URL,
