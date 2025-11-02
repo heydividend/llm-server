@@ -2,8 +2,16 @@ import os, json, time
 import contextvars
 import requests as _req
 import httpx
-from typing import Dict, List, Iterable
+from typing import Dict, List, Iterable, Optional
 from openai import OpenAI, AzureOpenAI
+
+# Gemini import (optional, for Azure VM deployment)
+try:
+    import google.generativeai as genai
+    GEMINI_AVAILABLE = True
+except ImportError:
+    genai = None
+    GEMINI_AVAILABLE = False
 
 # LLM Context Management
 ACTIVE_LLM = contextvars.ContextVar("ACTIVE_LLM", default="chatgpt")
@@ -26,10 +34,14 @@ http_client = httpx.Client(
 
 USE_AZURE = os.getenv("AZURE_OPENAI", "false").lower() in ("1","true","yes")
 if USE_AZURE:
-    OAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")
+    OAI_DEPLOYMENT = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME") or os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")
     OAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
     OAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
     OAI_API_VER = os.getenv("AZURE_OPENAI_API_VERSION", "2024-08-01-preview")
+    
+    if not OAI_ENDPOINT or not OAI_API_KEY:
+        raise ValueError("Azure OpenAI enabled but AZURE_OPENAI_ENDPOINT or AZURE_OPENAI_API_KEY not set")
+    
     oai_client = AzureOpenAI(
         api_key=OAI_API_KEY,
         azure_endpoint=OAI_ENDPOINT,
@@ -38,6 +50,7 @@ if USE_AZURE:
         max_retries=OAI_MAX_RETRIES
     )
     CHAT_MODEL = OAI_DEPLOYMENT
+    print(f"[INFO] 🔵 Azure OpenAI initialized: endpoint={OAI_ENDPOINT}, deployment={OAI_DEPLOYMENT}, api_version={OAI_API_VER}")
 else:
     OAI_API_KEY = os.getenv("OPENAI_API_KEY")
     oai_client = OpenAI(
@@ -46,6 +59,21 @@ else:
         max_retries=OAI_MAX_RETRIES
     )
     CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o")
+
+# Gemini Configuration
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+gemini_client = None
+if GEMINI_AVAILABLE and GEMINI_API_KEY:
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        gemini_client = genai.GenerativeModel('gemini-2.5-pro')
+        print(f"[INFO] 🟢 Gemini 2.5 Pro initialized for chart/FX analysis")
+    except Exception as e:
+        print(f"[WARN] ⚠️  Gemini initialization failed: {e}")
+elif not GEMINI_AVAILABLE:
+    print("[WARN] ⚠️  google-generativeai package not installed - install for production deployment")
+else:
+    print("[WARN] ⚠️  GEMINI_API_KEY not set - Gemini features disabled")
 
 def set_active_llm(provider: str, model: str | None = None):
     prov = (provider or "").strip().lower()
@@ -194,3 +222,79 @@ def oai_plan(question: str, planner_system: str) -> Dict:
         if any(w in question.lower() for w in ["hi","hello","salam","hey"]):
             return {"action":"chat", "final_answer":"Hi! How can I help you today?"}
         return {"action":"chat", "final_answer":"I'm here. Ask about tickers or dividends and I'll pull the data."}
+
+
+def oai_stream_with_model(
+    messages: list[dict],
+    model_deployment: str,
+    temperature=0.2,
+    max_tokens=2000
+) -> Iterable[str]:
+    """
+    Streams from a specific Azure OpenAI deployment (GPT-5, Grok-4, etc).
+    Used by multi-model routing system.
+    """
+    if not USE_AZURE:
+        raise ValueError("oai_stream_with_model requires Azure OpenAI to be enabled")
+    
+    stream = oai_client.chat.completions.create(
+        model=model_deployment,
+        messages=messages,
+        temperature=temperature,
+        stream=True,
+        max_tokens=max_tokens
+    )
+    for chunk in stream:
+        delta = chunk.choices[0].delta
+        if delta and delta.content is not None:
+            yield delta.content
+
+
+def gemini_stream(messages: list[dict], temperature=0.2, max_tokens=2000) -> Iterable[str]:
+    """
+    Streams from Gemini 2.5 Pro.
+    Used for chart analysis, FX trading, and multimodal queries.
+    """
+    if not gemini_client:
+        raise ValueError("Gemini client not initialized - check GEMINI_API_KEY")
+    
+    # Convert OpenAI-style messages to Gemini format
+    gemini_history = []
+    system_instruction = None
+    
+    for msg in messages:
+        role = msg.get("role", "")
+        content = msg.get("content", "")
+        
+        if role == "system":
+            system_instruction = content
+        elif role == "user":
+            gemini_history.append({"role": "user", "parts": [content]})
+        elif role == "assistant":
+            gemini_history.append({"role": "model", "parts": [content]})
+    
+    # Create chat session
+    chat = gemini_client.start_chat(history=gemini_history[:-1] if len(gemini_history) > 1 else [])
+    
+    # Get last user message
+    last_message = gemini_history[-1]["parts"][0] if gemini_history else ""
+    
+    # Stream response
+    response = chat.send_message(
+        last_message,
+        generation_config=genai.types.GenerationConfig(
+            temperature=temperature,
+            max_output_tokens=max_tokens,
+        ),
+        stream=True
+    )
+    
+    for chunk in response:
+        if chunk.text:
+            yield chunk.text
+
+
+def gemini_chat_once(messages: list[dict], temperature=0.2, max_tokens=2000) -> str:
+    """Non-streaming Gemini response"""
+    chunks = list(gemini_stream(messages, temperature, max_tokens))
+    return "".join(chunks)
