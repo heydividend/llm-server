@@ -1,0 +1,44 @@
+[Unit]
+Description=Harvey Backend API Service
+Documentation=https://github.com/yourusername/harvey
+After=network.target
+
+[Service]
+Type=exec
+User=azureuser
+Group=azureuser
+WorkingDirectory=/opt/harvey-backend
+
+# Environment variables
+EnvironmentFile=/etc/harvey/harvey.env
+Environment="PYTHONUNBUFFERED=1"
+Environment="ENVIRONMENT=production"
+
+# Start command with proper logging
+ExecStart=/usr/bin/python3 -u main.py
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=600
+StartLimitBurst=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=harvey-backend
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=2G
+CPUQuota=200%
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/harvey-backend/logs /var/log/harvey
+
+[Install]
+WantedBy=multi-user.target
