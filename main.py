@@ -25,7 +25,9 @@ from app.routes import feedback
 from app.routes import harvey_status
 from app.routes import dividend_strategies
 from app.routes import training
+from app.routes import admin  # Admin endpoints for logging and monitoring
 from app.routers import data_quality
+from app.middleware.api_logging import APILoggingMiddleware
 from app.core.database import engine
 from app.core.auth import verify_api_key
 from app.services.scheduler_service import scheduler
