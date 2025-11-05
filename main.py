@@ -24,6 +24,7 @@ from app.routes import azure_vm
 from app.routes import feedback
 from app.routes import harvey_status
 from app.routes import dividend_strategies
+from app.routes import training
 from app.routers import data_quality
 from app.core.database import engine
 from app.core.auth import verify_api_key
@@ -73,6 +74,7 @@ app.include_router(azure_vm.router, prefix="/v1", tags=["Azure VM"])
 app.include_router(feedback.router, prefix="/v1", tags=["Feedback & Learning"])
 app.include_router(harvey_status.router, prefix="/v1", tags=["Harvey Intelligence"])
 app.include_router(dividend_strategies.router, prefix="/v1", tags=["Dividend Strategies"])
+app.include_router(training.router, prefix="/v1", tags=["Training Data"])
 app.include_router(data_quality.router, prefix="/v1", tags=["Data Quality"])
 app.include_router(financial_router, tags=["Financial Models"])
 
