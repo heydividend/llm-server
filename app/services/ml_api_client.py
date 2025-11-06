@@ -21,8 +21,8 @@ load_dotenv()
 
 logger = logging.getLogger("ml_api_client")
 
-DEV_BASE_URL = "https://2657f601-b8fe-40bd-8b9b-bdce950dabad-00-3ihusjg16z2it.janeway.replit.dev/api/internal/ml"
-PROD_BASE_URL = "https://hd-test.replit.app/api/internal/ml"
+DEV_BASE_URL = "http://localhost:9000/api/internal/ml"
+PROD_BASE_URL = "http://localhost:9000/api/internal/ml"
 
 
 class MLAPIClient:
