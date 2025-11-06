@@ -197,3 +197,40 @@ def get_harvey_unified_status():
             "error": str(e),
             "note": "Some components may be unavailable in Replit development environment"
         }, status_code=500)
+
+
+@router.post("/harvey/analyze")
+async def analyze_query(request: dict):
+    """
+    Analyze a query using Harvey Intelligence Service.
+    This endpoint uses the multi-model router and investment explanation service.
+    """
+    try:
+        from app.services.harvey_intelligence import harvey
+        
+        query = request.get("query", "").strip()
+        if not query:
+            return JSONResponse({
+                "success": False,
+                "error": "Query is required"
+            }, status_code=400)
+        
+        # Process query through Harvey Intelligence with investment explanations
+        result = await harvey.analyze_dividend(
+            query=query,
+            include_strategies=True,
+            enable_ensemble=False  # Use single model for speed
+        )
+        
+        return JSONResponse({
+            "success": True,
+            "query": query,
+            "response": result
+        })
+        
+    except Exception as e:
+        logger.error(f"Failed to analyze query: {e}")
+        return JSONResponse({
+            "success": False,
+            "error": str(e)
+        }, status_code=500)
