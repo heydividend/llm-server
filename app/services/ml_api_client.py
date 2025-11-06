@@ -398,7 +398,8 @@ class MLAPIClient:
                 "grade": "A"
             }
         """
-        return self._make_request("/score/symbol", {"symbol": symbol})
+        # ML Service expects symbols as an array
+        return self._make_request("/score/symbol", {"symbols": [symbol]})
     
     def score_portfolio(self, portfolio_id: int) -> Dict[str, Any]:
         """
@@ -692,9 +693,9 @@ class MLAPIClient:
             Comprehensive ML insights
         """
         try:
-            # ML Service expects POST to /insights/symbol with symbol in body
+            # ML Service expects POST to /insights/symbol with symbols array
             url = f"{self.base_url}/insights/symbol"
-            data = {"symbol": symbol}
+            data = {"symbols": [symbol]}
             response = self.client.post(url, json=data, headers=self._get_headers())
             
             if response.status_code == 200:
