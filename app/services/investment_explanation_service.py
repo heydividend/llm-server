@@ -351,6 +351,9 @@ class InvestmentExplanationService:
         # Add the base response
         enhanced.append(base_response)
         
+        # Detect user experience level for context-aware prompting
+        experience_level = self._detect_experience_level(query)
+        
         # Detect concepts mentioned and add explanations
         concepts_to_explain = []
         
@@ -385,10 +388,22 @@ class InvestmentExplanationService:
                 enhanced.append(f"**What:** {explanation.get('what', '')}")
                 enhanced.append(f"**How:** {explanation.get('how', '')}")
                 enhanced.append(f"**Why it matters:** {explanation.get('why', '')}")
+                
+                # Add contextual examples based on experience level
+                example = self._generate_contextual_examples(concept, experience_level)
+                if example:
+                    enhanced.append(f"**{example}**")
         
         # Add investment context
         enhanced.append("\n## 💡 **Investment Context:**")
         enhanced.append(self._generate_investment_wisdom(query, data))
+        
+        # Add actionable insights for appropriate experience levels
+        if experience_level in ["beginner", "intermediate"]:
+            insights = self._generate_actionable_insights(query, concepts_to_explain, experience_level)
+            if insights:
+                enhanced.append("\n## 🎯 **Actionable Insights:**")
+                enhanced.append(insights)
         
         # Log the enhancement
         log_event("response_enhanced", {
@@ -427,6 +442,98 @@ class InvestmentExplanationService:
             wisdom.append("Past performance doesn't guarantee future results")
         
         return "\n".join([f"• {w}" for w in wisdom])
+    
+    def _detect_experience_level(self, query: str) -> str:
+        """
+        Detect user's experience level from their query.
+        
+        Returns: "beginner", "intermediate", or "advanced"
+        """
+        query_lower = query.lower()
+        
+        beginner_indicators = [
+            "what is", "how does", "explain", "beginner", "new to",
+            "start investing", "first time", "basics", "simple",
+            "eli5", "for dummies", "learn about"
+        ]
+        
+        advanced_indicators = [
+            "optimize", "tax efficiency", "derivatives", "correlation",
+            "sharpe ratio", "alpha", "beta", "option strategies",
+            "rebalancing", "efficient frontier", "factor investing",
+            "margin", "leverage", "hedging", "arbitrage"
+        ]
+        
+        # Count indicators
+        beginner_score = sum(1 for ind in beginner_indicators if ind in query_lower)
+        advanced_score = sum(1 for ind in advanced_indicators if ind in query_lower)
+        
+        if beginner_score > 0:
+            return "beginner"
+        elif advanced_score > 0:
+            return "advanced"
+        else:
+            return "intermediate"
+    
+    def _generate_contextual_examples(
+        self,
+        concept: str,
+        experience_level: str
+    ) -> str:
+        """Generate experience-appropriate examples"""
+        
+        examples = {
+            "dividend_yield": {
+                "beginner": "Example: A $100 stock paying $3/year has a 3% yield",
+                "intermediate": "Example: AT&T yields 6.5% but has cut dividends before",
+                "advanced": "Example: Covered call ETFs like JEPI yield 9% through options premium"
+            },
+            "dividend_aristocrat": {
+                "beginner": "Example: Coca-Cola has paid dividends for 100+ years",
+                "intermediate": "Example: JNJ increased dividends for 61 consecutive years",
+                "advanced": "Example: NOBL ETF tracks all S&P 500 Dividend Aristocrats"
+            },
+            "payout_ratio": {
+                "beginner": "Example: Company earning $10/share paying $4 = 40% payout",
+                "intermediate": "Example: REITs must pay 90% of income as dividends",
+                "advanced": "Example: FCF payout ratio often more relevant than earnings-based"
+            }
+        }
+        
+        if concept in examples and experience_level in examples[concept]:
+            return examples[concept][experience_level]
+        return ""
+    
+    def _generate_actionable_insights(
+        self,
+        query: str,
+        concepts: List[str],
+        experience_level: str
+    ) -> str:
+        """Generate actionable insights based on user level"""
+        
+        insights = []
+        
+        if experience_level == "beginner":
+            insights = [
+                "💰 Start with dividend ETFs for instant diversification",
+                "📊 Focus on companies with 10+ years of dividend growth",
+                "⚠️ Avoid yields above 8% - often unsustainable"
+            ]
+        elif experience_level == "intermediate":
+            insights = [
+                "🎯 Target 3-5% yield with 5-10% annual growth",
+                "📈 Consider sector rotation based on economic cycles",
+                "🛡️ Balance high yield with dividend growth stocks"
+            ]
+        else:  # advanced
+            insights = [
+                "🔄 Optimize tax efficiency with qualified dividends",
+                "📉 Use covered calls to enhance yield in flat markets",
+                "⚖️ Rebalance quarterly to maintain target allocations"
+            ]
+        
+        return "\n".join(insights)
 
 
 # Global instance

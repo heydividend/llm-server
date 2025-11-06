@@ -79,6 +79,7 @@ app.include_router(dividend_strategies.router, prefix="/v1", tags=["Dividend Str
 app.include_router(training.router, prefix="/v1", tags=["Training Data"])
 app.include_router(data_quality.router, prefix="/v1", tags=["Data Quality"])
 app.include_router(financial_router, tags=["Financial Models"])
+app.include_router(admin.router, prefix="/v1", tags=["Admin"])
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")

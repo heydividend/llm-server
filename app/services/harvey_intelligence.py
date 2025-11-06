@@ -190,7 +190,7 @@ Your responses must ALWAYS explain:
             result = await self._ensemble_analysis(query, symbol, user_id, session_id, query_type, research_context)
         else:
             # Single model mode: Route to optimal model
-            model_type, routing_reason = self.router.route(query)
+            model_type, routing_reason = self.router.route_query(query)
             result["model_used"] = model_type.value
             result["routing_reason"] = routing_reason
             
@@ -523,7 +523,7 @@ Your responses must ALWAYS explain:
                 "FinGPT (ML Engine)"
             ],
             "ml_endpoints": 22 if self.ml_integration.ml_available else 0,
-            "etf_providers_supported": len(self.etf_provider_service.providers)
+            "etf_providers_supported": len(ETFProviderService.ETF_PROVIDERS)
         }
 
 

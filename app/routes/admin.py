@@ -14,7 +14,7 @@ import logging
 
 from app.core.logging_config import LOG_DIR
 from app.middleware.api_logging import log_api_event
-from app.services.model_audit_service import ModelAuditService
+from app.services.model_audit_service import DividendModelAuditor as ModelAuditService
 
 # Set up admin logger
 logger = logging.getLogger("admin_api")
