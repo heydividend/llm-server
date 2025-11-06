@@ -16,32 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "API Server"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "ML Service"
+args = "Azure Monitor"
 
 [[workflows.workflow]]
-name = "API Server"
-author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "export ODBCSYSINI=/home/runner && uvicorn main:app --host 0.0.0.0 --port 5000 --reload"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "ML Service"
+name = "Azure Monitor"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd ml_training && python ml_api.py"
-waitForPort = 9000
+args = "python test_azure_connection.py"
 
 [workflows.workflow.metadata]
 outputType = "console"
