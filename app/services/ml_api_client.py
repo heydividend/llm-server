@@ -452,7 +452,7 @@ class MLAPIClient:
             Yield prediction with confidence
         """
         return self._make_request("/predict/yield", {
-            "symbol": symbol,
+            "symbols": [symbol],
             "horizon": horizon
         })
     
@@ -466,7 +466,7 @@ class MLAPIClient:
         Returns:
             Growth rate prediction with confidence
         """
-        return self._make_request("/predict/growth-rate", {"symbol": symbol})
+        return self._make_request("/predict/growth-rate", {"symbols": [symbol]})
     
     def predict_payout_ratio(self, symbol: str, horizon: str = "12_months") -> Dict[str, Any]:
         """
@@ -480,7 +480,7 @@ class MLAPIClient:
             Payout ratio prediction with sustainability rating
         """
         return self._make_request("/predict/payout-ratio", {
-            "symbol": symbol,
+            "symbols": [symbol],
             "horizon": horizon
         })
     
@@ -526,7 +526,7 @@ class MLAPIClient:
         Returns:
             Cluster analysis with peers
         """
-        return self._make_request("/cluster/analyze-stock", {"symbol": symbol})
+        return self._make_request("/cluster/analyze-stock", {"symbols": [symbol]})
     
     def cluster_find_similar(self, symbol: str, limit: int = 10) -> Dict[str, Any]:
         """
@@ -540,7 +540,7 @@ class MLAPIClient:
             Similar stocks with similarity scores
         """
         return self._make_request("/cluster/find-similar", {
-            "symbol": symbol,
+            "symbols": [symbol],
             "limit": limit
         })
     
