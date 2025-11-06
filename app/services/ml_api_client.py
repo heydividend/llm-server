@@ -692,8 +692,10 @@ class MLAPIClient:
             Comprehensive ML insights
         """
         try:
-            url = f"{self.base_url}/insights/{symbol}"
-            response = self.client.get(url, headers=self._get_headers())
+            # ML Service expects POST to /insights/symbol with symbol in body
+            url = f"{self.base_url}/insights/symbol"
+            data = {"symbol": symbol}
+            response = self.client.post(url, json=data, headers=self._get_headers())
             
             if response.status_code == 200:
                 return response.json()
@@ -741,7 +743,10 @@ class MLAPIClient:
             }
         """
         try:
-            url = f"{self.base_url}/health"
+            # ML Service health endpoint is at /health (not under /api/internal/ml)
+            # So we need to use the root URL, not base_url
+            ml_root = self.base_url.replace('/api/internal/ml', '')
+            url = f"{ml_root}/health"
             response = self.client.get(url)
             
             if response.status_code == 200:
