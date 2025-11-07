@@ -35,6 +35,16 @@ def create_database_engine():
     if USE_PYMSSQL:
         ENGINE_URL = f"mssql+pymssql://{quote_plus(USER)}:{quote_plus(PWD)}@{HOST}:{PORT}/{quote_plus(DB)}"
         logger.info("Using pymssql driver (no ODBC required)")
+        # pymssql doesn't support fast_executemany
+        return create_engine(
+            ENGINE_URL,
+            isolation_level="AUTOCOMMIT",
+            pool_pre_ping=True,
+            pool_size=5,
+            max_overflow=10,
+            pool_recycle=3600,
+            pool_timeout=30,
+        )
     else:
         DRV = os.getenv("ODBC_DRIVER", "FreeTDS")
         LOGIN_TIMEOUT = os.getenv("SQLSERVER_LOGIN_TIMEOUT", "10")
@@ -52,17 +62,17 @@ def create_database_engine():
         param_str = "&".join([f"{k}={quote_plus(v)}" for k, v in params.items()])
         ENGINE_URL = f"mssql+pyodbc://{quote_plus(USER)}:{quote_plus(PWD)}@{HOST}:{PORT}/{quote_plus(DB)}?{param_str}"
         logger.info(f"Using pyodbc driver: {DRV}")
-    
-    return create_engine(
-        ENGINE_URL,
-        isolation_level="AUTOCOMMIT",
-        fast_executemany=True,
-        pool_pre_ping=True,
-        pool_size=5,
-        max_overflow=10,
-        pool_recycle=3600,
-        pool_timeout=30,
-    )
+        # pyodbc supports fast_executemany for better performance
+        return create_engine(
+            ENGINE_URL,
+            isolation_level="AUTOCOMMIT",
+            fast_executemany=True,
+            pool_pre_ping=True,
+            pool_size=5,
+            max_overflow=10,
+            pool_recycle=3600,
+            pool_timeout=30,
+        )
 
 
 class DataExtractor:
