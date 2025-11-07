@@ -13,6 +13,7 @@ import asyncio
 import logging
 from typing import List, Dict, Any, Optional
 from app.services.ml_api_client import get_ml_client
+from app.services.ml_schedulers_service import MLSchedulersService
 
 logger = logging.getLogger("ml_integration")
 
@@ -24,10 +25,13 @@ class MLIntegration:
         try:
             self.client = get_ml_client()
             self.ml_available = bool(self.client.api_key)
+            # Initialize ML schedulers service for enhanced predictions
+            self.schedulers_service = MLSchedulersService()
         except Exception as e:
             logger.warning(f"ML API client initialization failed: {e}")
             self.client = None
             self.ml_available = False
+            self.schedulers_service = None
     
     async def get_dividend_intelligence(self, symbol: str) -> Dict[str, Any]:
         """
@@ -462,6 +466,102 @@ class MLIntegration:
         except Exception as e:
             logger.error(f"Failed to get cluster dashboard: {e}")
             return {"error": str(e)}
+    
+    async def get_scheduled_payout_ratings(
+        self, 
+        symbols: List[str],
+        force_refresh: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Get payout ratings from ML schedulers (with caching).
+        
+        This uses the scheduled ML predictions that run daily at 1 AM
+        for optimal performance and consistency.
+        
+        Args:
+            symbols: List of ticker symbols
+            force_refresh: Force refresh from ML API
+            
+        Returns:
+            Payout ratings with grades (A+, A, B, C, etc.)
+        """
+        if not self.schedulers_service:
+            logger.debug("ML schedulers unavailable, falling back to direct API")
+            # Fallback to direct API call if schedulers not available
+            if self.ml_available and self.client:
+                return self.client.get_payout_rating(symbols)
+            return {"success": False, "ml_available": False}
+        
+        try:
+            return await self.schedulers_service.get_payout_ratings(symbols, force_refresh)
+        except Exception as e:
+            logger.error(f"Failed to get scheduled payout ratings: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def get_dividend_calendar_predictions(
+        self,
+        symbols: List[str],
+        months_ahead: int = 6
+    ) -> Dict[str, Any]:
+        """
+        Get dividend calendar predictions from ML schedulers.
+        
+        This uses the scheduled ML predictions that run every Sunday at 2 AM
+        to predict upcoming dividend payment dates.
+        
+        Args:
+            symbols: List of ticker symbols
+            months_ahead: How many months to predict ahead
+            
+        Returns:
+            Dividend calendar predictions with dates and amounts
+        """
+        if not self.schedulers_service:
+            logger.debug("ML schedulers unavailable, falling back to direct API")
+            # Fallback to direct API call if schedulers not available
+            if self.ml_available and self.client:
+                return self.client.get_dividend_calendar(symbols, months_ahead)
+            return {"success": False, "ml_available": False}
+        
+        try:
+            return await self.schedulers_service.get_dividend_calendar(symbols, months_ahead)
+        except Exception as e:
+            logger.error(f"Failed to get dividend calendar predictions: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def get_ml_training_status(self) -> Dict[str, Any]:
+        """
+        Get ML model training status from schedulers.
+        
+        Returns:
+            Training status, last training time, and next scheduled training
+        """
+        if not self.schedulers_service:
+            logger.debug("ML schedulers unavailable")
+            return {"success": False, "ml_available": False}
+        
+        try:
+            return await self.schedulers_service.get_training_status()
+        except Exception as e:
+            logger.error(f"Failed to get ML training status: {e}")
+            return {"success": False, "error": str(e)}
+    
+    async def get_scheduler_health(self) -> Dict[str, Any]:
+        """
+        Get ML scheduler health status.
+        
+        Returns:
+            Health status of all ML schedulers
+        """
+        if not self.schedulers_service:
+            logger.debug("ML schedulers unavailable")
+            return {"success": False, "ml_available": False}
+        
+        try:
+            return await self.schedulers_service.get_health_status()
+        except Exception as e:
+            logger.error(f"Failed to get scheduler health: {e}")
+            return {"success": False, "error": str(e)}
 
 
 # Global instance

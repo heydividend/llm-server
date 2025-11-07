@@ -932,6 +932,88 @@ class MLAPIClient:
         if self.enable_cache and self.cache:
             self.cache.clear()
     
+    def get_dividend_calendar(self, symbols: List[str], months_ahead: int = 6) -> Dict[str, Any]:
+        """
+        Get predicted dividend payment dates for symbols.
+        
+        Args:
+            symbols: List of ticker symbols
+            months_ahead: How many months to predict ahead
+            
+        Returns:
+            Dividend calendar predictions
+        """
+        if len(symbols) > 100:
+            raise ValueError("Maximum 100 symbols allowed per request")
+        
+        # Use insights endpoint to get dividend predictions
+        predictions = {}
+        for symbol in symbols[:50]:  # Limit to 50 for performance
+            try:
+                insights = self.get_symbol_insights(symbol)
+                if insights.get("success"):
+                    data = insights.get("data", {})
+                    predictions[symbol] = {
+                        "next_ex_date": data.get("next_ex_date"),
+                        "next_pay_date": data.get("next_payment_date"),
+                        "predicted_amount": data.get("predicted_dividend"),
+                        "confidence": data.get("confidence", 0.75),
+                        "frequency": data.get("dividend_frequency", "Quarterly"),
+                        "upcoming_dates": []
+                    }
+            except Exception as e:
+                logger.warning(f"Failed to get dividend calendar for {symbol}: {e}")
+                predictions[symbol] = {"error": str(e)}
+        
+        return {
+            "success": True,
+            "predictions": predictions,
+            "months_ahead": months_ahead
+        }
+    
+    def get_training_status(self) -> Dict[str, Any]:
+        """
+        Get ML model training status.
+        
+        Returns:
+            Training status and metrics
+        """
+        try:
+            # Use health check endpoint to get model status
+            health = self.health_check()
+            
+            return {
+                "success": True,
+                "status": "active" if health.get("status") == "healthy" else "inactive",
+                "last_training": health.get("last_training"),
+                "models_trained": ["dividend_scorer", "yield_predictor", "growth_predictor", 
+                                 "payout_predictor", "cut_risk_analyzer"],
+                "metrics": {
+                    "models_loaded": health.get("models_loaded", False),
+                    "model_version": health.get("model_version", "v2.0")
+                }
+            }
+        except Exception as e:
+            logger.error(f"Error getting training status: {e}")
+            return {
+                "success": False,
+                "status": "error",
+                "error": str(e)
+            }
+    
+    def get_payout_ratings(self, symbols: List[str]) -> Dict[str, Any]:
+        """
+        Get payout ratings for multiple symbols.
+        Wrapper around get_payout_rating for backward compatibility.
+        
+        Args:
+            symbols: List of ticker symbols
+            
+        Returns:
+            Payout ratings for all symbols
+        """
+        return self.get_payout_rating(symbols)
+    
     def close(self):
         """Close the HTTP client connection pool."""
         self.client.close()

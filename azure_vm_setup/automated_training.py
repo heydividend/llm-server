@@ -15,6 +15,9 @@ from datetime import datetime, timedelta
 from typing import Dict, Any, List
 import schedule
 
+# Force pymssql for better compatibility
+os.environ['USE_PYMSSQL'] = 'true'
+
 # Setup logging
 logging.basicConfig(
     level=logging.INFO,

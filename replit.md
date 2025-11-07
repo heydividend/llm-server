@@ -3,6 +3,18 @@
 ## Overview
 Harvey is a FastAPI-based intelligent financial assistant designed for context-aware responses on dividends, stock prices, tickers, and company insights. Its primary purpose is to serve as an AI-powered tool for financial analysis and passive income planning, with a focus on dividend investing and real-time market data. Harvey aims to provide personalized recommendations and a robust, self-healing architecture, catering to US markets by default with options for international data. The project's ambition is to deliver a professional-grade solution for financial analysis, leveraging a unified intelligence system of multiple AI models for superior performance and cost optimization.
 
+### ML Services on Azure VM (20.81.210.213) ✅
+**Active ML Schedulers (heydividend-ml-schedulers service):**
+- 🤖 **Payout Rating ML** - Daily 1:00 AM - Generates A+/A/B/C dividend safety ratings
+- 🤖 **Dividend Calendar ML** - Sunday 2:00 AM - Predicts next dividend payment dates  
+- 🤖 **ML Training** - Sunday 3:00 AM - Trains all 5 core ML models
+
+**ML Infrastructure:**
+- Training scripts location: `server/ml/training/`
+- Service name: `heydividend-ml-schedulers`
+- Database: Azure SQL Server with pymssql driver
+- Models: Dividend predictions, payout ratings, yield forecasting, growth analysis, cut risk detection
+
 ## User Preferences
 I prefer iterative development and want to be involved in key decision-making processes. Please ask before making major changes or architectural shifts. I appreciate clear, concise explanations and direct answers, but also value detailed documentation for complex features. Ensure the coding style is clean, maintainable, and follows best practices.
 
@@ -35,7 +47,7 @@ A separate Next.js frontend provides a professional, financial-grade chat interf
 - **Scalability:** Designed for streaming responses and efficient data retrieval.
 
 ## External Dependencies
-- **Database:** Azure SQL Server
+- **Database:** Azure SQL Server (using pymssql driver - no ODBC required)
 - **AI Models:**
     - **Azure OpenAI:** HarveyGPT-5 (GPT-5), Grok-4, DeepSeek-R1.
     - **Google Gemini 2.5 Pro:** For chart analysis, FX trading, and multimodal queries.

@@ -19,8 +19,9 @@ Complete API reference for integrating with Harvey, your AI-powered financial ad
 8. [Natural Language Alerts](#natural-language-alerts)
 9. [Proactive Insights](#proactive-insights)
 10. [ML Predictions](#ml-predictions)
-11. [Error Handling](#error-handling)
-12. [Code Examples](#code-examples)
+11. [ML Schedulers](#ml-schedulers)
+12. [Error Handling](#error-handling)
+13. [Code Examples](#code-examples)
 
 ---
 
@@ -860,6 +861,307 @@ The dividend is highly sustainable with excellent coverage...
 - Real-time analysis from ML API
 - Integrated into natural conversation flow
 - Automatic ticker extraction
+
+---
+
+## ML Schedulers
+
+Harvey includes enterprise-grade ML schedulers that provide cached, high-performance dividend predictions. These schedulers run automatically to ensure fast responses and consistent predictions across all users.
+
+### Scheduler Overview
+
+**Automated ML Tasks:**
+- **Payout Rating Scheduler**: Runs daily at 1:00 AM UTC
+- **Dividend Calendar Scheduler**: Runs every Sunday at 2:00 AM UTC
+- **ML Model Training**: Runs every Sunday at 3:00 AM UTC
+
+**Key Benefits:**
+- ⚡ Instant responses from cached predictions
+- 📊 Consistent ratings across all users
+- 🔄 Automatic self-healing if services fail
+- 📈 Reduced API load and improved performance
+
+### GET /v1/ml-schedulers/health
+
+Monitor the health status of all ML schedulers.
+
+**Request:**
+```http
+GET /v1/ml-schedulers/health
+Authorization: Bearer YOUR_API_KEY
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "schedulers": {
+    "payout_rating": {
+      "status": "healthy",
+      "last_run": "2025-11-07T01:00:00Z",
+      "next_run": "2025-11-08T01:00:00Z",
+      "cached_symbols": 2500
+    },
+    "dividend_calendar": {
+      "status": "healthy",
+      "last_run": "2025-11-03T02:00:00Z",
+      "next_run": "2025-11-10T02:00:00Z",
+      "predictions_cached": 1800
+    },
+    "ml_training": {
+      "status": "active",
+      "last_training": "2025-11-03T03:00:00Z",
+      "next_training": "2025-11-10T03:00:00Z",
+      "models_trained": 5
+    }
+  },
+  "overall_health": "healthy",
+  "last_check": "2025-11-07T04:30:00Z"
+}
+```
+
+### POST /v1/ml-schedulers/payout-ratings
+
+Get cached payout ratings for dividend stocks with A+ to F grades.
+
+**Request:**
+```http
+POST /v1/ml-schedulers/payout-ratings
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+```
+
+```json
+{
+  "symbols": ["AAPL", "MSFT", "JNJ", "O", "SCHD"],
+  "force_refresh": false
+}
+```
+
+**Parameters:**
+- `symbols` (required): Array of stock ticker symbols (max 100)
+- `force_refresh` (optional): Force refresh from ML API instead of cache (default: false)
+
+**Response:**
+```json
+{
+  "success": true,
+  "ratings": {
+    "AAPL": {
+      "symbol": "AAPL",
+      "grade": "A+",
+      "score": 92.5,
+      "quality": "Excellent",
+      "sustainability": "Very Strong",
+      "recommendation": "Strong Buy",
+      "cached_at": "2025-11-07T01:00:00Z"
+    },
+    "MSFT": {
+      "symbol": "MSFT",
+      "grade": "A",
+      "score": 88.3,
+      "quality": "Very Good",
+      "sustainability": "Strong",
+      "recommendation": "Buy",
+      "cached_at": "2025-11-07T01:00:00Z"
+    }
+  },
+  "from_cache": true,
+  "cache_timestamp": "2025-11-07T01:00:00Z"
+}
+```
+
+### POST /v1/ml-schedulers/dividend-calendar
+
+Get predicted dividend payment dates for the next 6 months.
+
+**Request:**
+```http
+POST /v1/ml-schedulers/dividend-calendar
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+```
+
+```json
+{
+  "symbols": ["O", "SCHD", "JEPI", "JEPQ"],
+  "months_ahead": 6
+}
+```
+
+**Parameters:**
+- `symbols` (required): Array of stock ticker symbols (max 100)
+- `months_ahead` (optional): Number of months to predict ahead (default: 6, max: 12)
+
+**Response:**
+```json
+{
+  "success": true,
+  "predictions": {
+    "O": {
+      "next_ex_date": "2025-11-15",
+      "next_pay_date": "2025-11-30",
+      "predicted_amount": 0.265,
+      "confidence": 0.92,
+      "frequency": "Monthly",
+      "upcoming_dates": [
+        {"ex_date": "2025-11-15", "pay_date": "2025-11-30", "amount": 0.265},
+        {"ex_date": "2025-12-15", "pay_date": "2025-12-31", "amount": 0.265},
+        {"ex_date": "2026-01-15", "pay_date": "2026-01-31", "amount": 0.268}
+      ]
+    },
+    "SCHD": {
+      "next_ex_date": "2025-12-05",
+      "next_pay_date": "2025-12-20",
+      "predicted_amount": 0.75,
+      "confidence": 0.88,
+      "frequency": "Quarterly",
+      "upcoming_dates": [
+        {"ex_date": "2025-12-05", "pay_date": "2025-12-20", "amount": 0.75},
+        {"ex_date": "2026-03-05", "pay_date": "2026-03-20", "amount": 0.77}
+      ]
+    }
+  },
+  "months_ahead": 6,
+  "from_cache": true
+}
+```
+
+### GET /v1/ml-schedulers/training-status
+
+Get the status of ML model training and performance metrics.
+
+**Request:**
+```http
+GET /v1/ml-schedulers/training-status
+Authorization: Bearer YOUR_API_KEY
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "status": "completed",
+  "last_training": "2025-11-03T03:00:00Z",
+  "next_training": "2025-11-10T03:00:00Z",
+  "models_trained": [
+    "dividend_scorer",
+    "yield_predictor",
+    "growth_predictor",
+    "payout_predictor",
+    "cut_risk_analyzer"
+  ],
+  "performance": {
+    "dividend_scorer": {
+      "accuracy": 0.92,
+      "precision": 0.89,
+      "recall": 0.94
+    },
+    "yield_predictor": {
+      "mae": 0.15,
+      "rmse": 0.22
+    },
+    "cut_risk_analyzer": {
+      "accuracy": 0.87,
+      "f1_score": 0.85
+    }
+  },
+  "training_duration": "2h 45m",
+  "records_processed": 125000
+}
+```
+
+### GET /v1/ml-schedulers/admin/dashboard
+
+Admin dashboard for monitoring all ML scheduler operations.
+
+**Request:**
+```http
+GET /v1/ml-schedulers/admin/dashboard
+Authorization: Bearer YOUR_ADMIN_API_KEY
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "dashboard": {
+    "schedulers": {
+      "payout_rating": {
+        "status": "healthy",
+        "uptime": "99.8%",
+        "last_error": null,
+        "execution_times": [45.2, 43.8, 44.1],
+        "cache_hit_rate": 0.92
+      },
+      "dividend_calendar": {
+        "status": "healthy",
+        "uptime": "99.9%",
+        "last_error": null,
+        "execution_times": [62.3, 61.7, 63.2],
+        "cache_hit_rate": 0.88
+      }
+    },
+    "self_healing": {
+      "circuit_breakers": {
+        "ml_api": {"state": "closed", "failures": 0},
+        "ml_payout_rating": {"state": "closed", "failures": 0},
+        "ml_dividend_calendar": {"state": "closed", "failures": 0},
+        "ml_training": {"state": "closed", "failures": 0}
+      },
+      "recovery_history": [
+        {
+          "service": "ml_api",
+          "timestamp": "2025-11-06T14:30:00Z",
+          "action": "recovery_success"
+        }
+      ],
+      "overall_health": 0.95
+    },
+    "cache_stats": {
+      "total_cached_symbols": 2500,
+      "cache_memory_mb": 45.6,
+      "cache_hits_today": 15234,
+      "cache_misses_today": 1823
+    }
+  }
+}
+```
+
+### Self-Healing Features
+
+The ML Schedulers include automatic self-healing capabilities:
+
+**Circuit Breakers:**
+- Automatically detect service failures
+- Open circuit after threshold failures (5 for API, 3 for schedulers)
+- Attempt recovery after timeout period
+
+**Recovery Strategies:**
+- **ML API**: Restart harvey-ml service on Azure VM
+- **Payout Rating**: Restart harvey-payout-rating.timer
+- **Dividend Calendar**: Restart harvey-dividend-calendar.timer  
+- **ML Training**: Restart harvey-ml-training.timer
+
+**Health Monitoring:**
+- Continuous health score tracking (0.0 to 1.0)
+- Automatic recovery when health drops below 0.5
+- Recovery history tracking and audit logs
+
+### Integration with Chat API
+
+The ML Scheduler predictions are automatically integrated into the chat API responses:
+
+**Example Questions:**
+- "What are the payout ratings for my portfolio?" - Uses cached payout ratings
+- "When are the next dividend payments?" - Uses cached dividend calendar
+- "Has the ML model been trained recently?" - Shows training status
+
+**Benefits:**
+- ⚡ 10x faster responses from cache
+- 📊 Consistent predictions for all users
+- 🔄 Automatic fallback to direct API if cache miss
+- 💾 Reduced database and API load
 
 ---
 
