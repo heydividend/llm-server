@@ -10,9 +10,9 @@ echo "=========================================="
 
 # Configuration
 VM_IP="20.81.210.213"
-VM_USER="harvey"  # Update with your VM username
+VM_USER="azureuser"  # Update with your VM username
 LOCAL_DIR="."  # Current directory (Replit project)
-REMOTE_DIR="/home/harvey/harvey-backend"
+REMOTE_DIR="/home/azureuser/harvey"
 
 # Colors for output
 RED='\033[0;31m'
