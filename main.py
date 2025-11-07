@@ -26,6 +26,7 @@ from app.routes import harvey_status
 from app.routes import dividend_strategies
 from app.routes import training
 from app.routes import admin  # Admin endpoints for logging and monitoring
+from app.routes import ml_schedulers  # ML scheduler endpoints
 from app.routers import data_quality
 from app.middleware.api_logging import APILoggingMiddleware
 from app.core.database import engine
@@ -79,6 +80,7 @@ app.include_router(dividend_strategies.router, prefix="/v1", tags=["Dividend Str
 app.include_router(training.router, prefix="/v1", tags=["Training Data"])
 app.include_router(data_quality.router, prefix="/v1", tags=["Data Quality"])
 app.include_router(financial_router, tags=["Financial Models"])
+app.include_router(ml_schedulers.router, prefix="/v1", tags=["ML Schedulers"])
 app.include_router(admin.router, prefix="/v1", tags=["Admin"])
 
 # Mount static files

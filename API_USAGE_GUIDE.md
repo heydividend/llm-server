@@ -124,7 +124,87 @@ curl -X POST http://20.81.210.213/v1/portfolio/upload \
 
 ---
 
-### 6. Tax Optimization
+### 6. ML Schedulers (NEW! 🚀)
+
+#### Check Scheduler Health
+```bash
+curl http://20.81.210.213/v1/ml-schedulers/health \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+#### Get Cached Payout Ratings (A+ to F grades)
+```bash
+curl -X POST http://20.81.210.213/v1/ml-schedulers/payout-ratings \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "symbols": ["AAPL", "MSFT", "JNJ", "O", "SCHD"],
+    "force_refresh": false
+  }'
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "ratings": {
+    "AAPL": {
+      "grade": "A+",
+      "score": 92.5,
+      "quality": "Excellent",
+      "recommendation": "Strong Buy"
+    }
+  }
+}
+```
+
+#### Get Dividend Calendar Predictions
+```bash
+curl -X POST http://20.81.210.213/v1/ml-schedulers/dividend-calendar \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -d '{
+    "symbols": ["O", "SCHD", "JEPI"],
+    "months_ahead": 6
+  }'
+```
+
+**Response Example:**
+```json
+{
+  "success": true,
+  "predictions": {
+    "O": {
+      "next_ex_date": "2025-11-15",
+      "next_pay_date": "2025-11-30",
+      "predicted_amount": 0.265,
+      "frequency": "Monthly"
+    }
+  }
+}
+```
+
+#### Check Training Status
+```bash
+curl http://20.81.210.213/v1/ml-schedulers/training-status \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+#### Admin Dashboard (Admin API Key Required)
+```bash
+curl http://20.81.210.213/v1/ml-schedulers/admin/dashboard \
+  -H "Authorization: Bearer YOUR_ADMIN_API_KEY"
+```
+
+**Key Benefits:**
+- ⚡ 10x faster responses from cache
+- 📊 Daily payout ratings at 1 AM UTC
+- 📅 Weekly dividend calendar updates (Sunday 2 AM)
+- 🔄 Automatic self-healing if services fail
+
+---
+
+### 7. Tax Optimization
 
 ```bash
 curl -X POST http://20.81.210.213/v1/tax/optimize \
