@@ -1,0 +1,34 @@
+[Unit]
+Description=Harvey ML Continuous Training Service
+After=network.target harvey-ml.service
+Wants=harvey-ml.service
+
+[Service]
+Type=simple
+User=harvey
+Group=harvey
+WorkingDirectory=/home/harvey/harvey-backend/ml_training
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONPATH=/home/harvey/harvey-backend"
+
+# Run the automated training in scheduled mode
+ExecStart=/usr/bin/python3 /home/harvey/harvey-backend/azure_vm_setup/automated_training.py --mode scheduled
+
+# Restart policy
+Restart=always
+RestartSec=300
+StartLimitInterval=600
+StartLimitBurst=3
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=harvey-ml-training
+
+# Resource limits
+LimitNOFILE=65536
+MemoryLimit=4G
+CPUQuota=75%
+
+[Install]
+WantedBy=multi-user.target
