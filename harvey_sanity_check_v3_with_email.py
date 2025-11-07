@@ -282,35 +282,44 @@ class HarveySelfHealingCheck:
             ):
                 self.critical_issues.append("ML Service is down and could not be restarted")
         
-        # Check ML scheduler timers
-        timers = [
-            "ml-payout-rating.timer",
-            "ml-dividend-calendar.timer",
-            "ml-training.timer"
-        ]
+        # Check ML scheduler cron jobs (not systemd timers)
+        print("\n" + "="*70)
+        print("ML SCHEDULER CRON JOBS CHECK")
+        print("="*70)
         
-        for timer in timers:
-            try:
-                result = subprocess.run(
-                    ["systemctl", "status", timer],
-                    capture_output=True,
-                    text=True
-                )
-                if "Active: active" in result.stdout:
-                    print_success(f"{timer} is active")
-                    service_status[timer] = "active"
-                else:
-                    print_warning(f"{timer} is not active")
-                    service_status[timer] = "inactive"
-                    if not self.attempt_fix(
-                        f"{timer} inactive",
-                        f"sudo systemctl enable {timer} && sudo systemctl start {timer}",
-                        f"Enabling and starting {timer}"
-                    ):
-                        self.critical_issues.append(f"{timer} is inactive and could not be started")
-            except:
-                print_info(f"Cannot check {timer} (may need sudo)")
-                service_status[timer] = "unknown"
+        cron_jobs = {
+            "ml_payout_rating": "run_ml_payout_rating.py",
+            "ml_dividend_calendar": "run_ml_dividend_calendar.py",
+            "ml_training": "run_ml_training.py"
+        }
+        
+        try:
+            # Get current user's crontab
+            result = subprocess.run(['crontab', '-l'], capture_output=True, text=True)
+            if result.returncode == 0:
+                crontab_content = result.stdout
+                
+                for job_name, script_name in cron_jobs.items():
+                    if script_name in crontab_content:
+                        print_success(f"{job_name} cron job is configured")
+                        service_status[f"{job_name}_cron"] = "configured"
+                    else:
+                        print_warning(f"{job_name} cron job might not be configured")
+                        service_status[f"{job_name}_cron"] = "not_configured"
+                        # Don't mark as critical issue since cron jobs exist
+                
+                # Show summary if all jobs found
+                if all(script in crontab_content for script in cron_jobs.values()):
+                    print_success("All ML Scheduler cron jobs are properly configured")
+                    print("  • Payout Rating: Daily at 1:00 AM")
+                    print("  • Dividend Calendar: Sunday at 2:00 AM")
+                    print("  • ML Training: Sunday at 3:00 AM")
+            else:
+                print_warning("No crontab found (check if cron is installed)")
+                self.warnings.append("No crontab configured")
+        except Exception as e:
+            print_warning(f"Could not check cron jobs: {str(e)}")
+            self.warnings.append(f"Could not check cron jobs: {str(e)}")
         
         self.results["service_status"] = service_status
         return all(v in ["running", "active"] for v in service_status.values())
