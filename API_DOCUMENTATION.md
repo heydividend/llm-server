@@ -20,8 +20,9 @@ Complete API reference for integrating with Harvey, your AI-powered financial ad
 9. [Proactive Insights](#proactive-insights)
 10. [ML Predictions](#ml-predictions)
 11. [ML Schedulers](#ml-schedulers)
-12. [Error Handling](#error-handling)
-13. [Code Examples](#code-examples)
+12. [Unified Intelligence (RAG)](#unified-intelligence-rag)
+13. [Error Handling](#error-handling)
+14. [Code Examples](#code-examples)
 
 ---
 
@@ -1162,6 +1163,80 @@ The ML Scheduler predictions are automatically integrated into the chat API resp
 - 📊 Consistent predictions for all users
 - 🔄 Automatic fallback to direct API if cache miss
 - 💾 Reduced database and API load
+
+---
+
+## Unified Intelligence (RAG)
+
+Harvey's Unified Intelligence API integrates advanced RAG (Retrieval-Augmented Generation) capabilities with multi-source data orchestration. All Intelligence features are now integrated into the main Harvey API on port 8001.
+
+**Key Features:**
+- Multi-source data orchestration (Azure SQL, Yahoo Finance, Massive.com)
+- Real-time market data enrichment
+- Sentiment analysis integration
+- Self-evaluation loops for quality control
+
+### POST /v1/intelligence/analyze
+
+Main endpoint for AI analysis with RAG enrichment. Processes natural language queries and returns intelligent recommendations enriched with real-time data from multiple sources.
+
+**Request:**
+```http
+POST /v1/intelligence/analyze
+Authorization: Bearer YOUR_API_KEY
+Content-Type: application/json
+```
+
+```json
+{
+  "query": "What are the best dividend stocks under $50?",
+  "include_raw_data": false
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "recommendation": {
+    "summary": "Based on current analysis, here are top dividend stocks under $50...",
+    "stocks": [
+      {
+        "ticker": "T",
+        "company": "AT&T Inc.",
+        "price": 15.42,
+        "dividend_yield": 7.23,
+        "payout_rating": "A",
+        "sentiment": "positive"
+      }
+    ]
+  },
+  "confidence": 0.92,
+  "sources": ["Azure SQL", "Yahoo Finance", "Massive.com", "ML Predictions"],
+  "disclaimer": "This is AI-generated analysis for informational purposes only."
+}
+```
+
+### GET /v1/intelligence/health
+
+Check the health and availability of the Intelligence system.
+
+**Request:**
+```http
+GET /v1/intelligence/health
+Authorization: Bearer YOUR_API_KEY
+```
+
+**Response:**
+```json
+{
+  "status": "healthy",
+  "service": "Harvey Unified AI System",
+  "rag_available": true
+}
+```
+
+**For complete Intelligence API documentation, see:** [API_DOCUMENTATION_UNIFIED_INTELLIGENCE.md](./API_DOCUMENTATION_UNIFIED_INTELLIGENCE.md)
 
 ---
 
