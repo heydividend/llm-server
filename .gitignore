@@ -50,3 +50,6 @@ tickers.csv
 
 # Attached assets (if large)
 attached_assets/
+azure.env
+sendgrid_update.env
+*.env
