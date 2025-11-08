@@ -16,15 +16,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Azure Monitor"
+args = "Harvey Monitor"
 
 [[workflows.workflow]]
-name = "Azure Monitor"
+name = "Harvey Monitor"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python test_azure_connection.py"
+args = "python monitor_harvey_unified.py"
 
 [workflows.workflow.metadata]
 outputType = "console"
