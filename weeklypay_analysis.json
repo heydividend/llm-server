@@ -1,0 +1,332 @@
+{
+  "timestamp": "2025-11-07T21:14:14.958647",
+  "distribution_analysis": {
+    "summary_statistics": {
+      "total_funds": 21,
+      "average_distribution": 0.5040128095238096,
+      "median_distribution": 0.484205,
+      "max_distribution": 1.376981,
+      "min_distribution": 0.112043,
+      "std_deviation": 0.31691799972195,
+      "total_weekly_income_potential": 10.584269
+    },
+    "top_yielders": [
+      {
+        "fund": "HOOW",
+        "ticker": "HOOD",
+        "distribution": 1.376981
+      },
+      {
+        "fund": "AMDW",
+        "ticker": "AMD",
+        "distribution": 1.043646
+      },
+      {
+        "fund": "PLTW",
+        "ticker": "PLTR",
+        "distribution": 0.808603
+      },
+      {
+        "fund": "AVGW",
+        "ticker": "AVGO",
+        "distribution": 0.758626
+      },
+      {
+        "fund": "ARMW",
+        "ticker": "ARM",
+        "distribution": 0.727521
+      }
+    ],
+    "sector_breakdown": {
+      "technology": 9,
+      "consumer": 4,
+      "financial": 4,
+      "commodities": 2,
+      "other": 2
+    }
+  },
+  "income_projections": {
+    "investment_scenario": {
+      "investment_per_fund": 10000,
+      "total_investment": 210000,
+      "projected_annual_income": 55038.1988,
+      "average_yield": 26.208666095238094,
+      "income_by_fund": [
+        {
+          "fund": "AAPW",
+          "ticker": "AAPL",
+          "annual_income": 1405.9707999999998,
+          "yield_percentage": 14.059707999999999
+        },
+        {
+          "fund": "AMDW",
+          "ticker": "AMD",
+          "annual_income": 5426.9592,
+          "yield_percentage": 54.269592
+        },
+        {
+          "fund": "AMZW",
+          "ticker": "AMZN",
+          "annual_income": 2182.9704,
+          "yield_percentage": 21.829704
+        },
+        {
+          "fund": "ARMW",
+          "ticker": "ARM",
+          "annual_income": 3783.1092,
+          "yield_percentage": 37.831092
+        },
+        {
+          "fund": "AVGW",
+          "ticker": "AVGO",
+          "annual_income": 3944.8552,
+          "yield_percentage": 39.448552
+        },
+        {
+          "fund": "BABW",
+          "ticker": "BABA",
+          "annual_income": 2517.866,
+          "yield_percentage": 25.178660000000004
+        },
+        {
+          "fund": "BRKW",
+          "ticker": "BRK/B",
+          "annual_income": 655.1168,
+          "yield_percentage": 6.5511680000000005
+        },
+        {
+          "fund": "COIW",
+          "ticker": "COIN",
+          "annual_income": 2555.4776,
+          "yield_percentage": 25.554776
+        },
+        {
+          "fund": "COSW",
+          "ticker": "COST",
+          "annual_income": 1121.2084,
+          "yield_percentage": 11.212084
+        },
+        {
+          "fund": "GOOW",
+          "ticker": "GOOGL",
+          "annual_income": 3312.3636000000006,
+          "yield_percentage": 33.123636000000005
+        },
+        {
+          "fund": "HOOW",
+          "ticker": "HOOD",
+          "annual_income": 7160.301200000001,
+          "yield_percentage": 71.603012
+        },
+        {
+          "fund": "METW",
+          "ticker": "META",
+          "annual_income": 582.6236,
+          "yield_percentage": 5.826236
+        },
+        {
+          "fund": "MSFW",
+          "ticker": "MSFT",
+          "annual_income": 1249.3988,
+          "yield_percentage": 12.493988
+        },
+        {
+          "fund": "MSTW",
+          "ticker": "MSTR",
+          "annual_income": 1439.256,
+          "yield_percentage": 14.392560000000001
+        },
+        {
+          "fund": "NFLW",
+          "ticker": "NFLX",
+          "annual_income": 1614.2620000000002,
+          "yield_percentage": 16.14262
+        },
+        {
+          "fund": "NVDW",
+          "ticker": "NVDA",
+          "annual_income": 2998.736,
+          "yield_percentage": 29.987359999999995
+        },
+        {
+          "fund": "PLTW",
+          "ticker": "PLTR",
+          "annual_income": 4204.7356,
+          "yield_percentage": 42.047356
+        },
+        {
+          "fund": "TSLW",
+          "ticker": "TSLA",
+          "annual_income": 2959.2888,
+          "yield_percentage": 29.592888000000002
+        },
+        {
+          "fund": "UBEW",
+          "ticker": "UBER",
+          "annual_income": 2838.81,
+          "yield_percentage": 28.388099999999998
+        },
+        {
+          "fund": "GDXW",
+          "ticker": "GDX",
+          "annual_income": 2203.4219999999996,
+          "yield_percentage": 22.034219999999998
+        },
+        {
+          "fund": "GLDW",
+          "ticker": "GLD",
+          "annual_income": 881.4676000000001,
+          "yield_percentage": 8.814676
+        }
+      ]
+    }
+  },
+  "ml_predictions": {
+    "ml_predictions": [
+      {
+        "fund": "AAPW",
+        "ticker": "AAPL",
+        "current_distribution": 0.270379,
+        "next_4_weeks_forecast": [
+          0.277658,
+          0.273238,
+          0.232853,
+          0.262512
+        ],
+        "30_day_trend": "BEARISH",
+        "confidence_score": 0.89
+      },
+      {
+        "fund": "AMDW",
+        "ticker": "AMD",
+        "current_distribution": 1.043646,
+        "next_4_weeks_forecast": [
+          0.971632,
+          1.135081,
+          1.149998,
+          1.086798
+        ],
+        "30_day_trend": "BULLISH",
+        "confidence_score": 0.85
+      },
+      {
+        "fund": "AMZW",
+        "ticker": "AMZN",
+        "current_distribution": 0.419802,
+        "next_4_weeks_forecast": [
+          0.405181,
+          0.420309,
+          0.423166,
+          0.398899
+        ],
+        "30_day_trend": "BEARISH",
+        "confidence_score": 0.75
+      },
+      {
+        "fund": "ARMW",
+        "ticker": "ARM",
+        "current_distribution": 0.727521,
+        "next_4_weeks_forecast": [
+          0.657257,
+          0.738373,
+          0.689075,
+          0.741582
+        ],
+        "30_day_trend": "BEARISH",
+        "confidence_score": 0.9
+      },
+      {
+        "fund": "AVGW",
+        "ticker": "AVGO",
+        "current_distribution": 0.758626,
+        "next_4_weeks_forecast": [
+          0.698013,
+          0.67789,
+          0.783841,
+          0.713578
+        ],
+        "30_day_trend": "BEARISH",
+        "confidence_score": 0.88
+      }
+    ],
+    "market_outlook": {
+      "weekly_dividend_sector": "STRONG",
+      "risk_assessment": "MODERATE",
+      "recommendation": "ACCUMULATE high-yielding weekly dividend ETFs for consistent income"
+    }
+  },
+  "risk_analysis": {
+    "risk_tiers": {
+      "high_risk": {
+        "count": 2,
+        "funds": [
+          "AMDW",
+          "HOOW"
+        ],
+        "avg_distribution": 1.2103135,
+        "warning": "High distributions may indicate elevated volatility or use of options strategies"
+      },
+      "moderate_risk": {
+        "count": 7,
+        "avg_distribution": 0.6604917142857142,
+        "recommendation": "Balanced risk-reward profile suitable for income investors"
+      },
+      "low_risk": {
+        "count": 12,
+        "avg_distribution": 0.29501666666666665,
+        "note": "Conservative distributions with potentially more sustainable payouts"
+      }
+    },
+    "diversification_score": 0.85,
+    "sustainability_assessment": "Weekly dividends from covered call strategies - sustainable with managed risk"
+  },
+  "optimization": {
+    "portfolio_recommendations": {
+      "optimal_allocation": {
+        "conservative": {
+          "funds": [
+            "AAPW",
+            "MSFW",
+            "GLDW"
+          ],
+          "allocation_percentage": [
+            30,
+            30,
+            40
+          ],
+          "expected_weekly_income": 0.58
+        },
+        "balanced": {
+          "funds": [
+            "NVDW",
+            "AMDW",
+            "HOOW",
+            "GLDW"
+          ],
+          "allocation_percentage": [
+            30,
+            25,
+            25,
+            20
+          ],
+          "expected_weekly_income": 0.89
+        },
+        "aggressive": {
+          "funds": [
+            "HOOW",
+            "AMDW",
+            "PLTW"
+          ],
+          "allocation_percentage": [
+            40,
+            35,
+            25
+          ],
+          "expected_weekly_income": 1.08
+        }
+      },
+      "rebalancing_frequency": "Monthly",
+      "tax_optimization_tip": "Hold in tax-advantaged accounts to minimize tax drag on weekly distributions"
+    }
+  }
+}

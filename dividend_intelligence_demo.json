@@ -1,0 +1,126 @@
+{
+  "timestamp": "2025-11-08T12:29:32.573312+00:00",
+  "articles_processed": 5,
+  "top_articles": [
+    {
+      "title": "Apple Announces Special Dividend of $0.50 Per Share",
+      "source": "MarketWatch",
+      "url": "https://example.com/apple-special-dividend",
+      "published": "2025-11-08T11:29:32.570609+00:00",
+      "relevance_score": 5.0,
+      "sentiment_score": 1.0,
+      "tickers": [
+        "AAPL"
+      ],
+      "keywords": [
+        "special dividend"
+      ],
+      "analysis": "\ud83d\udfe1 MODERATE IMPACT: Important dividend development to monitor. Positive development for dividend investors. BUY CONSIDERATION: Special dividend capture opportunity. \u26a0\ufe0f DISCLAIMER: This is for educational purposes only, not financial advice. Please consult your trusted financial advisor before making investment decisions.",
+      "is_breaking": false
+    },
+    {
+      "title": "Microsoft Increases Quarterly Dividend by 10%",
+      "source": "Reuters",
+      "url": "https://example.com/msft-dividend-increase",
+      "published": "2025-11-08T10:29:32.570619+00:00",
+      "relevance_score": 4.0,
+      "sentiment_score": 1.0,
+      "tickers": [
+        "MSFT"
+      ],
+      "keywords": [
+        "quarterly dividend"
+      ],
+      "analysis": "\ud83d\udfe2 LOW IMPACT: Informational update. Positive development for dividend investors.",
+      "is_breaking": false
+    },
+    {
+      "title": "BREAKING: Ford Suspends Dividend Amid Market Challenges",
+      "source": "CNBC",
+      "url": "https://example.com/ford-dividend-suspension",
+      "published": "2025-11-08T11:59:32.570621+00:00",
+      "relevance_score": 3.0,
+      "sentiment_score": -1.0,
+      "tickers": [
+        "F"
+      ],
+      "keywords": [],
+      "analysis": "\ud83d\udfe2 LOW IMPACT: Informational update. Negative news - review portfolio exposure.",
+      "is_breaking": true
+    },
+    {
+      "title": "Trending on Reddit: NVIDIA Dividend Speculation Heats Up",
+      "source": "Reddit r/dividends",
+      "url": "https://reddit.com/r/dividends/nvda-speculation",
+      "published": "2025-11-08T09:29:32.570623+00:00",
+      "relevance_score": 1.0,
+      "sentiment_score": 0.0,
+      "tickers": [
+        "NVDA"
+      ],
+      "keywords": [],
+      "analysis": "\ud83d\udfe2 LOW IMPACT: Informational update.",
+      "is_breaking": false
+    },
+    {
+      "title": "Johnson & Johnson Maintains Dividend for 60th Consecutive Year",
+      "source": "Seeking Alpha",
+      "url": "https://example.com/jnj-dividend-maintained",
+      "published": "2025-11-08T07:29:32.570624+00:00",
+      "relevance_score": 1.0,
+      "sentiment_score": 0.0,
+      "tickers": [
+        "JNJ"
+      ],
+      "keywords": [],
+      "analysis": "\ud83d\udfe2 LOW IMPACT: Informational update.",
+      "is_breaking": false
+    }
+  ],
+  "trending_topics": [
+    {
+      "type": "ticker",
+      "topic": "AAPL",
+      "count": 1,
+      "trend_score": 2.5
+    },
+    {
+      "type": "ticker",
+      "topic": "MSFT",
+      "count": 1,
+      "trend_score": 2.5
+    },
+    {
+      "type": "ticker",
+      "topic": "F",
+      "count": 1,
+      "trend_score": 2.5
+    },
+    {
+      "type": "keyword",
+      "topic": "special dividend",
+      "count": 1,
+      "trend_score": 1.5
+    },
+    {
+      "type": "keyword",
+      "topic": "quarterly dividend",
+      "count": 1,
+      "trend_score": 1.5
+    }
+  ],
+  "alerts": [
+    {
+      "priority": "HIGH",
+      "title": "BREAKING: Ford Suspends Dividend Amid Market Challenges",
+      "message": "\ud83d\udfe2 LOW IMPACT: Informational update. Negative news - review portfolio exposure.",
+      "url": "https://example.com/ford-dividend-suspension"
+    }
+  ],
+  "statistics": {
+    "breaking_news": 1,
+    "positive_sentiment": 2,
+    "negative_sentiment": 1,
+    "unique_tickers": 5
+  }
+}

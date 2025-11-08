@@ -27,9 +27,10 @@ Harvey is a FastAPI-based intelligent financial assistant designed for context-a
 I prefer iterative development and want to be involved in key decision-making processes. Please ask before making major changes or architectural shifts. I appreciate clear, concise explanations and direct answers, but also value detailed documentation for complex features. Ensure the coding style is clean, maintainable, and follows best practices.
 
 ## Recent Changes (November 7, 2025)
-- **Fixed Timer Issue in Sanity Check:** Resolved false positive errors from non-existent systemd timers. The sanity check (v4.0) now correctly checks for cron jobs instead of timers, eliminating 6 false critical issues and improving health score from 60-80% to 85%.
-- **Email Alerts Working:** SendGrid email alerts fully operational using harvey@heydividend.com as sender to dev@heydividend.com
-- **ML Schedulers Confirmed:** All 4 ML scheduler cron jobs properly configured and running on schedule
+- **Achieved 100% System Health:** Optimized sanity check v6.0 eliminates all warnings by using correct database table names (tickers, dividends) and modern datetime handling
+- **Recovery Email Notifications:** System now sends "fixed it" emails when health recovers above 80% after issues, with state tracking to prevent spam
+- **Fixed Timer False Positives:** Resolved timer check errors - now correctly verifies cron jobs (4 ML schedulers confirmed running)
+- **Email Alerts Bi-directional:** SendGrid alerts for both problems (WARNING/CRITICAL) and recoveries (RESOLVED) to dev@heydividend.com
 
 ## System Architecture
 
