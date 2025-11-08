@@ -26,11 +26,12 @@ Harvey is a FastAPI-based intelligent financial assistant designed for context-a
 ## User Preferences
 I prefer iterative development and want to be involved in key decision-making processes. Please ask before making major changes or architectural shifts. I appreciate clear, concise explanations and direct answers, but also value detailed documentation for complex features. Ensure the coding style is clean, maintainable, and follows best practices.
 
-## Recent Changes (November 7, 2025)
-- **Achieved 100% System Health:** Optimized sanity check v6.0 eliminates all warnings by using correct database table names (tickers, dividends) and modern datetime handling
-- **Recovery Email Notifications:** System now sends "fixed it" emails when health recovers above 80% after issues, with state tracking to prevent spam
-- **Fixed Timer False Positives:** Resolved timer check errors - now correctly verifies cron jobs (4 ML schedulers confirmed running)
-- **Email Alerts Bi-directional:** SendGrid alerts for both problems (WARNING/CRITICAL) and recoveries (RESOLVED) to dev@heydividend.com
+## Recent Changes (November 8, 2025)
+- **✅ UNIFIED Harvey System:** Successfully integrated all features into ONE Harvey API on port 8001 - no more separate services!
+- **✅ Database Fixed:** Resolved FreeTDS connection issues by switching to pymssql driver - Harvey now connects properly to Azure SQL
+- **✅ RAG System Integrated:** Agentic RAG enrichment with multi-source orchestration (Azure SQL, Yahoo Finance, Massive.com sentiment)
+- **✅ Firewall Rule Confirmed:** Azure SQL firewall rule for VM IP 20.81.210.213 already in place and working
+- **Previous (Nov 7):** Achieved 100% System Health, Recovery Email Notifications, Fixed Timer False Positives, Bi-directional Email Alerts
 
 ## System Architecture
 
