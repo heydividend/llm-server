@@ -1,0 +1,47 @@
+[
+  {
+    "video_id": "intro_dividend_investing",
+    "title": "Dividend Investing for Beginners - Complete Guide",
+    "url": "https://youtube.com/@heydividedtv",
+    "duration": "12:45",
+    "topics": ["dividend basics", "passive income", "investing 101", "dividend strategy"],
+    "keywords": ["dividend", "passive income", "beginner", "investing", "stocks", "income strategy", "retirement"],
+    "description": "Comprehensive introduction to dividend investing covering basics, strategies, and common pitfalls"
+  },
+  {
+    "video_id": "dividend_aristocrats",
+    "title": "Dividend Aristocrats Explained - 25 Years of Growth",
+    "url": "https://youtube.com/@heydividedtv",
+    "duration": "15:20",
+    "topics": ["dividend aristocrats", "dividend growth", "reliable dividends"],
+    "keywords": ["aristocrats", "dividend growth", "25 years", "S&P 500", "reliable", "blue chip"],
+    "description": "Deep dive into Dividend Aristocrats - companies with 25+ years of consecutive dividend increases"
+  },
+  {
+    "video_id": "monthly_dividend_portfolio",
+    "title": "Build a Monthly Dividend Income Portfolio",
+    "url": "https://youtube.com/@heydividedtv",
+    "duration": "18:30",
+    "topics": ["monthly dividends", "income portfolio", "cash flow"],
+    "keywords": ["monthly", "income", "portfolio", "cash flow", "passive income", "strategy"],
+    "description": "Step-by-step guide to creating a portfolio that pays dividends every month"
+  },
+  {
+    "video_id": "reit_investing",
+    "title": "REIT Investing - Real Estate Dividends Explained",
+    "url": "https://youtube.com/@heydividedtv",
+    "duration": "20:15",
+    "topics": ["REITs", "real estate", "high yield"],
+    "keywords": ["REIT", "real estate", "high yield", "distributions", "tax", "FFO"],
+    "description": "Complete guide to Real Estate Investment Trusts including tax implications and evaluation metrics"
+  },
+  {
+    "video_id": "dividend_tax_strategies",
+    "title": "Dividend Tax Optimization Strategies for 2024",
+    "url": "https://youtube.com/@heydividedtv",
+    "duration": "16:45",
+    "topics": ["tax optimization", "dividend taxes", "tax strategy"],
+    "keywords": ["tax", "qualified dividends", "ordinary income", "tax-advantaged", "IRA", "Roth"],
+    "description": "Maximize after-tax dividend income with these proven tax optimization strategies"
+  }
+]

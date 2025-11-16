@@ -1,0 +1,117 @@
+{
+  "misconceptions": {
+    "cusip_vs_ticker": {
+      "title": "CUSIP vs Ticker Symbol",
+      "description": "CUSIP numbers and ticker symbols are different identifiers for securities. Understanding the difference is crucial for trading and research.",
+      "examples": [
+        "CUSIP: 9-character alphanumeric code (e.g., 037833100 for Apple Inc.)",
+        "Ticker: Short symbol used for trading (e.g., AAPL for Apple Inc.)",
+        "CUSIPs are used for settlement and record-keeping, not trading",
+        "Use ticker symbols when searching for stock prices or placing trades",
+        "Every security has a unique CUSIP, but only publicly traded ones have tickers"
+      ],
+      "correction_template": "It looks like you're using a CUSIP number. For dividend and stock information, please use the ticker symbol instead. For example, use 'AAPL' instead of the CUSIP '037833100'."
+    },
+    "distribution_vs_dividend": {
+      "title": "Distribution vs Dividend - Tax Implications",
+      "description": "Distributions and dividends have important differences, especially regarding tax treatment. Understanding these can help optimize your passive income strategy.",
+      "examples": [
+        "Qualified Dividends: From C-corps, taxed at favorable 0-20% rates",
+        "Ordinary Dividends: Taxed at ordinary income rates (up to 37%)",
+        "ROC (Return of Capital): Not immediately taxable, reduces cost basis",
+        "REIT Distributions: Often mostly ordinary income, may include ROC",
+        "MLP Distributions: Complex tax treatment with K-1 forms",
+        "Tracking cost basis is critical for distributions with ROC components"
+      ],
+      "correction_template": "Note: REITs and MLPs pay distributions, not dividends. Distributions often include Return of Capital (ROC), which has different tax treatment than qualified dividends."
+    },
+    "dividend_yield_misconception": {
+      "title": "High Yield Isn't Always Better",
+      "description": "A very high dividend yield can be a warning sign rather than an opportunity. Understanding yield sustainability is crucial.",
+      "examples": [
+        "Extremely high yields (>10%) may indicate a recent price drop",
+        "Price drops often signal dividend cut risk",
+        "Check payout ratio - above 80% is concerning for most stocks",
+        "Look at dividend growth history, not just current yield",
+        "Sustainable 3-6% yields often beat unsustainable 10%+ yields long-term"
+      ],
+      "correction_template": "While high yields are attractive, yields above 8-10% often indicate elevated risk. Consider payout ratio, dividend history, and company fundamentals."
+    },
+    "reinvestment_misconception": {
+      "title": "DRIP vs Manual Reinvestment",
+      "description": "Dividend Reinvestment Plans (DRIPs) and manual reinvestment have different advantages and tax implications.",
+      "examples": [
+        "DRIPs: Automatic reinvestment, often with no fees",
+        "DRIPs may allow fractional share purchases",
+        "All dividends are taxable even if reinvested",
+        "Manual reinvestment gives more control over timing and allocation",
+        "DRIPs can complicate cost basis tracking",
+        "Consider tax-advantaged accounts for automatic reinvestment"
+      ],
+      "correction_template": "Remember: Reinvested dividends are still taxable in the year received, whether through DRIP or manual reinvestment."
+    },
+    "ex_dividend_date_confusion": {
+      "title": "Ex-Dividend Date Timing",
+      "description": "Understanding ex-dividend dates is crucial for dividend capture strategies and avoiding disappointment.",
+      "examples": [
+        "Must own stock BEFORE ex-dividend date to receive dividend",
+        "Stock price typically drops by dividend amount on ex-date",
+        "Declaration date ≠ Ex-date ≠ Record date ≠ Payment date",
+        "T+1 settlement: Buy at least 1 day before ex-date",
+        "Dividend capture rarely works due to price adjustment",
+        "Focus on long-term holding, not short-term dividend capture"
+      ],
+      "correction_template": "To receive the upcoming dividend, you must purchase shares before the ex-dividend date. The stock price will adjust down on the ex-date."
+    },
+    "payout_ratio_misunderstanding": {
+      "title": "Payout Ratio Guidelines",
+      "description": "Payout ratio indicates dividend sustainability and varies by sector and company maturity.",
+      "examples": [
+        "Payout Ratio = Dividends / Earnings",
+        "0-40%: Conservative, room for growth",
+        "40-60%: Balanced, sustainable for most companies",
+        "60-80%: High, limited growth potential",
+        "80%+: Risky, potential dividend cut ahead",
+        "REITs: Must pay 90%+ of taxable income, so high ratios are normal",
+        "MLPs: Use distributable cash flow, not earnings"
+      ],
+      "correction_template": "Payout ratios above 80% suggest limited dividend safety buffer. For REITs, evaluate based on FFO (Funds From Operations) instead of earnings."
+    }
+  },
+  "quick_tips": {
+    "dividend_safety": [
+      "Check payout ratio (prefer <70% for non-REITs)",
+      "Review dividend growth history (5+ years of increases is positive)",
+      "Examine free cash flow coverage",
+      "Monitor debt levels and interest coverage",
+      "Diversify across sectors and payment months"
+    ],
+    "tax_optimization": [
+      "Hold qualified dividend stocks in taxable accounts",
+      "Keep REITs and high-yield bonds in tax-advantaged accounts",
+      "Consider tax-loss harvesting to offset dividend income",
+      "Track cost basis carefully, especially with DRIPs",
+      "Understand your state's tax treatment of dividends"
+    ],
+    "portfolio_building": [
+      "Aim for monthly dividend income through strategic timing",
+      "Balance yield, growth, and safety",
+      "Include Dividend Aristocrats for stability",
+      "Consider sector diversification",
+      "Don't chase yields above 8% without thorough research"
+    ]
+  },
+  "educational_resources": {
+    "key_terms": {
+      "Dividend Aristocrat": "S&P 500 company with 25+ years of consecutive dividend increases",
+      "Dividend King": "Company with 50+ years of consecutive dividend increases",
+      "Dividend Champion": "Company with 25+ years of dividend growth (any index)",
+      "DRIP": "Dividend Reinvestment Plan - automatic dividend reinvestment",
+      "Qualified Dividend": "Dividend eligible for favorable long-term capital gains tax rates",
+      "Payout Ratio": "Percentage of earnings paid as dividends",
+      "Yield on Cost": "Current annual dividend / original purchase price",
+      "FFO": "Funds From Operations - key REIT profitability metric",
+      "Distribution": "Payment from REITs, MLPs, or funds (may include ROC)"
+    }
+  }
+}
