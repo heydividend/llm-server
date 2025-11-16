@@ -7,6 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse, JSONResponse
+import orjson
 
 from app.config import settings
 from app.utils.helper import (
@@ -22,6 +23,7 @@ from app.logger_module import QueryResponseLogger
 from app.services import conversation_service
 from app.services.pdfco_service import pdfco_service
 from app.services.portfolio_parser import portfolio_parser
+from app.helpers.video_integration import get_video_recommendations
 
 logging.basicConfig(
     level=logging.INFO,
@@ -432,13 +434,45 @@ async def chat_completions(request: Request):
         if stream:
             # Wrapper to collect chunks while streaming
             async def stream_and_log():
-                collected = []
+                collected_content = []
+                req_id = f"chatcmpl-{int(datetime.now().timestamp() * 1000)}"
+                done_chunk = None
                 try:
                     for chunk in gen:
-                        collected.append(chunk)
-                        yield chunk
+                        # Ensure chunk is bytes
+                        chunk_bytes = chunk if isinstance(chunk, bytes) else chunk.encode('utf-8')
+                        chunk_str = chunk_bytes.decode('utf-8')
+                        
+                        # Hold back the [DONE] chunk to append videos before it
+                        if chunk_str == 'data: [DONE]\n\n':
+                            done_chunk = chunk_bytes
+                            continue
+                            
+                        yield chunk_bytes
+                        
+                        # Extract content from SSE chunk for conversation history
+                        if chunk_str.startswith('data: '):
+                            try:
+                                data = orjson.loads(chunk_str[6:].strip())
+                                content = data.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                                if content:
+                                    collected_content.append(content)
+                            except:
+                                pass
+                    
+                    # After AI response, append relevant videos BEFORE [DONE]
+                    videos = get_video_recommendations(question, max_results=2)
+                    if videos:
+                        video_sse = f'data: {orjson.dumps({"id": req_id, "object": "chat.completion.chunk", "choices": [{"delta": {"content": videos}}]}).decode()}\n\n'
+                        yield video_sse.encode('utf-8')
+                        collected_content.append(videos)
+                    
+                    # Now emit the [DONE] chunk
+                    if done_chunk:
+                        yield done_chunk
+                        
                 finally:
-                    response_text = "".join(collected)
+                    response_text = "".join(collected_content)
                     
                     # Save assistant response to conversation
                     try:
@@ -471,10 +505,24 @@ async def chat_completions(request: Request):
             return StreamingResponse(stream_and_log(), media_type="text/event-stream")
 
         # Non-streaming
-        collected = []
+        collected_content = []
         for chunk in gen:
-            collected.append(chunk)
-        text = "".join(collected)
+            chunk_str = chunk.decode('utf-8') if isinstance(chunk, bytes) else chunk
+            # Extract content from SSE chunk
+            if chunk_str.startswith('data: ') and chunk_str != 'data: [DONE]\n\n':
+                try:
+                    data = orjson.loads(chunk_str[6:].strip())
+                    content = data.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                    if content:
+                        collected_content.append(content)
+                except:
+                    pass
+        text = "".join(collected_content)
+        
+        # Enhance with videos
+        videos = get_video_recommendations(question, max_results=2)
+        if videos:
+            text += videos
         
         # === SAVE ASSISTANT RESPONSE ===
         try:

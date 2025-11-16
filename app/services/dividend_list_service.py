@@ -6,7 +6,11 @@ Provides intelligent dividend list management with watchlist/portfolio integrati
 import logging
 from typing import Dict, List, Optional, Any, Tuple
 from datetime import datetime
-import pymssql
+
+try:
+    import pymssql
+except ImportError:
+    pymssql = None
 
 logger = logging.getLogger(__name__)
 
