@@ -9,7 +9,7 @@ from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from pydantic import BaseModel
 
-from app.core.auth import get_api_key
+from app.core.auth import verify_api_key
 from app.services.ml_schedulers_service import MLSchedulersService
 from app.core.self_healing import self_healing_manager
 
@@ -43,7 +43,7 @@ class SchedulerStatusResponse(BaseModel):
 
 
 @router.get("/health")
-async def get_ml_schedulers_health(api_key: str = Depends(get_api_key)):
+async def get_ml_schedulers_health(api_key: str = Depends(verify_api_key)):
     """
     Get health status of all ML schedulers
     """
@@ -64,7 +64,7 @@ async def get_ml_schedulers_health(api_key: str = Depends(get_api_key)):
 async def get_payout_rating(
     request: PayoutRatingRequest,
     background_tasks: BackgroundTasks,
-    api_key: str = Depends(get_api_key)
+    api_key: str = Depends(verify_api_key)
 ):
     """
     Get dividend payout ratings (A+/A/B/C) for symbols
@@ -110,7 +110,7 @@ async def get_payout_rating(
 async def get_dividend_calendar(
     request: DividendCalendarRequest,
     background_tasks: BackgroundTasks,
-    api_key: str = Depends(get_api_key)
+    api_key: str = Depends(verify_api_key)
 ):
     """
     Get predicted dividend payment dates
@@ -153,7 +153,7 @@ async def get_dividend_calendar(
 
 
 @router.get("/training/status")
-async def get_training_status(api_key: str = Depends(get_api_key)):
+async def get_training_status(api_key: str = Depends(verify_api_key)):
     """
     Get status of ML model training
     Training runs weekly on Sunday 3 AM
@@ -176,7 +176,7 @@ async def get_training_status(api_key: str = Depends(get_api_key)):
 @router.post("/training/trigger")
 async def trigger_training(
     background_tasks: BackgroundTasks,
-    api_key: str = Depends(get_api_key)
+    api_key: str = Depends(verify_api_key)
 ):
     """
     Manually trigger ML model training
@@ -199,7 +199,7 @@ async def trigger_training(
 
 
 @router.get("/admin/status")
-async def get_admin_status(api_key: str = Depends(get_api_key)):
+async def get_admin_status(api_key: str = Depends(verify_api_key)):
     """
     Admin endpoint for comprehensive ML scheduler status
     """
@@ -253,7 +253,7 @@ async def get_admin_status(api_key: str = Depends(get_api_key)):
 async def restart_scheduler(
     scheduler_name: str,
     background_tasks: BackgroundTasks,
-    api_key: str = Depends(get_api_key)
+    api_key: str = Depends(verify_api_key)
 ):
     """
     Admin endpoint to restart specific scheduler

@@ -8,8 +8,8 @@ from typing import List, Optional
 from pydantic import BaseModel
 import logging
 import os
-import pymssql
 
+from app.core.database import engine
 from app.services.dividend_list_service import DividendListService
 from app.services.watchlist_portfolio_service import WatchlistPortfolioService
 
@@ -19,12 +19,8 @@ router = APIRouter(prefix="/api/dividend-lists", tags=["dividend-lists"])
 
 def get_db_connection():
     """Get database connection"""
-    return pymssql.connect(
-        server=os.getenv('SQLSERVER_HOST'),
-        user=os.getenv('SQLSERVER_USER'),
-        password=os.getenv('SQLSERVER_PASSWORD'),
-        database=os.getenv('SQLSERVER_DB')
-    )
+    # Return SQLAlchemy connection instead of pymssql
+    return engine.raw_connection()
 
 def get_user_id_from_header(x_user_id: Optional[str] = Header(None)) -> int:
     """Extract user ID from header"""

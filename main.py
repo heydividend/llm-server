@@ -26,13 +26,17 @@ from app.routes import harvey_status
 from app.routes import dividend_strategies
 from app.routes import training
 from app.routes import admin  # Admin endpoints for logging and monitoring
-from app.routes import ml_schedulers  # ML scheduler endpoints
+# from app.routes import ml_schedulers  # ML scheduler endpoints - temporarily disabled due to aiohttp dependency
 from app.routers import data_quality
 from app.middleware.api_logging import APILoggingMiddleware
 from app.core.database import engine
 from app.core.auth import verify_api_key
 from app.services.scheduler_service import scheduler
 from financial_models.api.endpoints import router as financial_router
+
+# Import new feature routes
+from app.api.routes import video_routes
+from app.api.routes import dividend_lists_routes
 
 
 # Setup logging using centralized configuration
@@ -66,8 +70,54 @@ class TimingMiddleware(BaseHTTPMiddleware):
         return response
 
 
+# Feature Monitoring Middleware - tracks metrics for new features
+class FeatureMonitoringMiddleware(BaseHTTPMiddleware):
+    """Lightweight middleware to monitor new feature endpoints"""
+    
+    FEATURE_ENDPOINTS = {
+        "/api/videos": "VIDEO_SERVICE",
+        "/api/dividend-lists": "DIVIDEND_LISTS"
+    }
+    
+    async def dispatch(self, request, call_next):
+        path = request.url.path
+        
+        # Check if this is a monitored feature endpoint
+        feature_name = None
+        for prefix, name in self.FEATURE_ENDPOINTS.items():
+            if path.startswith(prefix):
+                feature_name = name
+                break
+        
+        # If not a monitored feature, pass through
+        if not feature_name:
+            return await call_next(request)
+        
+        # Track metrics for monitored features
+        start = time.time()
+        
+        try:
+            response = await call_next(request)
+            duration_ms = int((time.time() - start) * 1000)
+            
+            # Log with specified format
+            logger.info(
+                f"[{feature_name}] endpoint={path} status={response.status_code} duration={duration_ms}ms"
+            )
+            
+            return response
+            
+        except Exception as e:
+            duration_ms = int((time.time() - start) * 1000)
+            logger.error(
+                f"[{feature_name}] endpoint={path} status=500 duration={duration_ms}ms error={str(e)}"
+            )
+            raise
+
+
 # Add middleware and routes
 app.add_middleware(TimingMiddleware)
+app.add_middleware(FeatureMonitoringMiddleware)  # Monitor new features
 app.include_router(ai_routes.router, prefix="/v1/chat", tags=["AI"])
 app.include_router(income_ladder.router, prefix="/v1", tags=["Income Ladder"])
 app.include_router(tax_optimization.router, prefix="/v1", tags=["Tax Optimization"])
@@ -80,8 +130,12 @@ app.include_router(dividend_strategies.router, prefix="/v1", tags=["Dividend Str
 app.include_router(training.router, prefix="/v1", tags=["Training Data"])
 app.include_router(data_quality.router, prefix="/v1", tags=["Data Quality"])
 app.include_router(financial_router, tags=["Financial Models"])
-app.include_router(ml_schedulers.router, prefix="/v1", tags=["ML Schedulers"])
+# app.include_router(ml_schedulers.router, prefix="/v1", tags=["ML Schedulers"])  # Temporarily disabled
 app.include_router(admin.router, prefix="/v1", tags=["Admin"])
+
+# Include new feature routers
+app.include_router(video_routes.router, tags=["Videos"])
+app.include_router(dividend_lists_routes.router, tags=["Dividend Lists"])
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
