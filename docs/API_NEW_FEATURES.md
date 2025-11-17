@@ -96,6 +96,39 @@ Get all available video topics.
 
 ---
 
+#### GET /api/videos/topic/{topic}
+Get videos for a specific topic.
+
+**Parameters:**
+- `topic` (path): Topic name (e.g., "dividend basics", "REITs", "tax optimization")
+
+**Example:** `GET /api/videos/topic/REITs`
+
+**Response:**
+```json
+{
+  "query": "topic:REITs",
+  "videos": [
+    {
+      "video_id": "reits_investing",
+      "title": "REIT Investing Explained",
+      "url": "https://youtube.com/@heydividedtv",
+      "duration": "15:20",
+      "topics": ["REITs", "real estate", "passive income"],
+      "relevance_score": 10
+    }
+  ],
+  "total_results": 1
+}
+```
+
+**cURL Example:**
+```bash
+curl -X GET "http://localhost:8001/api/videos/topic/dividend%20basics"
+```
+
+---
+
 #### POST /api/videos/recommend
 Get formatted video recommendations with markdown response.
 
@@ -222,6 +255,72 @@ curl -X POST http://localhost:8001/api/dividend-lists/add-to-watchlist \
   -H "Content-Type: application/json" \
   -H "X-User-Id: 123" \
   -d '{"category_id": "monthly_payers", "max_stocks": 5}'
+```
+
+---
+
+#### GET /api/dividend-lists/user/lists
+Get all custom dividend lists created by the user.
+
+**Headers:**
+- `X-User-Id`: User identifier (optional, defaults to 1)
+
+**Response:**
+```json
+{
+  "lists": [
+    {
+      "list_id": 1,
+      "list_name": "My High Yield Portfolio",
+      "category_id": "high_yield",
+      "description": "Top high-yield dividend stocks",
+      "created_date": "2025-11-15T10:00:00",
+      "stock_count": 15,
+      "is_public": false
+    }
+  ],
+  "total": 1
+}
+```
+
+**cURL Example:**
+```bash
+curl -X GET http://localhost:8001/api/dividend-lists/user/lists \
+  -H "X-User-Id: 123"
+```
+
+---
+
+#### POST /api/dividend-lists/user/create
+Create a new custom dividend list.
+
+**Headers:**
+- `X-User-Id`: User identifier (optional, defaults to 1)
+
+**Request:**
+```json
+{
+  "list_name": "My Monthly Dividend Portfolio",
+  "tickers": ["O", "STAG", "AGNC"]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "list_id": 5,
+  "list_name": "My Monthly Dividend Portfolio",
+  "stocks_added": 3
+}
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:8001/api/dividend-lists/user/create \
+  -H "Content-Type: application/json" \
+  -H "X-User-Id: 123" \
+  -d '{"list_name": "Tech Dividend Stocks", "tickers": ["AAPL", "MSFT", "CSCO"]}'
 ```
 
 ---
@@ -384,4 +483,4 @@ async function addToWatchlist(userId: number, categoryId: string) {
 
 For issues or questions, contact the Harvey AI development team.
 
-**Last Updated:** November 16, 2025
+**Last Updated:** November 16, 2025 (Updated with 3 additional endpoints)
