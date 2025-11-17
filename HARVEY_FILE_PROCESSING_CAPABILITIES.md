@@ -22,27 +22,39 @@ Harvey can analyze financial documents, portfolio statements, and dividend repor
 - ✅ Tables and spreadsheets (PNG, JPG, JPEG)
 
 ### Office Documents
-- ✅ Excel spreadsheets (.xlsx, .xls)
-- ✅ Word documents (.docx, .doc)
+- ✅ Excel spreadsheets (.xlsx - modern format)
+- ✅ Excel legacy files (.xls - older format)
 - ✅ CSV files with portfolio data
+
+### Cloud Storage (NEW - 2025)
+- ✅ **Google Sheets** - Direct URL processing
+- ✅ **Google Drive** - Download and analyze files
+- ✅ **OneDrive** - Microsoft cloud file access
 
 ---
 
 ## 🔧 Processing Technologies
 
-### 1. **Node Service Integration** (Primary)
-**Technology:** Node.js text extraction service  
-**Endpoint:** `NODE_ANALYZE_URL`  
+### 1. **Enhanced File Processor** (NEW - Unified System)
+**Technology:** Multi-source file processing pipeline  
 **Capabilities:**
-- Basic text extraction from PDFs
-- Image OCR (optical character recognition)
-- Office document parsing
-- Multi-format support
+- Automatic file type detection
+- Cloud source routing (Sheets, Drive, OneDrive)
+- Secure file validation (50MB limit, type checking)
+- Format normalization
+- Portfolio data extraction from any source
 
-**Limitations:**
-- Basic text-only extraction
-- Limited table structure preservation
-- No specialized financial data parsing
+**Supported Sources:**
+- Local uploads (PDF, CSV, XLS, XLSX, images)
+- Google Sheets URLs
+- Google Drive URLs
+- OneDrive URLs
+
+**Security Features:**
+- 50MB file size limit
+- MIME type validation
+- File extension whitelisting
+- Sanitized error messages
 
 ### 2. **PDF.co Advanced Processing** (NEW - Enhanced)
 **Technology:** PDF.co cloud API  
@@ -65,13 +77,39 @@ Harvey can analyze financial documents, portfolio statements, and dividend repor
 - Bulk portfolio data extraction
 - Financial reports with structured data
 
-### 3. **Azure Document Intelligence** (Fallback)
+### 3. **Azure Document Intelligence** (PDF/Image OCR)
 **Technology:** Azure AI Document Intelligence (formerly Form Recognizer)  
 **Integration:** JSON response flattening via `_maybe_flatten_vision_json()`  
 **Capabilities:**
-- Vision API JSON response handling
+- High-accuracy OCR for PDFs and images
 - Multi-page document analysis
 - Layout-aware text extraction
+- Table structure preservation
+
+### 4. **Excel Processing**
+**Technology:** openpyxl (XLSX) + xlrd 1.2.0 (XLS)  
+**Capabilities:**
+- Modern Excel (.xlsx) via openpyxl
+- Legacy Excel (.xls) via xlrd 1.2.0
+- Automatic format detection
+- Column name recognition
+- Data normalization
+
+### 5. **Cloud Integrations**
+**Google Sheets:**
+- Service account authentication
+- Read spreadsheet data
+- Convert to CSV for parsing
+
+**Google Drive:**
+- Download files from Drive
+- Support for public and private files
+- Auto-detect file types
+
+**OneDrive:**
+- Microsoft Graph API integration
+- OAuth 2.0 client credentials
+- Personal and business accounts
 
 ---
 
@@ -386,6 +424,6 @@ Form Data:
 
 ---
 
-**Last Updated:** November 1, 2025  
+**Last Updated:** November 17, 2025  
 **Harvey Version:** Harvey-1o  
-**PDF.co Integration:** v1.0
+**Enhanced File Processing:** v2.0 (Cloud Integrations + XLS Support)

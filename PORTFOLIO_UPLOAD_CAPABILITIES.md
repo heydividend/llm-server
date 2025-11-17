@@ -19,12 +19,13 @@ Harvey can now analyze portfolios and watchlists uploaded in **ANY** of these fo
 
 **Processing:** Node service OCR → Portfolio Parser
 
-### 3. **Excel/Spreadsheets**
-- ✅ `.xlsx` Excel workbooks
-- ✅ `.xls` Legacy Excel files
+### 3. **Excel/Spreadsheets** (ENHANCED - 2025)
+- ✅ `.xlsx` Excel workbooks (modern format via openpyxl)
+- ✅ `.xls` Legacy Excel files (via xlrd 1.2.0)
 - ✅ Portfolio trackers with custom columns
+- ✅ Multi-sheet workbooks
 
-**Processing:** Node service extraction → Portfolio Parser
+**Processing:** openpyxl/xlrd extraction → Portfolio Parser
 
 ### 4. **CSV Files**
 - ✅ Any CSV with ticker symbols
@@ -32,6 +33,13 @@ Harvey can now analyze portfolios and watchlists uploaded in **ANY** of these fo
 - ✅ Tab-delimited or comma-delimited
 
 **Processing:** Direct CSV parsing → Portfolio Parser
+
+### 5. **Cloud Storage** (NEW - 2025)
+- ✅ **Google Sheets** - Paste spreadsheet URL
+- ✅ **Google Drive** - Share file link
+- ✅ **OneDrive** - Microsoft cloud files
+
+**Processing:** Cloud API download → Format detection → Portfolio Parser
 
 ---
 
@@ -473,7 +481,7 @@ curl -X POST http://localhost:5000/chat \
 
 ---
 
-**Harvey is now ready to analyze portfolios from ANY format!** 🎉
+**Harvey is now ready to analyze portfolios from ANY format or cloud source!** 🎉
 
 Upload your portfolio and ask:
 - "Analyze my holdings"
@@ -481,4 +489,14 @@ Upload your portfolio and ask:
 - "How diversified am I?"
 - "Get ML predictions for my portfolio"
 
-Harvey will extract, enrich, and provide professional-grade analysis automatically.
+Or share cloud links:
+- "Analyze this Google Sheet: https://docs.google.com/spreadsheets/d/..."
+- "Process this file from Drive: https://drive.google.com/file/d/..."
+- "Import from OneDrive: https://onedrive.live.com/..."
+
+Harvey will extract, enrich, and provide professional-grade analysis automatically from any source.
+
+---
+
+**Last Updated:** November 17, 2025  
+**Enhanced File Processing:** v2.0 (XLS + Cloud Integrations)

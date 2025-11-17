@@ -1,7 +1,7 @@
 # Harvey API Documentation
 
 **Version:** Harvey-1o  
-**Last Updated:** October 30, 2025
+**Last Updated:** November 17, 2025
 
 Complete API reference for integrating with Harvey, your AI-powered financial advisor backend.
 
@@ -13,15 +13,16 @@ Complete API reference for integrating with Harvey, your AI-powered financial ad
 2. [Authentication](#authentication)
 3. [Base URL & Response Format](#base-url--response-format)
 4. [Core Chat API](#core-chat-api)
-5. [Conversational Memory](#conversational-memory)
-6. [Income Ladder Builder](#income-ladder-builder)
-7. [Tax Optimization AI](#tax-optimization-ai)
-8. [Natural Language Alerts](#natural-language-alerts)
-9. [Proactive Insights](#proactive-insights)
-10. [ML Predictions](#ml-predictions)
-11. [ML Schedulers](#ml-schedulers)
-12. [Error Handling](#error-handling)
-13. [Code Examples](#code-examples)
+5. [File Processing](#file-processing) **NEW**
+6. [Conversational Memory](#conversational-memory)
+7. [Income Ladder Builder](#income-ladder-builder)
+8. [Tax Optimization AI](#tax-optimization-ai)
+9. [Natural Language Alerts](#natural-language-alerts)
+10. [Proactive Insights](#proactive-insights)
+11. [ML Predictions](#ml-predictions)
+12. [ML Schedulers](#ml-schedulers)
+13. [Error Handling](#error-handling)
+14. [Code Examples](#code-examples)
 
 ---
 
@@ -32,6 +33,7 @@ Harvey provides a comprehensive REST API for financial analysis, dividend invest
 **Key Features:**
 - Streaming chat responses with Server-Sent Events (SSE)
 - Token-aware conversational memory (4000 token budget)
+- Enhanced file processing (7 file types + cloud storage) **NEW**
 - ML-powered dividend analysis and predictions
 - Tax optimization and loss harvesting
 - Natural language alert creation

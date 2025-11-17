@@ -2,17 +2,156 @@
 
 ## Overview
 
-This document covers three new Harvey AI features deployed to production:
+This document covers four major Harvey AI feature sets deployed to production:
 
-1. **Video Answer Service** - YouTube @heydividedtv integration
-2. **Investor Education Service** - Investment misconception detection
-3. **Dividend Lists Management** - Curated dividend stock categories
+1. **Enhanced File Processing** - 7 file types + cloud storage integration **NEW**
+2. **Video Answer Service** - YouTube @heydividedtv integration
+3. **Investor Education Service** - Investment misconception detection
+4. **Dividend Lists Management** - Curated dividend stock categories
 
 **Base URL:** `https://20.81.210.213:8001` (Production) or `http://localhost:8001` (Local)
 
+**Last Updated:** November 17, 2025
+
 ---
 
-## 1. Video Answer Service
+## 1. Enhanced File Processing Service (NEW - 2025)
+
+Process portfolios from local files or cloud storage platforms.
+
+### Endpoints
+
+#### POST /files/upload
+Upload local files for portfolio analysis.
+
+**Supported File Types:**
+- PDF (.pdf) - Brokerage statements, reports
+- CSV (.csv) - Portfolio exports
+- Excel Modern (.xlsx) - Via openpyxl
+- Excel Legacy (.xls) - Via xlrd 1.2.0
+- Images (.jpg, .jpeg, .png) - Screenshots, scans
+
+**Request (multipart/form-data):**
+```bash
+curl -X POST http://localhost:8001/files/upload \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "file=@portfolio.xlsx" \
+  -F "include_summary=true"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "file_type": "xlsx",
+  "source": "local",
+  "holdings_count": 5,
+  "tickers": ["AAPL", "MSFT", "JNJ", "KO", "PEP"],
+  "portfolio_summary": "**PORTFOLIO ANALYSIS (5 holdings detected)**...",
+  "metadata": {
+    "row_count": 6,
+    "column_count": 7
+  }
+}
+```
+
+**Security:**
+- Max file size: 50MB
+- MIME type validation
+- Extension whitelisting
+- Sanitized error messages
+
+---
+
+#### POST /files/cloud
+Process files from cloud storage (Google Sheets, Drive, OneDrive).
+
+**Supported Cloud Sources:**
+- Google Sheets
+- Google Drive
+- OneDrive (requires credentials)
+
+**Request:**
+```json
+{
+  "url": "https://docs.google.com/spreadsheets/d/1ABC...xyz/edit",
+  "include_summary": true
+}
+```
+
+**cURL Example:**
+```bash
+curl -X POST http://localhost:8001/files/cloud \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://docs.google.com/spreadsheets/d/...", "include_summary": true}'
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "file_type": "google_sheets",
+  "source": "cloud",
+  "holdings_count": 8,
+  "tickers": ["HOOY", "MSTY", "SMCY", "MARO", "PLTY", "CVNY", "YETH", "CONY"],
+  "portfolio_summary": "**PORTFOLIO ANALYSIS (8 holdings detected)**..."
+}
+```
+
+---
+
+#### GET /files/health
+Check health status of file processing services.
+
+**Response:**
+```json
+{
+  "azure_document_intelligence": {
+    "enabled": true,
+    "status": "healthy"
+  },
+  "google_sheets": {
+    "enabled": true,
+    "status": "healthy"
+  },
+  "google_drive": {
+    "enabled": true,
+    "status": "healthy"
+  },
+  "onedrive": {
+    "enabled": false,
+    "status": "disabled"
+  }
+}
+```
+
+---
+
+#### GET /files/supported-types
+Get list of all supported file types and cloud sources.
+
+**Response:**
+```json
+{
+  "local_files": [
+    {"type": "pdf", "extension": ".pdf"},
+    {"type": "csv", "extension": ".csv"},
+    {"type": "xlsx", "extension": ".xlsx"},
+    {"type": "xls", "extension": ".xls"},
+    {"type": "image", "extension": ".jpg, .jpeg, .png"}
+  ],
+  "cloud_sources": [
+    {"source": "google_sheets", "enabled": true},
+    {"source": "google_drive", "enabled": true},
+    {"source": "onedrive", "enabled": false}
+  ]
+}
+```
+
+---
+
+## 2. Video Answer Service
 
 Search and recommend relevant videos from the @heydividedtv YouTube channel.
 
@@ -151,7 +290,7 @@ Get formatted video recommendations with markdown response.
 
 ---
 
-## 2. Dividend Lists Management
+## 3. Dividend Lists Management
 
 Access curated dividend stock categories and manage watchlists/portfolios.
 
@@ -390,7 +529,7 @@ Get user's portfolio with dividend projections.
 
 ---
 
-## 3. Investor Education Service
+## 4. Investor Education Service
 
 The Investor Education Service runs automatically during chat interactions and detects common misconceptions. It's not directly exposed via API but enhances chat responses.
 
@@ -483,4 +622,4 @@ async function addToWatchlist(userId: number, categoryId: string) {
 
 For issues or questions, contact the Harvey AI development team.
 
-**Last Updated:** November 16, 2025 (Updated with 3 additional endpoints)
+**Last Updated:** November 17, 2025 (Added Enhanced File Processing with 4 new endpoints)
