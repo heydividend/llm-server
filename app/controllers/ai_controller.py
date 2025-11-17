@@ -25,6 +25,7 @@ from app.services.pdfco_service import pdfco_service
 from app.services.portfolio_parser import portfolio_parser
 from app.helpers.video_integration import get_video_recommendations
 from app.helpers.status_message_detector import detect_status_message, get_status_sse_chunk
+from app.services.hashtag_analytics_service import get_hashtag_analytics_service
 
 logging.basicConfig(
     level=logging.INFO,
@@ -64,7 +65,7 @@ AUTO_WEB_FALLBACK = os.getenv("AUTO_WEB_FALLBACK", "true").lower() in ("1", "tru
 FAST_WEB_MAX_PAGES = int(os.getenv("FAST_WEB_MAX_PAGES", "5"))
 
 
-def process_query_with_tickers(query: str, rid: str, debug: bool = False) -> tuple:
+def process_query_with_tickers(query: str, rid: str, debug: bool = False, session_id: str = None, user_id: str = None) -> tuple:
     """Extract tickers from query and return updated query with ticker information."""
     ticker_result = extract_tickers_function(query, debug=debug)
     
@@ -82,6 +83,19 @@ def process_query_with_tickers(query: str, rid: str, debug: bool = False) -> tup
         
         if debug and ticker_result.get("debug_info"):
             logger.info(f"[{rid}] Ticker debug info: {ticker_result['debug_info']}")
+        
+        # Track hashtag event
+        try:
+            hashtag_service = get_hashtag_analytics_service()
+            hashtag_service.track_hashtag_event(
+                hashtags=detected_tickers,
+                user_id=user_id,
+                context="chat",
+                session_id=session_id,
+                metadata={"request_id": rid}
+            )
+        except Exception as e:
+            logger.warning(f"[{rid}] Hashtag tracking failed: {str(e)}")
         
         return updated_query, ticker_info, detected_tickers
     else:
@@ -235,9 +249,14 @@ async def chat_completions(request: Request):
         debug  = str(debug_raw).lower() in ("1","true","yes","on")
         stream = str(stream_raw).lower() in ("", "1","true","yes","on")
 
-        # === TICKER EXTRACTION ===
+        # === TICKER EXTRACTION (with session tracking) ===
+        session_id_raw = form.get("session_id", "").strip() if hasattr(form.get("session_id", ""), 'strip') else ""
+        user_id_raw = form.get("user_id", "").strip() if hasattr(form.get("user_id", ""), 'strip') else ""
+        
         updated_question, ticker_info, detected_tickers = process_query_with_tickers(
-            question, rid, debug=debug
+            question, rid, debug=debug,
+            session_id=session_id_raw if session_id_raw else None,
+            user_id=user_id_raw if user_id_raw else None
         )
 
         # Build overrides
@@ -602,9 +621,27 @@ async def chat_completions(request: Request):
     debug  = bool(body.get("debug", False))
     stream = bool(body.get("stream", True))
 
-    # === TICKER EXTRACTION ===
+    # === CONVERSATION MEMORY (before ticker extraction for session tracking) ===
+    session_id_raw = (body.get("session_id") or "").strip()
+    conversation_id_raw = (body.get("conversation_id") or "").strip()
+    user_id_raw = (body.get("user_id") or "").strip()
+    
+    conv_memory = handle_conversation_memory(
+        session_id=session_id_raw if session_id_raw else None,
+        conversation_id=conversation_id_raw if conversation_id_raw else None,
+        user_query=question,
+        rid=rid
+    )
+    
+    session_id = conv_memory["session_id"]
+    conversation_id = conv_memory["conversation_id"]
+    conversation_history = conv_memory["conversation_history"]
+
+    # === TICKER EXTRACTION (with session tracking) ===
     updated_question, ticker_info, detected_tickers = process_query_with_tickers(
-        question, rid, debug=debug
+        question, rid, debug=debug, 
+        session_id=session_id,
+        user_id=user_id_raw if user_id_raw else None
     )
 
     overrides = {
@@ -618,21 +655,6 @@ async def chat_completions(request: Request):
 
     if ticker_info:
         overrides["prepend_user"] = (ticker_info + overrides["prepend_user"]).strip()
-
-    # === CONVERSATION MEMORY ===
-    session_id_raw = (body.get("session_id") or "").strip()
-    conversation_id_raw = (body.get("conversation_id") or "").strip()
-    
-    conv_memory = handle_conversation_memory(
-        session_id=session_id_raw if session_id_raw else None,
-        conversation_id=conversation_id_raw if conversation_id_raw else None,
-        user_query=question,
-        rid=rid
-    )
-    
-    session_id = conv_memory["session_id"]
-    conversation_id = conv_memory["conversation_id"]
-    conversation_history = conv_memory["conversation_history"]
     
     overrides["conversation_history"] = conversation_history
 
