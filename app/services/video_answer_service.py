@@ -70,6 +70,39 @@ class VideoAnswerService:
         
         return index
     
+    def _normalize_video_urls(self, video: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Ensure video has canonical YouTube URLs
+        
+        Generates:
+        - video_url: https://www.youtube.com/watch?v={video_id}
+        - embed_url: https://www.youtube.com/embed/{video_id}
+        - thumbnail_url: https://img.youtube.com/vi/{video_id}/maxresdefault.jpg
+        
+        Args:
+            video: Video dictionary (must have video_id)
+            
+        Returns:
+            Video dictionary with normalized URLs
+        """
+        video_id = video.get("video_id", "")
+        
+        if video_id:
+            # Generate canonical YouTube watch URL
+            video["video_url"] = f"https://www.youtube.com/watch?v={video_id}"
+            
+            # Generate embed URL for iframe embedding
+            video["embed_url"] = f"https://www.youtube.com/embed/{video_id}"
+            
+            # Generate thumbnail URL (maxresdefault for highest quality)
+            video["thumbnail_url"] = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+            
+            # Keep original url field for backwards compatibility
+            if "url" not in video or not video["url"].startswith("https://www.youtube.com/watch"):
+                video["url"] = video["video_url"]
+        
+        return video
+    
     def search_videos(self, query: str, max_results: int = 3) -> List[Dict[str, Any]]:
         """
         Search for relevant videos based on user query
@@ -79,7 +112,7 @@ class VideoAnswerService:
             max_results: Maximum number of videos to return
             
         Returns:
-            List of relevant video dictionaries with relevance scores
+            List of relevant video dictionaries with relevance scores and normalized URLs
         """
         query_lower = query.lower()
         query_terms = re.findall(r'\b\w+\b', query_lower)
@@ -115,6 +148,10 @@ class VideoAnswerService:
         for video_idx, score in sorted_videos:
             video = self.video_knowledge_base[video_idx].copy()
             video["relevance_score"] = score
+            
+            # FIX: Normalize URLs to include canonical YouTube watch/embed URLs
+            video = self._normalize_video_urls(video)
+            
             results.append(video)
         
         return results

@@ -33,7 +33,7 @@ A separate Next.js frontend provides a professional, financial-grade chat interf
 - **Proactive Insights & Alerts:** Generates daily personalized portfolio digests and utilizes natural language AI for proactive market monitoring and alerts.
 - **Professional Markdown Formatting:** Ensures clean, business-grade response formatting with standardized tables.
 - **4-Tier Dividend Analytics Framework:** Provides descriptive, diagnostic, predictive, and prescriptive analytics, integrating ML predictions and streaming progressively.
-- **File Processing:** Advanced document processing with Azure Document Intelligence, supporting various formats (CSV, Excel, PDF, images) for extracting portfolio holdings from financial statements.
+- **Enhanced File Processing & Cloud Integrations:** Comprehensive file processing supporting 7 file types (PDF, CSV, XLS, XLSX, JPG, PNG, JPEG) with Azure Document Intelligence OCR. Includes cloud integrations for Google Sheets, Google Drive, and OneDrive, enabling users to analyze portfolios directly from spreadsheets and cloud storage. Features secure file upload validation, automated format detection, and unified API endpoints.
 - **Feedback-Driven Learning System:** Collects user feedback for sentiment analysis, response quality tracking, and building training datasets for continuous improvement and fine-tuning.
 - **Self-Healing AI:** Implements automatic error detection, web search fallback, HTTP retry logic, and database resilience.
 
@@ -54,6 +54,6 @@ A separate Next.js frontend provides a professional, financial-grade chat interf
     - **FinGPT:** Self-hosted on Azure VM for dividend scoring and financial sentiment.
     - **OpenAI:** GPT-4o (legacy fallback, optional).
     - **Ollama:** For optional local Llama models.
-- **Document Processing:** Azure Document Intelligence (primary), PDF.co API (legacy fallback), Node.js text extraction service.
+- **Document Processing:** Azure Document Intelligence (primary for PDF/image OCR), openpyxl (Excel XLSX), xlrd (Excel XLS), Google Sheets API, Google Drive API, Microsoft OneDrive API (Graph), PDF.co API (legacy fallback).
 - **Charting Library:** Highcharts (client-side JavaScript CDN).
 - **Python Libraries:** FastAPI, uvicorn, pyodbc, pandas, requests, sqlalchemy, google-generativeai, azure-ai-documentintelligence.

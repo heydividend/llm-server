@@ -38,6 +38,7 @@ from financial_models.api.endpoints import router as financial_router
 from app.api.routes import video_routes
 from app.api.routes import dividend_lists_routes
 from app.api.routes import hashtag_routes
+from app.api.routes import file_processing_routes
 
 
 # Setup logging using centralized configuration
@@ -78,7 +79,8 @@ class FeatureMonitoringMiddleware(BaseHTTPMiddleware):
     FEATURE_ENDPOINTS = {
         "/api/videos": "VIDEO_SERVICE",
         "/api/dividend-lists": "DIVIDEND_LISTS",
-        "/api/hashtags": "HASHTAG_ANALYTICS"
+        "/api/hashtags": "HASHTAG_ANALYTICS",
+        "/files": "FILE_PROCESSING"
     }
     
     async def dispatch(self, request, call_next):
@@ -139,6 +141,7 @@ app.include_router(admin.router, prefix="/v1", tags=["Admin"])
 app.include_router(video_routes.router, tags=["Videos"])
 app.include_router(dividend_lists_routes.router, tags=["Dividend Lists"])
 app.include_router(hashtag_routes.router, tags=["Hashtags"])
+app.include_router(file_processing_routes.router, tags=["File Processing"])
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
