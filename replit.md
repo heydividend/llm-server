@@ -4,6 +4,12 @@
 Harvey is a FastAPI-based intelligent financial assistant designed for context-aware responses on dividends, stock prices, tickers, and company insights. Its primary purpose is to serve as an AI-powered tool for financial analysis and passive income planning, with a focus on dividend investing and real-time market data. Harvey aims to provide personalized recommendations and a robust, self-healing architecture, catering to US markets by default with options for international data. The project's ambition is to deliver a professional-grade solution for financial analysis, leveraging a unified intelligence system of multiple AI models for superior performance and cost optimization.
 
 ### ML Services on Azure VM (20.81.210.213) ✅
+**Deployment Status (Nov 18, 2025):** All systems verified and production-ready
+- ✅ Video Answer Service: Live with 5 curated videos, semantic search working
+- ✅ ML Training Agents: Active with 120 training questions across 10 categories
+- ✅ Harvey Backend: Running on port 8001 with Bearer token authentication
+- ✅ Streaming SSE: Successfully emitting video_metadata events
+
 **Active ML Schedulers (heydividend-ml-schedulers service):**
 - 🤖 **Payout Rating ML** - Daily 1:00 AM - Generates A+/A/B/C dividend safety ratings
 - 🤖 **Dividend Calendar ML** - Sunday 2:00 AM - Predicts next dividend payment dates  
@@ -14,6 +20,7 @@ Harvey is a FastAPI-based intelligent financial assistant designed for context-a
 - Service name: `heydividend-ml-schedulers`
 - Database: Azure SQL Server with pymssql driver
 - Models: Dividend predictions, payout ratings, yield forecasting, growth analysis, cut risk detection
+- Training Ingestion: 120 questions loaded (dividend analysis, income strategies, technical timing, ETF funds, tax optimization, etc.)
 
 ## User Preferences
 I prefer iterative development and want to be involved in key decision-making processes. Please ask before making major changes or architectural shifts. I appreciate clear, concise explanations and direct answers, but also value detailed documentation for complex features. Ensure the coding style is clean, maintainable, and follows best practices.
