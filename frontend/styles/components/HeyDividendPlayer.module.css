@@ -1,0 +1,452 @@
+/**
+ * HeyDividend Video Player Styles
+ * Custom branded player with Harvey's dark theme
+ * Navy (#0B1E39) background, aqua accents, professional design
+ */
+
+/* Container Variants */
+.container {
+  position: relative;
+  background: linear-gradient(135deg, #0B1E39 0%, #1a2f4d 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.container:hover {
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+/* Variant: Inline (compact, chat width) */
+.inline {
+  max-width: 100%;
+  margin: 20px 0;
+}
+
+.inline .playerWrapper {
+  height: 200px;
+}
+
+/* Variant: Expanded (full width, 16:9 ratio) */
+.expanded {
+  max-width: 100%;
+  margin: 30px 0;
+}
+
+.expanded .playerWrapper {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  height: 0;
+}
+
+.expanded .youtubePlayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Variant: Modal (fullscreen overlay) */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90vw;
+  max-width: 1200px;
+  z-index: 9999;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* Brand Header */
+.brandHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(90deg, #0B1E39 0%, #152b47 100%);
+  border-bottom: 2px solid #00d9ff;
+}
+
+.brandLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #00d9ff 0%, #00a8cc 100%);
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 14px;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+}
+
+.brandName {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.channelBadge {
+  padding: 6px 12px;
+  background: rgba(0, 217, 255, 0.1);
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  border-radius: 20px;
+  color: #00d9ff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Player Wrapper */
+.playerWrapper {
+  position: relative;
+  width: 100%;
+  background: #000;
+}
+
+.youtubePlayer {
+  width: 100%;
+  height: 100%;
+}
+
+/* Custom Controls Overlay */
+.controlsOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(11, 30, 57, 0.95) 0%, transparent 100%);
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.controlsOverlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Progress Bar */
+.progressBar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: height 0.2s ease;
+}
+
+.progressBar:hover {
+  height: 6px;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #00d9ff 0%, #00a8cc 100%);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 8px rgba(0, 217, 255, 0.6);
+}
+
+/* Controls */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.controlsLeft,
+.controlsRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.controlButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.controlButton:hover {
+  background: rgba(0, 217, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.controlButton:active {
+  transform: scale(0.95);
+}
+
+/* Volume Control */
+.volumeControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.volumeSlider {
+  width: 80px;
+  height: 4px;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #00d9ff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 4px rgba(0, 217, 255, 0.8);
+}
+
+.volumeSlider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #00d9ff;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 4px rgba(0, 217, 255, 0.8);
+}
+
+/* Time Display */
+.timeDisplay {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Speed Control */
+.speedControl {
+  position: relative;
+}
+
+.speedLabel {
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.speedMenu {
+  position: absolute;
+  bottom: 50px;
+  right: 0;
+  background: #0B1E39;
+  border: 1px solid rgba(0, 217, 255, 0.3);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+.speedOption {
+  display: block;
+  width: 100%;
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.speedOption:hover {
+  background: rgba(0, 217, 255, 0.1);
+}
+
+.speedOption.active {
+  background: rgba(0, 217, 255, 0.2);
+  color: #00d9ff;
+  font-weight: 700;
+}
+
+/* External Link */
+.externalLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(0, 217, 255, 0.2);
+  border-radius: 50%;
+  color: #00d9ff;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.externalLink:hover {
+  background: #00d9ff;
+  color: #0B1E39;
+  transform: scale(1.1);
+}
+
+/* Video Info */
+.videoInfo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 16px 20px;
+  gap: 12px;
+}
+
+.videoTitle {
+  flex: 1;
+  margin: 0;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.duration {
+  padding: 4px 10px;
+  background: rgba(0, 217, 255, 0.2);
+  border-radius: 6px;
+  color: #00d9ff;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Video Description */
+.videoDescription {
+  padding: 0 20px 16px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* CTA Section */
+.ctaSection {
+  padding: 16px 20px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #00d9ff 0%, #00a8cc 100%);
+  border: none;
+  border-radius: 8px;
+  color: #0B1E39;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 217, 255, 0.3);
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 217, 255, 0.5);
+}
+
+.ctaButton:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .brandHeader {
+    padding: 12px 16px;
+  }
+
+  .brandName {
+    font-size: 16px;
+  }
+
+  .videoTitle {
+    font-size: 16px;
+  }
+
+  .volumeControl {
+    display: none; /* Hide volume slider on mobile */
+  }
+
+  .controlsOverlay {
+    opacity: 1; /* Always show controls on mobile */
+    pointer-events: all;
+  }
+
+  .modal {
+    width: 95vw;
+  }
+}
+
+/* Accessibility */
+.controlButton:focus,
+.externalLink:focus,
+.ctaButton:focus,
+.speedOption:focus {
+  outline: 2px solid #00d9ff;
+  outline-offset: 2px;
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  background: #0B1E39;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 217, 255, 0.2);
+  border-top-color: #00d9ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

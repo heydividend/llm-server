@@ -15,7 +15,7 @@ video_service = VideoAnswerService()
 hashtag_service = get_hashtag_analytics_service()
 
 
-def enhance_response_with_videos(user_query: str, ai_response: str, threshold: int = 2, detected_tickers: Optional[List[str]] = None) -> str:
+def enhance_response_with_videos(user_query: str, ai_response: str, threshold: int = 2, detected_tickers: Optional[List[str]] = None, enable_videos: bool = True) -> str:
     """
     Enhance AI response with relevant videos from @heydividedtv
     
@@ -24,10 +24,15 @@ def enhance_response_with_videos(user_query: str, ai_response: str, threshold: i
         ai_response: Harvey's generated response
         threshold: Minimum relevance score to include videos (default: 2)
         detected_tickers: Optional list of detected tickers/hashtags
+        enable_videos: Whether to include video recommendations (default: True)
         
     Returns:
-        Enhanced response with video recommendations appended
+        Enhanced response with video recommendations appended (or unchanged if videos disabled)
     """
+    
+    # Return unchanged response if videos are disabled
+    if not enable_videos:
+        return ai_response
     
     # Enhance query with detected tickers for better video matching
     enhanced_query = user_query
@@ -47,7 +52,7 @@ def enhance_response_with_videos(user_query: str, ai_response: str, threshold: i
     return ai_response
 
 
-def get_video_recommendations(query: str, max_results: int = 2, detected_tickers: Optional[List[str]] = None) -> Optional[str]:
+def get_video_recommendations(query: str, max_results: int = 2, detected_tickers: Optional[List[str]] = None, enable_videos: bool = True) -> Optional[str]:
     """
     Get formatted video recommendations for a query
     
@@ -55,10 +60,15 @@ def get_video_recommendations(query: str, max_results: int = 2, detected_tickers
         query: Search query
         max_results: Maximum videos to return
         detected_tickers: Optional list of detected tickers/hashtags to enhance search
+        enable_videos: Whether to return video recommendations (default: True)
         
     Returns:
-        Formatted markdown string with videos, or None if no relevant videos
+        Formatted markdown string with videos, or None if no relevant videos or videos disabled
     """
+    # Return None if videos are disabled
+    if not enable_videos:
+        return None
+    
     # Enhance query with detected tickers for better video matching
     enhanced_query = query
     if detected_tickers:
