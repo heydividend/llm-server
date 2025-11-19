@@ -38,6 +38,7 @@ filelock==3.13.1
 fonttools==4.59.2
 frozenlist==1.7.0
 fsspec==2024.5.0
+google-generativeai==0.8.3
 gradio==5.46.1
 gradio_client==1.13.1
 graphviz==0.21

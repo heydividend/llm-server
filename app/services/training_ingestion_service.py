@@ -816,6 +816,179 @@ class TrainingDataIngestion:
         except Exception as e:
             logger.error(f"Failed to get training statistics: {e}")
             return {"error": str(e)}
+    
+    def ingest_gemini_questions(
+        self,
+        questions: List[Dict[str, Any]],
+        prevent_duplicates: bool = True
+    ) -> Dict[str, Any]:
+        """
+        Ingest Gemini-generated training questions into the database.
+        
+        Args:
+            questions: List of question dicts with 'question', 'category', 'answer' (optional)
+            prevent_duplicates: Check against existing questions (default: True)
+            
+        Returns:
+            Dict with ingestion statistics
+        """
+        if not self.engine:
+            return {"success": False, "error": "Database not configured"}
+        
+        ingested_count = 0
+        duplicate_count = 0
+        error_count = 0
+        
+        try:
+            with self.engine.begin() as conn:
+                for q_data in questions:
+                    question_text = q_data.get('question', '').strip()
+                    category = q_data.get('category', 'unknown')
+                    answer = q_data.get('answer', '')
+                    
+                    if not question_text:
+                        error_count += 1
+                        continue
+                    
+                    # Generate question ID based on content
+                    question_id = hashlib.md5(
+                        f"gemini:{category}:{question_text}".encode()
+                    ).hexdigest()[:12]
+                    
+                    # Check for duplicates if requested
+                    if prevent_duplicates:
+                        existing = conn.execute(
+                            text("""
+                                SELECT question_id FROM training_questions 
+                                WHERE question_id = :qid OR question_text = :qtext
+                            """),
+                            {"qid": question_id, "qtext": question_text}
+                        ).fetchone()
+                        
+                        if existing:
+                            duplicate_count += 1
+                            logger.debug(f"Skipped duplicate: {question_text[:50]}...")
+                            continue
+                    
+                    # Determine complexity level
+                    complexity = self._determine_complexity(question_text)
+                    
+                    # Insert question with gemini_generated source tag
+                    conn.execute(
+                        text("""
+                            INSERT INTO training_questions 
+                            (question_id, category, question_text, complexity_level, processed, created_at)
+                            VALUES (:qid, :cat, :qtext, :complexity, 0, GETDATE())
+                        """),
+                        {
+                            "qid": question_id,
+                            "cat": category,
+                            "qtext": question_text,
+                            "complexity": complexity
+                        }
+                    )
+                    
+                    # If answer is provided, create training data entry
+                    if answer:
+                        training_id = f"htd_{hashlib.md5(question_id.encode()).hexdigest()[:12]}"
+                        training_format = json.dumps({
+                            "messages": [
+                                {"role": "user", "content": question_text},
+                                {"role": "assistant", "content": answer}
+                            ]
+                        })
+                        
+                        conn.execute(
+                            text("""
+                                INSERT INTO harvey_training_data
+                                (training_id, question_id, best_model, combined_response, 
+                                 training_format, quality_score, exported)
+                                VALUES (:tid, :qid, :model, :response, :format, :score, 0)
+                            """),
+                            {
+                                "tid": training_id,
+                                "qid": question_id,
+                                "model": "Gemini-2.5-Pro",
+                                "response": answer,
+                                "format": training_format,
+                                "score": 0.9  # Default high score for Gemini responses
+                            }
+                        )
+                    
+                    ingested_count += 1
+                
+                logger.info(
+                    f"Ingested {ingested_count} Gemini questions "
+                    f"({duplicate_count} duplicates, {error_count} errors)"
+                )
+                
+                return {
+                    "success": True,
+                    "ingested": ingested_count,
+                    "duplicates": duplicate_count,
+                    "errors": error_count,
+                    "total_processed": len(questions)
+                }
+                
+        except Exception as e:
+            logger.error(f"Failed to ingest Gemini questions: {e}")
+            return {"success": False, "error": str(e)}
+    
+    def merge_gemini_with_manual(self, category: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Get statistics on merged manual and Gemini-generated questions.
+        
+        Args:
+            category: Optional category filter
+            
+        Returns:
+            Dict with counts by source
+        """
+        if not self.engine:
+            return {"error": "Database not configured"}
+        
+        try:
+            with self.engine.connect() as conn:
+                # Count questions by source (inferred from question_id prefix)
+                query = """
+                    SELECT 
+                        CASE 
+                            WHEN question_id LIKE 'gemini:%' THEN 'gemini_generated'
+                            ELSE 'manual'
+                        END as source,
+                        category,
+                        COUNT(*) as count
+                    FROM training_questions
+                """
+                
+                if category:
+                    query += " WHERE category = :category"
+                
+                query += " GROUP BY CASE WHEN question_id LIKE 'gemini:%' THEN 'gemini_generated' ELSE 'manual' END, category"
+                
+                params = {"category": category} if category else {}
+                results = conn.execute(text(query), params).fetchall()
+                
+                stats = {"by_source": {}, "by_category": {}}
+                
+                for row in results:
+                    source = row[0]
+                    cat = row[1]
+                    count = row[2]
+                    
+                    if source not in stats["by_source"]:
+                        stats["by_source"][source] = 0
+                    stats["by_source"][source] += count
+                    
+                    if cat not in stats["by_category"]:
+                        stats["by_category"][cat] = {"manual": 0, "gemini_generated": 0}
+                    stats["by_category"][cat][source] = count
+                
+                return stats
+                
+        except Exception as e:
+            logger.error(f"Failed to merge statistics: {e}")
+            return {"error": str(e)}
 
 
 # Global instance

@@ -27,6 +27,8 @@ from app.helpers.video_integration import get_video_recommendations
 from app.helpers.status_message_detector import detect_status_message, get_status_sse_chunk
 from app.services.hashtag_analytics_service import get_hashtag_analytics_service
 from app.services.video_answer_service import VideoAnswerService
+from app.core.model_router import router as model_router, ModelType
+from app.services.gemini_query_handler import get_gemini_handler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -453,8 +455,65 @@ async def chat_completions(request: Request):
             f"conversation_id={conversation_id}"
         )
 
-        # Generate response
-        gen = handle_request(updated_question, user_system_all, overrides, debug=debug)
+        # === GEMINI ROUTING LOGIC (Multipart path) ===
+        # Check if query should be routed to Gemini based on query type
+        model_type, routing_reason = model_router.route_query(updated_question, has_image=False)
+        
+        if model_type == ModelType.GEMINI:
+            logger.info(f"[{rid}] {routing_reason}")
+            
+            # Get query type for specialized handling
+            query_type = model_router.classify_query(updated_question, has_image=False)
+            
+            try:
+                # Get Gemini handler
+                gemini_handler = get_gemini_handler()
+                
+                # Build context from conversation history
+                context_parts = []
+                if conversation_history:
+                    context_parts.append("Previous conversation:")
+                    for msg in conversation_history[-3:]:  # Last 3 messages
+                        role = msg.get('role', 'unknown')
+                        content = msg.get('content', '')
+                        if content:
+                            context_parts.append(f"{role}: {content[:200]}...")
+                
+                context_str = "\n".join(context_parts) if context_parts else None
+                
+                # Create generator that wraps Gemini response
+                def gemini_gen():
+                    try:
+                        # Use streaming handler
+                        for chunk in gemini_handler.handle_query_streaming(
+                            query=updated_question,
+                            query_type=query_type,
+                            context=context_str,
+                            tickers=detected_tickers,
+                            temperature=0.7,
+                            max_tokens=2048
+                        ):
+                            yield chunk
+                        
+                        logger.info(f"[{rid}] Gemini response generation complete")
+                        
+                    except Exception as e:
+                        logger.error(f"[{rid}] Gemini processing error: {e}, falling back to default handler")
+                        # Fallback to default handler on error
+                        for chunk in handle_request(updated_question, user_system_all, overrides, debug=debug):
+                            yield chunk
+                
+                # Use Gemini generator
+                gen = gemini_gen()
+                logger.info(f"[{rid}] Using Gemini for query_type={query_type.value}")
+                
+            except Exception as e:
+                logger.error(f"[{rid}] Gemini handler initialization failed: {e}, falling back to default")
+                gen = handle_request(updated_question, user_system_all, overrides, debug=debug)
+        else:
+            # Use default routing for non-Gemini queries
+            logger.info(f"[{rid}] {routing_reason}")
+            gen = handle_request(updated_question, user_system_all, overrides, debug=debug)
         
         if stream:
             # Wrapper to collect chunks while streaming
@@ -703,7 +762,65 @@ async def chat_completions(request: Request):
         f"conversation_id={conversation_id}"
     )
 
-    gen = handle_request(updated_question, user_system_all, overrides, debug=debug)
+    # === GEMINI ROUTING LOGIC ===
+    # Check if query should be routed to Gemini based on query type
+    model_type, routing_reason = model_router.route_query(updated_question, has_image=False)
+    
+    if model_type == ModelType.GEMINI:
+        logger.info(f"[{rid}] {routing_reason}")
+        
+        # Get query type for specialized handling
+        query_type = model_router.classify_query(updated_question, has_image=False)
+        
+        try:
+            # Get Gemini handler
+            gemini_handler = get_gemini_handler()
+            
+            # Build context from conversation history
+            context_parts = []
+            if conversation_history:
+                context_parts.append("Previous conversation:")
+                for msg in conversation_history[-3:]:  # Last 3 messages
+                    role = msg.get('role', 'unknown')
+                    content = msg.get('content', '')
+                    if content:
+                        context_parts.append(f"{role}: {content[:200]}...")
+            
+            context_str = "\n".join(context_parts) if context_parts else None
+            
+            # Create generator that wraps Gemini response
+            def gemini_gen():
+                try:
+                    # Use streaming handler
+                    for chunk in gemini_handler.handle_query_streaming(
+                        query=updated_question,
+                        query_type=query_type,
+                        context=context_str,
+                        tickers=detected_tickers,
+                        temperature=0.7,
+                        max_tokens=2048
+                    ):
+                        yield chunk
+                    
+                    logger.info(f"[{rid}] Gemini response generation complete")
+                    
+                except Exception as e:
+                    logger.error(f"[{rid}] Gemini processing error: {e}, falling back to default handler")
+                    # Fallback to default handler on error
+                    for chunk in handle_request(updated_question, user_system_all, overrides, debug=debug):
+                        yield chunk
+            
+            # Use Gemini generator
+            gen = gemini_gen()
+            logger.info(f"[{rid}] Using Gemini for query_type={query_type.value}")
+            
+        except Exception as e:
+            logger.error(f"[{rid}] Gemini handler initialization failed: {e}, falling back to default")
+            gen = handle_request(updated_question, user_system_all, overrides, debug=debug)
+    else:
+        # Use default routing for non-Gemini queries
+        logger.info(f"[{rid}] {routing_reason}")
+        gen = handle_request(updated_question, user_system_all, overrides, debug=debug)
     
     if stream:
         async def stream_and_log():

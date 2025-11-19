@@ -48,6 +48,12 @@ class QueryType(Enum):
     COMPLEX_ANALYSIS = "complex_analysis"
     GENERAL_CHAT = "general_chat"
     MULTIMODAL = "multimodal"
+    DIVIDEND_SUSTAINABILITY = "dividend_sustainability"  # Gemini: Deep sustainability analysis
+    RISK_ASSESSMENT = "risk_assessment"  # Gemini: Portfolio risk analysis
+    PORTFOLIO_OPTIMIZATION = "portfolio_optimization"  # Gemini: Allocation strategies
+    TAX_STRATEGY = "tax_strategy"  # Gemini: Tax-efficient investing
+    GLOBAL_MARKETS = "global_markets"  # Gemini: International dividend markets
+    MULTIMODAL_DOCUMENT = "multimodal_document"  # Gemini: Document analysis (PDFs/images)
 
 # Model configurations
 MODEL_CONFIGS = {
@@ -84,7 +90,7 @@ MODEL_CONFIGS = {
         endpoint="https://generativelanguage.googleapis.com",
         cost_per_1m_input=1.25,
         cost_per_1m_output=5.0,
-        specialization="Chart analysis, FX data, multimodal (images+text), technical patterns",
+        specialization="Chart analysis, FX data, multimodal (images+text), dividend sustainability, risk assessment, portfolio optimization, tax strategy, global markets, document analysis",
         max_tokens=1048576  # 1M context
     ),
     ModelType.FINGPT: ModelConfig(
@@ -152,6 +158,43 @@ class QueryRouter:
             QueryType.MULTIMODAL: [
                 r'\b(analyze\s+this\s+(image|photo|screenshot|picture))\b',
                 r'\b(what.*in\s+this\s+(image|chart|graph))\b'
+            ],
+            QueryType.DIVIDEND_SUSTAINABILITY: [
+                r'\b(dividend\s+sustainability|sustainable\s+dividend|sustainability\s+(of|analysis))\b',
+                r'\b(payout\s+sustainability|can.*maintain.*dividend|dividend.*fundamentals)\b',
+                r'\b(coverage\s+ratio|earnings\s+coverage|fcf\s+coverage|free\s+cash\s+flow.*dividend)\b',
+                r'\b(analyze.*sustainability|sustain.*payout|long(-|\s)term.*dividend)\b'
+            ],
+            QueryType.RISK_ASSESSMENT: [
+                r'\b(risk\s+(assessment|analysis|profile|evaluation)|portfolio\s+risk)\b',
+                r'\b(downside\s+(risk|protection)|volatility\s+analysis|var|value\s+at\s+risk)\b',
+                r'\b(risk.*portfolio|assess.*risk|concentration\s+risk|sector\s+risk)\b',
+                r'\b(drawdown|maximum\s+drawdown|tail\s+risk|black\s+swan)\b'
+            ],
+            QueryType.PORTFOLIO_OPTIMIZATION: [
+                r'\b(optimize.*portfolio|portfolio\s+optimization|allocation\s+strategy)\b',
+                r'\b(diversification\s+(strategy|analysis)|diversify.*portfolio)\b',
+                r'\b(rebalance|rebalancing\s+strategy|optimal\s+allocation)\b',
+                r'\b(how.*allocate|best.*allocation|allocation.*income)\b'
+            ],
+            QueryType.TAX_STRATEGY: [
+                r'\b(tax(-|\s)(efficient|strategy|optimization|advantaged))\b',
+                r'\b(qualified\s+dividend|ordinary\s+dividend|dividend\s+tax)\b',
+                r'\b(tax.*loss.*harvest|capital\s+gain.*tax|ltcg|stcg)\b',
+                r'\b(roth|traditional.*ira|401k.*dividend|tax(-|\s)deferred)\b',
+                r'\b(minimize.*tax|reduce.*tax.*dividend|after(-|\s)tax.*return)\b'
+            ],
+            QueryType.GLOBAL_MARKETS: [
+                r'\b(international\s+dividend|global\s+(dividend|market)|foreign\s+dividend)\b',
+                r'\b(european\s+dividend|asian\s+dividend|emerging\s+market.*dividend)\b',
+                r'\b(adr|american\s+depositary|withholding\s+tax|foreign\s+tax)\b',
+                r'\b(currency\s+(risk|hedging)|fx.*dividend|exchange\s+rate.*dividend)\b',
+                r'\b(compare.*(us|america).*(europe|asia|international))\b'
+            ],
+            QueryType.MULTIMODAL_DOCUMENT: [
+                r'\b(analyze.*\b(pdf|document|file|statement|report))\b',
+                r'\b(read.*\b(document|pdf|statement)|extract.*from.*\b(pdf|document))\b',
+                r'\b(portfolio.*\b(pdf|document|file|statement)|brokerage.*statement)\b'
             ]
         }
     
@@ -171,6 +214,36 @@ class QueryRouter:
         # Multimodal takes priority if image is present
         if has_image:
             return QueryType.MULTIMODAL
+        
+        # Check multimodal document patterns (PDFs, statements)
+        for pattern in self.patterns[QueryType.MULTIMODAL_DOCUMENT]:
+            if re.search(pattern, query_lower, re.IGNORECASE):
+                return QueryType.MULTIMODAL_DOCUMENT
+        
+        # Check dividend sustainability patterns (before general dividend scoring)
+        for pattern in self.patterns[QueryType.DIVIDEND_SUSTAINABILITY]:
+            if re.search(pattern, query_lower, re.IGNORECASE):
+                return QueryType.DIVIDEND_SUSTAINABILITY
+        
+        # Check risk assessment patterns
+        for pattern in self.patterns[QueryType.RISK_ASSESSMENT]:
+            if re.search(pattern, query_lower, re.IGNORECASE):
+                return QueryType.RISK_ASSESSMENT
+        
+        # Check portfolio optimization patterns
+        for pattern in self.patterns[QueryType.PORTFOLIO_OPTIMIZATION]:
+            if re.search(pattern, query_lower, re.IGNORECASE):
+                return QueryType.PORTFOLIO_OPTIMIZATION
+        
+        # Check tax strategy patterns
+        for pattern in self.patterns[QueryType.TAX_STRATEGY]:
+            if re.search(pattern, query_lower, re.IGNORECASE):
+                return QueryType.TAX_STRATEGY
+        
+        # Check global markets patterns
+        for pattern in self.patterns[QueryType.GLOBAL_MARKETS]:
+            if re.search(pattern, query_lower, re.IGNORECASE):
+                return QueryType.GLOBAL_MARKETS
         
         # Check quantitative analysis patterns (high priority)
         for pattern in self.patterns[QueryType.QUANTITATIVE_ANALYSIS]:
@@ -241,7 +314,13 @@ class QueryRouter:
             QueryType.FAST_QUERY: (ModelType.GROK4, "Fast query → Grok-4 (optimized for speed)"),
             QueryType.COMPLEX_ANALYSIS: (ModelType.GPT5, "Complex analysis → GPT-5 (advanced reasoning)"),
             QueryType.GENERAL_CHAT: (ModelType.GROK4, "General chat → Grok-4 (cost-optimized)"),
-            QueryType.MULTIMODAL: (ModelType.GEMINI, "Multimodal query → Gemini 2.5 Pro (image analysis)")
+            QueryType.MULTIMODAL: (ModelType.GEMINI, "Multimodal query → Gemini 2.5 Pro (image analysis)"),
+            QueryType.DIVIDEND_SUSTAINABILITY: (ModelType.GEMINI, "Dividend sustainability analysis → Gemini 2.5 Pro (deep reasoning expert)"),
+            QueryType.RISK_ASSESSMENT: (ModelType.GEMINI, "Portfolio risk assessment → Gemini 2.5 Pro (analytical reasoning)"),
+            QueryType.PORTFOLIO_OPTIMIZATION: (ModelType.GEMINI, "Portfolio optimization → Gemini 2.5 Pro (strategic allocation expert)"),
+            QueryType.TAX_STRATEGY: (ModelType.GEMINI, "Tax strategy → Gemini 2.5 Pro (tax optimization expert)"),
+            QueryType.GLOBAL_MARKETS: (ModelType.GEMINI, "Global markets analysis → Gemini 2.5 Pro (international finance expert)"),
+            QueryType.MULTIMODAL_DOCUMENT: (ModelType.GEMINI, "Document analysis → Gemini 2.5 Pro (multimodal document expert)")
         }
         
         model, reason = routing_map.get(query_type, (ModelType.GPT5, "Default → GPT-5"))
