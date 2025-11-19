@@ -8,9 +8,10 @@ echo "=========================================="
 echo "  Deploying Gemini Enhancements to Harvey"
 echo "=========================================="
 
-# Step 1: Activate conda environment
+# Step 1: Initialize and activate conda environment
 echo ""
-echo "Step 1: Activating conda environment..."
+echo "Step 1: Initializing and activating conda environment..."
+eval "$(conda shell.bash hook)"
 conda activate llm
 
 # Step 2: Install google-generativeai package
