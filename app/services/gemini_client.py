@@ -12,10 +12,20 @@ import json
 from typing import Dict, List, Any, Optional
 from datetime import datetime, timedelta
 from collections import deque
-import google.generativeai as genai
-from google.generativeai.types import GenerationConfig, HarmCategory, HarmBlockThreshold
 
 logger = logging.getLogger("gemini_client")
+
+try:
+    import google.generativeai as genai
+    from google.generativeai.types import GenerationConfig, HarmCategory, HarmBlockThreshold
+    GEMINI_AVAILABLE = True
+except ImportError:
+    logger.warning("google-generativeai not installed - Gemini features disabled")
+    GEMINI_AVAILABLE = False
+    genai = None
+    GenerationConfig = None
+    HarmCategory = None
+    HarmBlockThreshold = None
 
 
 class RateLimiter:
@@ -140,6 +150,12 @@ class GeminiClient:
             cache_enabled: Enable response caching (default: True)
             cache_max_age: Cache TTL in seconds (default: 3600)
         """
+        if not GEMINI_AVAILABLE:
+            raise ImportError(
+                "google-generativeai package not installed. "
+                "Install with: pip install google-generativeai>=0.8.0"
+            )
+        
         self.api_key = api_key or os.getenv("GEMINI_API_KEY")
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY not found in environment variables")

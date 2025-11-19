@@ -28,7 +28,15 @@ from app.helpers.status_message_detector import detect_status_message, get_statu
 from app.services.hashtag_analytics_service import get_hashtag_analytics_service
 from app.services.video_answer_service import VideoAnswerService
 from app.core.model_router import router as model_router, ModelType
-from app.services.gemini_query_handler import get_gemini_handler
+
+# Gemini handler import (optional - only available when google-generativeai is installed)
+try:
+    from app.services.gemini_query_handler import get_gemini_handler
+    GEMINI_HANDLER_AVAILABLE = True
+except (ImportError, Exception):
+    GEMINI_HANDLER_AVAILABLE = False
+    get_gemini_handler = None
+    logger.info("Gemini handler not available - Gemini features disabled")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -459,7 +467,7 @@ async def chat_completions(request: Request):
         # Check if query should be routed to Gemini based on query type
         model_type, routing_reason = model_router.route_query(updated_question, has_image=False)
         
-        if model_type == ModelType.GEMINI:
+        if model_type == ModelType.GEMINI and GEMINI_HANDLER_AVAILABLE:
             logger.info(f"[{rid}] {routing_reason}")
             
             # Get query type for specialized handling
@@ -766,7 +774,7 @@ async def chat_completions(request: Request):
     # Check if query should be routed to Gemini based on query type
     model_type, routing_reason = model_router.route_query(updated_question, has_image=False)
     
-    if model_type == ModelType.GEMINI:
+    if model_type == ModelType.GEMINI and GEMINI_HANDLER_AVAILABLE:
         logger.info(f"[{rid}] {routing_reason}")
         
         # Get query type for specialized handling
