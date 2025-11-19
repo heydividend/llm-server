@@ -107,12 +107,30 @@ from dotenv import load_dotenv
 load_dotenv('/home/azureuser/harvey/.env')
 
 api_key = os.getenv("GEMINI_API_KEY")
-if api_key and len(api_key) > 10:
-    print(f"✅ GEMINI_API_KEY found (length: {len(api_key)})")
-else:
-    print("❌ GEMINI_API_KEY not found or invalid")
-    print("   Get a key from: https://aistudio.google.com/app/apikey")
+if not api_key:
+    print("❌ GEMINI_API_KEY not found in environment")
+    print("   Add it to /home/azureuser/harvey/.env")
+    print("   Get a new key from: https://aistudio.google.com/app/apikey")
     exit(1)
+
+# Valid Gemini API keys are 39 characters starting with "AIzaSy"
+if len(api_key) < 30:
+    print(f"⚠️  WARNING: GEMINI_API_KEY appears invalid (length: {len(api_key)})")
+    print(f"   Expected: 39 characters starting with 'AIzaSy'")
+    print(f"   Current: {len(api_key)} characters")
+    print("")
+    print("   Get a valid key from: https://aistudio.google.com/app/apikey")
+    print("   Add it to: /home/azureuser/harvey/.env")
+    print("")
+    print("⚠️  Continuing anyway, but Gemini features may not work...")
+    print("")
+elif not api_key.startswith("AIzaSy"):
+    print(f"⚠️  WARNING: GEMINI_API_KEY format unexpected")
+    print(f"   Expected to start with: AIzaSy")
+    print(f"   Please verify key is correct")
+    print("")
+else:
+    print(f"✅ GEMINI_API_KEY looks valid (length: {len(api_key)})")
 PYEOF
 
 # Step 5: Restart Harvey backend
@@ -141,14 +159,20 @@ try:
     import google.generativeai as genai
     print("✅ google-generativeai imported successfully")
     
-    from app.services.gemini_client import gemini_client
-    print("✅ GeminiClient imported successfully")
+    from app.services.gemini_client import get_gemini_client
+    print("✅ get_gemini_client function imported successfully")
+    
+    # Try to instantiate the client
+    client = get_gemini_client()
+    print("✅ GeminiClient instantiated successfully")
     
     print("")
     print("Gemini Intelligence System is ready!")
     
 except Exception as e:
-    print(f"❌ Import failed: {e}")
+    print(f"❌ Import/instantiation failed: {e}")
+    import traceback
+    traceback.print_exc()
     exit(1)
 PYEOF
 
