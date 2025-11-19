@@ -29,8 +29,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from urllib.parse import quote_plus
 
-# Load environment
-load_dotenv()
+# Load environment - explicitly specify path for stdin context
+load_dotenv('/home/azureuser/harvey/.env')
 
 # Get database connection from environment
 HOST = os.getenv("SQLSERVER_HOST")
@@ -82,7 +82,8 @@ python <<'EOF'
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load environment - explicitly specify path for stdin context
+load_dotenv('/home/azureuser/harvey/.env')
 
 api_key = os.getenv("GEMINI_API_KEY")
 if api_key:
