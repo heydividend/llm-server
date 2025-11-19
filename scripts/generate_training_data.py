@@ -26,6 +26,9 @@ from typing import Dict, List, Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from app.services.gemini_training_generator import get_training_generator
 from app.services.training_ingestion_service import training_ingestion
 
