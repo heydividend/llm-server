@@ -65,8 +65,8 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 gemini_client = None
 if GEMINI_AVAILABLE and GEMINI_API_KEY:
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        gemini_client = genai.GenerativeModel('gemini-2.5-pro')
+        genai.configure(api_key=GEMINI_API_KEY)  # type: ignore[attr-defined]
+        gemini_client = genai.GenerativeModel('gemini-2.5-pro')  # type: ignore[attr-defined]
         print(f"[INFO] 🟢 Gemini 2.5 Pro initialized for chart/FX analysis")
     except Exception as e:
         print(f"[WARN] ⚠️  Gemini initialization failed: {e}")

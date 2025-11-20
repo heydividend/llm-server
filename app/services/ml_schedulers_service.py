@@ -232,6 +232,8 @@ class MLSchedulersService:
             
             command = "cd /home/azureuser/harvey/ml_training && source venv/bin/activate && export USE_PYMSSQL=true && python train.py --model all --save-dir ./models"
             
+            if self.ssh_client is None:
+                raise Exception("SSH client not initialized")
             stdin, stdout, stderr = self.ssh_client.exec_command(command)
             
             # Log output
@@ -296,6 +298,8 @@ class MLSchedulersService:
             
             # Restart the service
             command = f"sudo systemctl restart {service}"
+            if self.ssh_client is None:
+                raise Exception("SSH client not initialized")
             stdin, stdout, stderr = self.ssh_client.exec_command(command)
             
             # Wait for completion
@@ -303,7 +307,7 @@ class MLSchedulersService:
             
             # Check if restart was successful
             check_command = f"systemctl is-active {service}"
-            stdin, stdout, stderr = self.ssh_client.exec_command(check_command)
+            stdin, stdout, stderr = self.ssh_client.exec_command(command)
             status = stdout.read().decode().strip()
             
             if status == "active":
