@@ -46,6 +46,7 @@ A separate Next.js frontend provides a professional, financial-grade chat interf
 - **Enhanced File Processing & Cloud Integrations:** Comprehensive file processing supporting 7 file types (PDF, CSV, XLS, XLSX, JPG, PNG, JPEG) with Azure Document Intelligence OCR. Includes cloud integrations for Google Sheets, Google Drive, and OneDrive, enabling users to analyze portfolios directly from spreadsheets and cloud storage. Features secure file upload validation, automated format detection, and unified API endpoints.
 - **Feedback-Driven Learning System:** Collects user feedback for sentiment analysis, response quality tracking, and building training datasets for continuous improvement and fine-tuning.
 - **Self-Healing AI:** Implements automatic error detection, web search fallback, HTTP retry logic, and database resilience.
+- **Data Scientist Agent:** AI-powered database analyst that examines Harvey's Azure SQL database (schema, data distribution, training coverage, model performance, user feedback) and generates ML recommendations using Gemini 2.0. Provides actionable insights for new ML models, training improvements, feature engineering, model optimization, data quality enhancements, and performance improvements. Accessible via CLI tool (`scripts/data_scientist_agent.py`) for on-demand or scheduled analysis.
 
 **System Design Choices:**
 - **Backend:** FastAPI (Python 3.11)
