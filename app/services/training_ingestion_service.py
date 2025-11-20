@@ -212,7 +212,7 @@ class TrainingDataIngestion:
             logger.warning("Missing database credentials for training ingestion")
             return None
         
-        return f"mssql+pyodbc://{user}:{password}@{host}/{db}?driver=ODBC+Driver+17+for+SQL+Server"
+        return f"mssql+pyodbc://{user}:{password}@{host}/{db}?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes"
     
     def _ensure_training_tables(self):
         """Create training data tables if they don't exist."""
