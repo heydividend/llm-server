@@ -321,6 +321,7 @@ def main():
         print(f"✗ Failed to save file: {e}")
     
     # Ingest to database
+    result = None  # Initialize to avoid unbound variable
     if args.to_database:
         print("Ingesting questions into training database...")
         
@@ -349,7 +350,7 @@ def main():
     print(f"Total questions generated: {len(all_questions)}")
     print(f"Output saved to: {output_path}")
     
-    if args.to_database:
+    if args.to_database and result:
         print(f"Database ingestion: {'✓ Complete' if result.get('success') else '✗ Failed'}")
     
     print()

@@ -5,7 +5,7 @@ Uses pymssql (no ODBC drivers required)
 """
 
 import os
-import pymssql
+import pymssql  # type: ignore[import-not-found]
 from dotenv import load_dotenv
 
 load_dotenv(override=True)

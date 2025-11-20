@@ -9,11 +9,11 @@ import sys
 import json
 import time
 import logging
-import schedule
+import schedule  # type: ignore[import-not-found]
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 # Setup logging
 logging.basicConfig(
@@ -100,7 +100,7 @@ class GeminiTrainingScheduler:
     
     def generate_training_data(
         self,
-        category: str = None,
+        category: Optional[str] = None,
         count: int = 100,
         to_database: bool = True
     ) -> Dict[str, Any]:

@@ -64,6 +64,11 @@ def main():
         print("   Required: AZURE_VM_USER, AZURE_VM_IP, SSH_VM_PASSWORD")
         return 1
     
+    # Type guard: credentials exist at this point
+    assert AZURE_VM_IP is not None
+    assert AZURE_VM_USER is not None
+    assert SSH_VM_PASSWORD is not None
+    
     # Create SSH client
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

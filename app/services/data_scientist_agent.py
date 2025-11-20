@@ -11,7 +11,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from typing import Dict, List, Any
-import pymssql
+import pymssql  # type: ignore[import-not-found]
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -310,7 +310,7 @@ Provide detailed recommendations in JSON format with these keys:
 
 Return only valid JSON."""
             
-            response = gemini.generate_response(prompt)
+            response = gemini.generate_response(prompt)  # type: ignore[attr-defined]
             recommendations_text = response.get("text", "")
             
             try:
