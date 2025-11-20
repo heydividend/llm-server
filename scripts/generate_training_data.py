@@ -21,13 +21,13 @@ import os
 import json
 import argparse
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from dotenv import load_dotenv
-load_dotenv()
+load_dotenv(override=True)
 
 from app.services.gemini_training_generator import get_training_generator
 from app.services.training_ingestion_service import training_ingestion
@@ -293,7 +293,7 @@ def main():
     try:
         data = {
             "metadata": {
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
                 "total_questions": len(all_questions),
                 "categories": list(set(q['category'] for q in all_questions)),
                 "with_answers": with_answers,

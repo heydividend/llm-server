@@ -122,7 +122,7 @@ class ResponseCache:
 
 class GeminiClient:
     """
-    Unified client for Google Gemini 2.5 Pro API.
+    Unified client for Google Gemini API.
     
     Features:
     - Rate limiting (60 requests/minute default)
@@ -130,12 +130,13 @@ class GeminiClient:
     - Exponential backoff retry logic
     - Comprehensive error handling
     - Detailed logging of all API calls
+    - Default model: gemini-1.5-flash (stable, better free tier quotas)
     """
     
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model_name: str = "gemini-2.0-flash-exp",
+        model_name: str = "gemini-1.5-flash",
         max_requests_per_minute: int = 60,
         cache_enabled: bool = True,
         cache_max_age: int = 3600
@@ -145,7 +146,7 @@ class GeminiClient:
         
         Args:
             api_key: Gemini API key (defaults to GEMINI_API_KEY env var)
-            model_name: Model to use (default: gemini-2.0-flash-exp)
+            model_name: Model to use (default: gemini-1.5-flash)
             max_requests_per_minute: Rate limit (default: 60)
             cache_enabled: Enable response caching (default: True)
             cache_max_age: Cache TTL in seconds (default: 3600)
