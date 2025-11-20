@@ -202,39 +202,67 @@ Generate exactly 5 diverse questions. Return ONLY valid JSON."""
         category: str,
         count: int
     ) -> List[Dict[str, Any]]:
-        """Generate questions using Azure OpenAI models"""
-        try:
-            response = oai_client.chat.completions.create(  # type: ignore[arg-type]
-                model=deployment,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": f"Generate {count} dividend investing questions for '{category}' category."}
-                ],
-                temperature=0.8,  # Higher for creativity
-                max_tokens=2000
-            )
-            
-            content = (response.choices[0].message.content or "").strip()
-            
-            # Parse JSON response
+        """Generate questions using Azure OpenAI models with retry logic"""
+        max_retries = 3
+        retry_delay = 2
+        
+        for attempt in range(max_retries):
             try:
-                # Extract JSON from response
-                start_idx = content.find("{")
-                end_idx = content.rfind("}") + 1
-                if start_idx != -1 and end_idx > start_idx:
-                    json_str = content[start_idx:end_idx]
-                    data = json.loads(json_str)
-                    return data.get("questions", [])
-                else:
-                    print(f"      ⚠️  No JSON found in response")
-                    return []
-            except json.JSONDecodeError as e:
-                print(f"      ⚠️  JSON parse error: {e}")
-                return []
+                response = oai_client.chat.completions.create(  # type: ignore[arg-type]
+                    model=deployment,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": f"Generate {count} dividend investing questions for '{category}' category."}
+                    ],
+                    temperature=0.8,  # Higher for creativity
+                    max_tokens=2000,
+                    timeout=30
+                )
                 
-        except Exception as e:
-            print(f"      ❌ Azure API error: {e}")
-            return []
+                content = (response.choices[0].message.content or "").strip()
+                
+                if not content:
+                    print(f"      ⚠️  Empty response (attempt {attempt + 1}/{max_retries})")
+                    if attempt < max_retries - 1:
+                        import time
+                        time.sleep(retry_delay)
+                        continue
+                    return []
+                
+                # Parse JSON response
+                try:
+                    # Extract JSON from response
+                    start_idx = content.find("{")
+                    end_idx = content.rfind("}") + 1
+                    if start_idx != -1 and end_idx > start_idx:
+                        json_str = content[start_idx:end_idx]
+                        data = json.loads(json_str)
+                        questions = data.get("questions", [])
+                        if questions:
+                            return questions
+                        else:
+                            print(f"      ⚠️  No questions in JSON (attempt {attempt + 1}/{max_retries})")
+                    else:
+                        print(f"      ⚠️  No JSON found in response (attempt {attempt + 1}/{max_retries})")
+                except json.JSONDecodeError as e:
+                    print(f"      ⚠️  JSON parse error: {e} (attempt {attempt + 1}/{max_retries})")
+                
+                # Retry if we didn't get valid questions
+                if attempt < max_retries - 1:
+                    import time
+                    time.sleep(retry_delay)
+                    continue
+                return []
+                    
+            except Exception as e:
+                print(f"      ❌ Azure API error: {e} (attempt {attempt + 1}/{max_retries})")
+                if attempt < max_retries - 1:
+                    import time
+                    time.sleep(retry_delay)
+                else:
+                    return []
+        
+        return []
     
     def _generate_with_gemini(
         self,
@@ -242,37 +270,67 @@ Generate exactly 5 diverse questions. Return ONLY valid JSON."""
         category: str,
         count: int
     ) -> List[Dict[str, Any]]:
-        """Generate questions using Gemini 2.5 Pro"""
-        try:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Generate {count} dividend investing questions for '{category}' category."}
-            ]
-            
-            chunks = []
-            for chunk in gemini_stream(messages, temperature=0.8, max_tokens=2000):
-                chunks.append(chunk)
-            
-            content = "".join(chunks).strip()
-            
-            # Parse JSON response
+        """Generate questions using Gemini 2.5 Pro with retry logic"""
+        max_retries = 3
+        retry_delay = 2
+        
+        for attempt in range(max_retries):
             try:
-                start_idx = content.find("{")
-                end_idx = content.rfind("}") + 1
-                if start_idx != -1 and end_idx > start_idx:
-                    json_str = content[start_idx:end_idx]
-                    data = json.loads(json_str)
-                    return data.get("questions", [])
-                else:
-                    print(f"      ⚠️  No JSON found in response")
-                    return []
-            except json.JSONDecodeError as e:
-                print(f"      ⚠️  JSON parse error: {e}")
-                return []
+                # Combine system prompt and user prompt for Gemini
+                full_prompt = f"{system_prompt}\n\nUser: Generate {count} dividend investing questions for '{category}' category."
                 
-        except Exception as e:
-            print(f"      ❌ Gemini API error: {e}")
-            return []
+                messages = [
+                    {"role": "user", "content": full_prompt}
+                ]
+                
+                # Consume the stream into a single string
+                chunks = []
+                for chunk in gemini_stream(messages, temperature=0.8, max_tokens=2000):
+                    chunks.append(chunk)
+                
+                content = "".join(chunks).strip()
+                
+                if not content:
+                    print(f"      ⚠️  Empty response from Gemini (attempt {attempt + 1}/{max_retries})")
+                    if attempt < max_retries - 1:
+                        import time
+                        time.sleep(retry_delay)
+                        continue
+                    return []
+                
+                # Parse JSON response
+                try:
+                    start_idx = content.find("{")
+                    end_idx = content.rfind("}") + 1
+                    if start_idx != -1 and end_idx > start_idx:
+                        json_str = content[start_idx:end_idx]
+                        data = json.loads(json_str)
+                        questions = data.get("questions", [])
+                        if questions:
+                            return questions
+                        else:
+                            print(f"      ⚠️  No questions in JSON (attempt {attempt + 1}/{max_retries})")
+                    else:
+                        print(f"      ⚠️  No JSON found in response (attempt {attempt + 1}/{max_retries})")
+                except json.JSONDecodeError as e:
+                    print(f"      ⚠️  JSON parse error: {e} (attempt {attempt + 1}/{max_retries})")
+                
+                # Retry if we didn't get valid questions
+                if attempt < max_retries - 1:
+                    import time
+                    time.sleep(retry_delay)
+                    continue
+                return []
+                    
+            except Exception as e:
+                print(f"      ❌ Gemini API error: {e} (attempt {attempt + 1}/{max_retries})")
+                if attempt < max_retries - 1:
+                    import time
+                    time.sleep(retry_delay)
+                else:
+                    return []
+        
+        return []
     
     def generate_ensemble_training_data(
         self,
@@ -405,13 +463,12 @@ def main():
     if args.to_database:
         print("\n📥 Ingesting into training database...")
         try:
-            # Convert to training_ingestion format
+            # Convert to training_ingestion format (matching ingest_gemini_questions signature)
             questions_for_db = [
                 {
-                    "question": q["question"],
-                    "category": q.get("category", "general"),
-                    "complexity": q.get("complexity", "moderate"),
-                    "source": f"multi_model_{q.get('model_source', 'unknown')}"
+                    "question": q["question"],  # Required field
+                    "category": q.get("category", "general"),  # Required field
+                    # Note: 'answer' is optional - we don't provide it since these are training prompts
                 }
                 for q in result["questions"]
             ]

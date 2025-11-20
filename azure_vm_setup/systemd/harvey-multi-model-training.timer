@@ -1,0 +1,20 @@
+[Unit]
+Description=Harvey Multi-Model Training Generator Timer
+Requires=harvey-multi-model-training.service
+Documentation=https://github.com/heydividend/harvey
+
+[Timer]
+# Run every Sunday at 5:00 AM (after all other ML schedulers)
+OnCalendar=Sun *-*-* 05:00:00
+
+# Persist timer across reboots
+Persistent=true
+
+# Accuracy (allow 15 minutes variance for better system performance)
+AccuracySec=15min
+
+# Randomize start time by up to 5 minutes to avoid conflicts
+RandomizedDelaySec=300
+
+[Install]
+WantedBy=timers.target
