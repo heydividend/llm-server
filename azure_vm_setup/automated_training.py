@@ -13,7 +13,7 @@ import argparse
 import subprocess
 from datetime import datetime, timedelta
 from typing import Dict, Any, List
-import schedule
+import schedule  # type: ignore[import-not-found]
 
 # Force pymssql for better compatibility
 os.environ['USE_PYMSSQL'] = 'true'

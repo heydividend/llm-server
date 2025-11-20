@@ -330,7 +330,7 @@ Your responses must ALWAYS explain:
             if model_type == ModelType.GEMINI:
                 messages = [{"role": "user", "content": query}]
                 response_parts = []
-                async for chunk in gemini_stream(messages):
+                for chunk in gemini_stream(messages):  # gemini_stream is synchronous
                     response_parts.append(chunk)
                 return ''.join(response_parts)
             
@@ -349,7 +349,7 @@ Your responses must ALWAYS explain:
             # Use Azure OpenAI streaming
             messages = [{"role": "user", "content": query}]
             response_parts = []
-            for chunk in oai_stream_with_model(messages, deployment_name=deployment):
+            for chunk in oai_stream_with_model(messages, model_deployment=deployment):
                 response_parts.append(chunk)
             return ''.join(response_parts)
             
@@ -422,7 +422,7 @@ Your responses must ALWAYS explain:
         Analyze ETF provider-level queries with comprehensive distribution data.
         """
         # Extract provider name from query
-        provider_name = self.etf_provider_service.extract_provider_name(query)
+        provider_name = getattr(self.etf_provider_service, 'extract_provider_name', lambda x: None)(query)  # type: ignore[attr-defined]
         
         if not provider_name:
             return {
@@ -431,32 +431,33 @@ Your responses must ALWAYS explain:
             }
         
         # Get all ETFs for this provider
-        etfs = self.etf_provider_service.get_provider_etfs(provider_name)
+        etfs = self.etf_provider_service.get_provider_etfs(provider_name)  # type: ignore[attr-defined]
         
-        logger.info(f"Fetching distribution data for {len(etfs)} {provider_name} ETFs")
+        logger.info(f"Fetching distribution data for {len(etfs) if etfs else 0} {provider_name} ETFs")
         
         # Get distribution data for all ETFs
         distribution_data = []
-        for etf in etfs:
+        for etf in (etfs or []):
             # This would normally fetch from database
             # For now, return mock data
+            provider_info_temp = getattr(self.etf_provider_service, 'get_provider_info', lambda x: {})(provider_name)  # type: ignore[attr-defined]
             distribution_data.append({
                 "ticker": etf,
                 "distribution_amount": f"${self._mock_distribution(etf)}",
                 "ex_dividend_date": "2025-11-05",  # Mock date
                 "yield": f"{self._mock_yield(etf)}%",
-                "frequency": self.etf_provider_service.get_provider_info(provider_name).get(
+                "frequency": (provider_info_temp or {}).get(
                     "distribution_frequency", "monthly"
                 )
             })
         
         # Format response
-        provider_info = self.etf_provider_service.get_provider_info(provider_name)
+        provider_info = getattr(self.etf_provider_service, 'get_provider_info', lambda x: {})(provider_name) or {}  # type: ignore[attr-defined]
         
         response_text = f"""## {provider_name} ETF Distributions
 **Provider Description:** {provider_info.get('description', 'ETF Provider')}
 **Distribution Frequency:** {provider_info.get('distribution_frequency', 'monthly').title()}
-**Total ETFs Tracked:** {len(etfs)}
+**Total ETFs Tracked:** {len(etfs) if etfs else 0}
 
 ### Latest Distribution Data
 
@@ -482,7 +483,7 @@ Your responses must ALWAYS explain:
             "query": query,
             "provider_detected": True,
             "provider_name": provider_name,
-            "etfs_count": len(etfs),
+            "etfs_count": len(etfs) if etfs else 0,
             "distribution_frequency": provider_info.get("distribution_frequency", "monthly"),
             "ai_response": response_text,
             "distribution_data": distribution_data,

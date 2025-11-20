@@ -7,10 +7,10 @@ from openai import OpenAI, AzureOpenAI
 
 # Gemini import (optional, for Azure VM deployment)
 try:
-    import google.generativeai as genai
+    import google.generativeai as genai  # type: ignore[import-not-found]
     GEMINI_AVAILABLE = True
 except ImportError:
-    genai = None
+    genai = None  # type: ignore[assignment]
     GEMINI_AVAILABLE = False
 
 # LLM Context Management
@@ -104,7 +104,7 @@ def _ollama_list_tags() -> list[str]:
         r.raise_for_status()
         data = r.json() or {}
         models = data.get("models") or []
-        return [m.get("name") for m in models if isinstance(m, dict) and m.get("name")]
+        return [m.get("name") for m in models if isinstance(m, dict) and m.get("name")]  # type: ignore[misc]
     except Exception:
         return []
 
@@ -176,9 +176,9 @@ def oai_stream(messages: list[dict], temperature=0.2, max_tokens=2000) -> Iterab
         return
 
     # OpenAI/Azure path
-    stream = oai_client.chat.completions.create(
+    stream = oai_client.chat.completions.create(  # type: ignore[arg-type]
         model=CHAT_MODEL,
-        messages=messages,
+        messages=messages,  # type: ignore[arg-type]
         temperature=temperature,
         stream=True,
         max_tokens=max_tokens
@@ -215,7 +215,7 @@ def oai_plan(question: str, planner_system: str) -> Dict:
         temperature=0.1,
         max_tokens=2000,
     )
-    txt = resp.choices[0].message.content.strip()
+    txt = (resp.choices[0].message.content or "").strip()
     try:
         return json.loads(txt)
     except Exception:
@@ -237,9 +237,9 @@ def oai_stream_with_model(
     if not USE_AZURE:
         raise ValueError("oai_stream_with_model requires Azure OpenAI to be enabled")
     
-    stream = oai_client.chat.completions.create(
+    stream = oai_client.chat.completions.create(  # type: ignore[arg-type]
         model=model_deployment,
-        messages=messages,
+        messages=messages,  # type: ignore[arg-type]
         temperature=temperature,
         stream=True,
         max_tokens=max_tokens
@@ -282,7 +282,7 @@ def gemini_stream(messages: list[dict], temperature=0.2, max_tokens=2000) -> Ite
     # Stream response
     response = chat.send_message(
         last_message,
-        generation_config=genai.types.GenerationConfig(
+        generation_config=genai.types.GenerationConfig(  # type: ignore[attr-defined]
             temperature=temperature,
             max_output_tokens=max_tokens,
         ),

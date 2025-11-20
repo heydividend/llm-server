@@ -43,12 +43,12 @@ def test_azure_openai_models():
             # Get non-streaming response
             response = oai_client.chat.completions.create(
                 model=deployment,
-                messages=messages,
+                messages=messages,  # type: ignore[arg-type]
                 temperature=0.2,
                 max_tokens=50
             )
             
-            reply = response.choices[0].message.content.strip()
+            reply = (response.choices[0].message.content or "").strip()
             print(f"   Response: {reply}")
             print(f"   Status: ✅ SUCCESS")
             results[name] = "SUCCESS"

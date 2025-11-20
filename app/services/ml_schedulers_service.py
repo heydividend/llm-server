@@ -7,14 +7,20 @@ import os
 import json
 import logging
 import asyncio
-import aiohttp
+try:
+    import aiohttp  # type: ignore[import-not-found]
+except ImportError:
+    aiohttp = None  # type: ignore[assignment]
 from datetime import datetime, timedelta
 from typing import Dict, Any, List, Optional
 from cachetools import TTLCache
 import paramiko
 
 from app.services.ml_api_client import MLAPIClient
-from app.core.config import settings
+try:
+    from app.core.config import settings  # type: ignore[import-not-found]
+except ImportError:
+    settings = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +40,7 @@ class MLSchedulersService:
         self.calendar_cache = TTLCache(maxsize=1000, ttl=300)
         
         # SSH connection for admin operations
-        self.ssh_client = None
+        self.ssh_client: Optional[paramiko.SSHClient] = None
         
     async def get_health_status(self) -> Dict[str, Any]:
         """
