@@ -13,8 +13,9 @@ Harvey is a FastAPI-based intelligent financial assistant designed for context-a
 **Active ML Schedulers (heydividend-ml-schedulers service):**
 - 🤖 **Payout Rating ML** - Daily 1:00 AM - Generates A+/A/B/C dividend safety ratings
 - 🤖 **Dividend Calendar ML** - Sunday 2:00 AM - Predicts next dividend payment dates  
-- 🤖 **ML Training** - Sunday 3:00 AM - Trains all 5 core ML models
+- 🤖 **ML Training** - Sunday 3:00 AM - Trains all 7 core ML models (scorer, yield, growth, payout, cut risk, anomaly, cluster)
 - 🤖 **Gemini Training Data Generator** - Sunday 4:00 AM - Auto-generates 100 training questions weekly using Gemini 1.5 Flash
+- 🎓 **Multi-Model Training** - Sunday 5:00 AM (READY TO DEPLOY) - Generates 800 training questions/week using ALL 4 AI models (GPT-5, Grok-4, DeepSeek-R1, Gemini 2.5 Pro) to train Harvey towards standalone intelligence
 
 **ML Infrastructure:**
 - Training scripts location: `server/ml/training/`
@@ -33,7 +34,7 @@ I prefer iterative development and want to be involved in key decision-making pr
 A separate Next.js frontend provides a professional, financial-grade chat interface with a dark blue theme, real-time streaming responses, interactive charts, and PDF export functionalities.
 
 **Technical Implementations & Feature Specifications:**
-- **Harvey Unified Intelligence System:** Coordinates 5 specialized AI models (GPT-5, Grok-4, DeepSeek-R1, Gemini 2.5 Pro, FinGPT) across Replit and Azure VMs. It features intelligent query routing (8 types), ensemble learning, model audit logging, and continuous dividend-focused learning, achieving significant cost savings. **NEW:** Gemini 1.5 Flash automatically generates 100 training questions weekly via scheduled automation (Sunday 4AM), continuously expanding Harvey's knowledge base.
+- **Harvey Unified Intelligence System:** Coordinates 5 specialized AI models (GPT-5, Grok-4, DeepSeek-R1, Gemini 2.5 Pro, FinGPT) across Replit and Azure VMs. It features intelligent query routing (14 query types), ensemble learning, model audit logging, and continuous dividend-focused learning, achieving significant cost savings. **NEW (Nov 20, 2025):** Multi-Model Training System uses ALL 4 external AI models to train Harvey, generating 800 diverse training questions weekly (GPT-5 for complex reasoning, Grok-4 for fast insights, DeepSeek-R1 for quantitative analysis, Gemini 2.5 Pro for strategic planning). **Vision:** Harvey will eventually stand alone as a custom model, trained by the collective knowledge of 4 AI masters.
 - **Multi-Model AI Routing:** Automatically selects the optimal AI model based on query type (e.g., Grok-4 for fast queries, DeepSeek-R1 for quantitative analysis, GPT-5 for complex analysis, Gemini for charts, FinGPT for dividend scoring).
 - **Harvey Intelligence Engine Integration:** Integrates with Harvey's internal Intelligence Engine, offering 22+ ML endpoints for scoring, predictions, clustering, and advanced insights, automatically enhancing dividend responses.
 - **HeyDividend Video Answer Service:** Intelligent video recommendation system that enhances AI responses with relevant @heydividedtv YouTube content. Features semantic search across 500+ dividend investing videos, structured metadata delivery (video_id, title, duration, thumbnails), and custom HeyDividend-branded video players for React/Next.js and vanilla JavaScript. Backend uses `video_suffix` approach for reliable streaming SSE delivery, emitting both markdown text and structured `video_metadata` arrays. Supports enable/disable toggle via `enable_videos` API parameter (defaults to true). Frontend components include inline, expanded, and modal player variants with custom Navy #0B1E39 branding, YouTube IFrame API integration, and multi-framework support (React, Vue, Angular, PHP, WordPress).
@@ -47,6 +48,7 @@ A separate Next.js frontend provides a professional, financial-grade chat interf
 - **Feedback-Driven Learning System:** Collects user feedback for sentiment analysis, response quality tracking, and building training datasets for continuous improvement and fine-tuning.
 - **Self-Healing AI:** Implements automatic error detection, web search fallback, HTTP retry logic, and database resilience.
 - **Data Scientist Agent:** AI-powered database analyst that examines Harvey's Azure SQL database (schema, data distribution, training coverage, model performance, user feedback) and generates ML recommendations using Gemini 2.0. Provides actionable insights for new ML models, training improvements, feature engineering, model optimization, data quality enhancements, and performance improvements. Accessible via CLI tool (`scripts/data_scientist_agent.py`) for on-demand or scheduled analysis.
+- **Multi-Model Training System (Nov 20, 2025):** Automated training data generation using ALL 4 external AI models simultaneously. Script: `scripts/multi_model_training_generator.py`. Each model contributes based on its specialization (GPT-5: complex reasoning, Grok-4: fast insights, DeepSeek-R1: quantitative, Gemini: strategic). Generates 800 questions/week across 8 dividend categories. Ready for Azure VM deployment as Sunday 5:00 AM scheduler. **Goal:** Train Harvey to eventually replace external models and achieve standalone intelligence.
 
 **System Design Choices:**
 - **Backend:** FastAPI (Python 3.11)
