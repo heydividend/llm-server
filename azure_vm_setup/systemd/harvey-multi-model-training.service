@@ -7,16 +7,16 @@ Documentation=https://github.com/heydividend/harvey
 Type=oneshot
 User=azureuser
 Group=azureuser
-WorkingDirectory=/opt/harvey
-Environment="PATH=/opt/harvey/venv/bin:/usr/local/bin:/usr/bin:/bin"
+WorkingDirectory=/home/azureuser/harvey
+Environment="PATH=/home/azureuser/harvey/venv/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="USE_PYMSSQL=true"
 
 # Load environment variables from .env file
-EnvironmentFile=/opt/harvey/.env
+EnvironmentFile=/home/azureuser/harvey/.env
 
 # Run multi-model training generator with shell wrapper for date substitution
 # Generates 800 questions/week (200 per model × 4 models)
-ExecStart=/bin/sh -c '/opt/harvey/venv/bin/python /opt/harvey/scripts/multi_model_training_generator.py --category all --questions-per-model 25 --to-database --output /opt/harvey/training_data/multi_model_weekly_$(date +\%Y\%m\%d).json'
+ExecStart=/bin/sh -c '/home/azureuser/harvey/venv/bin/python /home/azureuser/harvey/scripts/multi_model_training_generator.py --category all --questions-per-model 25 --to-database --output /home/azureuser/harvey/training_data/multi_model_weekly_$(date +\%Y\%m\%d).json'
 
 # Logging
 StandardOutput=journal
