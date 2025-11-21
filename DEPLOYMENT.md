@@ -102,14 +102,54 @@ curl http://your-vm-ip/v1/feedback/summary
 
 ## Deployment Options
 
-### Option 1: Azure Run Command (Recommended)
+### Option 1: Git-Based Deployment (Recommended for Production)
+**Modern git-based workflow with automatic pull and restart**
+
+Harvey directory on VM: `/home/azureuser/harvey`
+
+#### From Azure VM (Run Deployment Script):
+```bash
+# SSH into Azure VM
+ssh azureuser@20.81.210.213
+
+# Navigate to Harvey directory
+cd /home/azureuser/harvey
+
+# Run automated deployment script
+./deploy_on_azure_vm.sh
+```
+
+This script will:
+- ✅ Pull latest changes from git
+- ✅ Stash uncommitted changes (if any)
+- ✅ Update Python dependencies
+- ✅ Stop services gracefully
+- ✅ Restart harvey-backend and ml-schedulers
+- ✅ Reload Nginx
+- ✅ Run health checks
+- ✅ Show deployment summary
+
+#### From Replit (Push and Deploy):
+```bash
+# On Replit, commit and push your changes
+git add .
+git commit -m "Add multi-currency support"
+git push origin main
+
+# Then deploy to Azure VM remotely
+./scripts/deploy_from_replit.sh
+```
+
+This will push to git, copy deployment script to VM, and execute it remotely.
+
+### Option 2: Azure Run Command
 **No SSH required! No file uploads!**
 
 - Run script via Azure Portal → VM → Run Command
 - Automatically pulls latest code from Replit
 - Configures everything in one step
 
-### Option 2: SSH Deployment
+### Option 3: SSH Deployment (Legacy)
 ```bash
 # SSH into Azure VM
 ssh azureuser@your-vm-ip
@@ -122,7 +162,7 @@ cd harvey-backend
 sudo bash deploy/local_deploy.sh
 ```
 
-### Option 3: GitHub Actions (Future)
+### Option 4: GitHub Actions (Future)
 Automated CI/CD pipeline (not yet implemented)
 
 ---
@@ -346,13 +386,82 @@ Before deploying to production:
 
 ---
 
+## Git-Based Deployment Scripts
+
+Harvey now includes modern git-based deployment:
+
+### Script Locations
+- `deploy_on_azure_vm.sh` - Run ON the Azure VM to pull and deploy
+- `scripts/deploy_from_replit.sh` - Run FROM Replit to push and deploy remotely
+
+### Deployment Workflow
+```
+┌─────────────────┐      git push       ┌──────────────────┐
+│     Replit      │ ──────────────────> │   Git Remote     │
+│  (Development)  │                      │ (GitHub/GitLab)  │
+└─────────────────┘                      └──────────────────┘
+                                                   │
+                                            git pull
+                                                   ▼
+                                         ┌──────────────────┐
+                                         │   Azure VM       │
+                                         │  Harvey Backend  │
+                                         │   (Production)   │
+                                         └──────────────────┘
+```
+
+### Service Management Commands
+```bash
+# Start/stop/restart Harvey services
+sudo systemctl start harvey-backend
+sudo systemctl stop harvey-backend
+sudo systemctl restart harvey-backend
+
+# Start/stop ML schedulers
+sudo systemctl start heydividend-ml-schedulers
+sudo systemctl stop heydividend-ml-schedulers
+
+# View logs in real-time
+sudo journalctl -u harvey-backend -f
+sudo journalctl -u heydividend-ml-schedulers -f
+
+# Check service status
+sudo systemctl status harvey-backend
+sudo systemctl status heydividend-ml-schedulers
+```
+
+### Rollback Procedure
+```bash
+# On Azure VM
+cd /home/azureuser/harvey
+
+# View recent commits
+git log -10 --oneline
+
+# Rollback to previous version
+git reset --hard <commit-hash>
+
+# Restart services
+sudo systemctl restart harvey-backend
+sudo systemctl restart heydividend-ml-schedulers
+```
+
+---
+
 ## Support
 
 For deployment issues:
 1. Check logs: `sudo journalctl -u harvey-backend -f`
 2. Verify services: `sudo systemctl status harvey-backend`
-3. Test endpoints: `curl http://localhost:8000/health`
+3. Test endpoints: `curl http://localhost:8001/health`
 4. Review Azure NSG rules in Azure Portal
+5. Check deployment history: `cat /home/azureuser/harvey/logs/deployments.log`
 
-**Deployment script:** `deploy/AZURE_RUN_COMMAND_DEPLOY.sh`  
-**Deployment model:** Azure VM (production), Replit (development)
+**Git Deployment Scripts:**
+- `deploy_on_azure_vm.sh` - On VM deployment
+- `scripts/deploy_from_replit.sh` - Remote deployment from Replit
+
+**Legacy Deployment:** `deploy/AZURE_RUN_COMMAND_DEPLOY.sh`  
+**Deployment Model:** Azure VM (production), Replit (development)  
+**Harvey Directory:** `/home/azureuser/harvey`  
+**Last Updated:** November 21, 2025 (Multi-Currency Support)

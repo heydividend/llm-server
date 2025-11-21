@@ -26,6 +26,7 @@ from app.routes import harvey_status
 from app.routes import dividend_strategies
 from app.routes import training
 from app.routes import admin  # Admin endpoints for logging and monitoring
+from app.routes import currency  # Multi-currency support endpoints
 # from app.routes import ml_schedulers  # ML scheduler endpoints - temporarily disabled due to aiohttp dependency
 from app.routers import data_quality
 from app.middleware.api_logging import APILoggingMiddleware
@@ -136,6 +137,7 @@ app.include_router(data_quality.router, prefix="/v1", tags=["Data Quality"])
 app.include_router(financial_router, tags=["Financial Models"])
 # app.include_router(ml_schedulers.router, prefix="/v1", tags=["ML Schedulers"])  # Temporarily disabled
 app.include_router(admin.router, prefix="/v1", tags=["Admin"])
+app.include_router(currency.router, tags=["Currency"])  # Multi-currency support
 
 # Include new feature routers
 app.include_router(video_routes.router, tags=["Videos"])

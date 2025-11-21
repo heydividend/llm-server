@@ -25,6 +25,15 @@ Harvey is a FastAPI-based intelligent financial assistant designed for context-a
 - Training Ingestion: 120+ questions loaded and growing weekly (dividend analysis, income strategies, technical timing, ETF funds, tax optimization, etc.)
 - Gemini Automation: Generates 100 questions/week across 10 categories, saves to training_questions table
 
+**Deployment Architecture:**
+- Development: Replit (NixOS) - Port 5000
+- Production: Azure VM (Ubuntu) - Port 8001
+- Git-based deployment with automated scripts
+- Systemd services: `harvey-backend`, `heydividend-ml-schedulers`
+- Nginx reverse proxy for production
+- Harvey directory on VM: `/home/azureuser/harvey`
+- Deployment scripts: `deploy_on_azure_vm.sh` (on VM), `scripts/deploy_from_replit.sh` (from Replit)
+
 ## User Preferences
 I prefer iterative development and want to be involved in key decision-making processes. Please ask before making major changes or architectural shifts. I appreciate clear, concise explanations and direct answers, but also value detailed documentation for complex features. Ensure the coding style is clean, maintainable, and follows best practices.
 
@@ -49,6 +58,7 @@ A separate Next.js frontend provides a professional, financial-grade chat interf
 - **Self-Healing AI:** Implements automatic error detection, web search fallback, HTTP retry logic, and database resilience.
 - **Data Scientist Agent:** AI-powered database analyst that examines Harvey's Azure SQL database (schema, data distribution, training coverage, model performance, user feedback) and generates ML recommendations using Gemini 2.0. Provides actionable insights for new ML models, training improvements, feature engineering, model optimization, data quality enhancements, and performance improvements. Accessible via CLI tool (`scripts/data_scientist_agent.py`) for on-demand or scheduled analysis.
 - **Multi-Model Training System (Nov 20, 2025):** Automated training data generation using ALL 4 external AI models simultaneously. Script: `scripts/multi_model_training_generator.py`. Each model contributes based on its specialization (GPT-5: complex reasoning, Grok-4: fast insights, DeepSeek-R1: quantitative, Gemini: strategic). Generates 800 questions/week across 8 dividend categories. Ready for Azure VM deployment as Sunday 5:00 AM scheduler. **Goal:** Train Harvey to eventually replace external models and achieve standalone intelligence.
+- **Multi-Currency Support (Nov 21, 2025):** Real-time currency conversion and international dividend investing across 7 major currencies (USD 🇺🇸, GBP 🇬🇧, CAD 🇨🇦, AUD 🇦🇺, EUR 🇪🇺, JPY 🇯🇵, HKD 🇭🇰). Features intelligent forex rate caching (4-hour TTL), multi-API fallback for reliability (Frankfurter + ExchangeRate-API), native currency preservation with USD conversion, multi-currency portfolio aggregation, currency-adjusted yield calculations, and seamless integration with dividend analytics. API endpoints: `/v1/currency/rate`, `/v1/currency/convert`, `/v1/currency/convert-dividend`, `/v1/currency/aggregate`. Harvey's system prompts enhanced to automatically provide currency conversions with exchange rates and formatted amounts for international dividend queries.
 
 **System Design Choices:**
 - **Backend:** FastAPI (Python 3.11)
@@ -68,5 +78,6 @@ A separate Next.js frontend provides a professional, financial-grade chat interf
     - **OpenAI:** GPT-4o (legacy fallback, optional).
     - **Ollama:** For optional local Llama models.
 - **Document Processing:** Azure Document Intelligence (primary for PDF/image OCR), openpyxl (Excel XLSX), xlrd (Excel XLS), Google Sheets API, Google Drive API, Microsoft OneDrive API (Graph), PDF.co API (legacy fallback).
+- **Currency Conversion:** Frankfurter API (primary), ExchangeRate-API (fallback) for real-time forex rates across 7 major currencies.
 - **Charting Library:** Highcharts (client-side JavaScript CDN).
 - **Python Libraries:** FastAPI, uvicorn, pyodbc, pandas, requests, sqlalchemy, google-generativeai, azure-ai-documentintelligence.
