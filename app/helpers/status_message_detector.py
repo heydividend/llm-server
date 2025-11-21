@@ -277,7 +277,7 @@ def get_status_sse_chunk(status_message: str, request_id: str = "status-msg") ->
         "object": "chat.completion.chunk",
         "choices": [{
             "delta": {
-                "content": f"*{status_message}*\n\n"
+                "status": status_message
             }
         }]
     }
