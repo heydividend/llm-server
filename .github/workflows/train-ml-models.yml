@@ -96,7 +96,7 @@ jobs:
               print(f"📦 Container already exists: {container_name}")
           
           # Upload all model files
-          model_dir = "server/ml/models"
+          model_dir = "server/ml_models"
           model_files = glob.glob(f"{model_dir}/*.joblib") + glob.glob(f"{model_dir}/*.keras")
           
           timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
