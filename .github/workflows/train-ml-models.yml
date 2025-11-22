@@ -1,0 +1,147 @@
+name: Train ML Models
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      force_retrain:
+        description: 'Force retrain all models'
+        required: false
+        default: 'false'
+
+jobs:
+  train-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Microsoft ODBC Driver for SQL Server
+        run: |
+          curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+          curl https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev
+
+      - name: Install Python dependencies
+        run: |
+          cd server/ml/training
+          pip install -r requirements.txt
+          pip install azure-storage-blob pyodbc
+          
+      - name: Verify dependencies
+        run: |
+          python -c "import prophet; print(f'✅ Prophet {prophet.__version__}')"
+          python -c "import sklearn; print(f'✅ scikit-learn {sklearn.__version__}')"
+          python -c "import statsmodels; print(f'✅ statsmodels {statsmodels.__version__}')"
+          python -c "from azure.storage.blob import BlobServiceClient; print('✅ Azure Blob Storage SDK')"
+
+      - name: Train ML models
+        env:
+          # Azure SQL connection for training data
+          AZURE_SQL_SERVER: ${{ secrets.AZURE_SQL_SERVER }}
+          AZURE_SQL_DATABASE: ${{ secrets.AZURE_SQL_DATABASE }}
+          AZURE_SQL_USER: ${{ secrets.AZURE_SQL_USER }}
+          AZURE_SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
+        run: |
+          cd server/ml/training
+          echo "🤖 Starting ML model training pipeline..."
+          
+          # Train all models
+          bash train_all_models.sh
+          
+          echo "✅ Training complete!"
+          
+          # List generated models
+          echo "📁 Generated models:"
+          ls -lh ../models/*.joblib ../models/*.keras 2>/dev/null || echo "No models found"
+
+      - name: Upload models to Azure Blob Storage
+        env:
+          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+          AZURE_STORAGE_ACCOUNT_KEY: ${{ secrets.AZURE_STORAGE_ACCOUNT_KEY }}
+          ML_MODELS_CONTAINER: ${{ secrets.ML_MODELS_CONTAINER }}
+        run: |
+          python - <<'EOF'
+          import os
+          import glob
+          from datetime import datetime
+          from azure.storage.blob import BlobServiceClient, ContentSettings
+          
+          # Azure credentials
+          account_name = os.environ['AZURE_STORAGE_ACCOUNT_NAME']
+          account_key = os.environ['AZURE_STORAGE_ACCOUNT_KEY']
+          container_name = os.environ.get('ML_MODELS_CONTAINER', 'ml-models')
+          
+          # Create blob service client
+          connection_string = f"DefaultEndpointsProtocol=https;AccountName={account_name};AccountKey={account_key};EndpointSuffix=core.windows.net"
+          blob_service_client = BlobServiceClient.from_connection_string(connection_string)
+          container_client = blob_service_client.get_container_client(container_name)
+          
+          # Ensure container exists
+          try:
+              container_client.create_container()
+              print(f"✅ Created container: {container_name}")
+          except Exception:
+              print(f"📦 Container already exists: {container_name}")
+          
+          # Upload all model files
+          model_dir = "server/ml/models"
+          model_files = glob.glob(f"{model_dir}/*.joblib") + glob.glob(f"{model_dir}/*.keras")
+          
+          timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+          
+          for model_file in model_files:
+              filename = os.path.basename(model_file)
+              
+              # Upload to models/ directory (latest version)
+              blob_name = f"models/{filename}"
+              
+              with open(model_file, "rb") as data:
+                  blob_client = container_client.get_blob_client(blob_name)
+                  blob_client.upload_blob(
+                      data, 
+                      overwrite=True,
+                      content_settings=ContentSettings(content_type='application/octet-stream')
+                  )
+              
+              file_size = os.path.getsize(model_file)
+              print(f"✅ Uploaded {filename} ({file_size:,} bytes) to {blob_name}")
+              
+              # Also upload versioned copy for rollback capability
+              versioned_blob_name = f"models/archive/{timestamp}/{filename}"
+              with open(model_file, "rb") as data:
+                  blob_client = container_client.get_blob_client(versioned_blob_name)
+                  blob_client.upload_blob(
+                      data, 
+                      overwrite=True,
+                      content_settings=ContentSettings(content_type='application/octet-stream')
+                  )
+              print(f"📦 Archived to {versioned_blob_name}")
+          
+          print(f"\n🎉 Successfully uploaded {len(model_files)} models to Azure Blob Storage!")
+          print(f"   Container: {container_name}")
+          print(f"   Timestamp: {timestamp}")
+          EOF
+
+      - name: Notify on completion
+        if: success()
+        run: |
+          echo "✅ ML model training and upload completed successfully!"
+          echo "Models are now available in Azure Blob Storage for production use."
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ ML model training or upload failed!"
+          echo "Check the logs above for error details."
