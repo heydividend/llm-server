@@ -1,10 +1,20 @@
-scikit-learn>=1.5.0
-xgboost>=2.0.0
-pandas>=2.0.0
-numpy>=1.24.0
-joblib>=1.3.0
-sqlalchemy>=2.0.0
-pyodbc>=5.0.0
-python-dotenv>=1.0.0
-psutil>=5.9.0
-pymssql>=2.2.0
+# ML Training Dependencies
+# Install with: pip install -r requirements.txt
+# 
+# Note: These packages are NOT included in production deployment
+# Train models locally or in external pipeline, then deploy model files only
+
+prophet>=1.1.7
+scikit-learn>=1.7.2
+statsmodels>=0.14.5
+pandas>=2.3.2
+joblib>=1.5.2
+numpy>=1.26.4
+scipy>=1.16.2
+matplotlib>=3.10.7
+
+# Optional: Enhanced features
+# seaborn>=0.13.0  # Better visualization
+# xgboost>=2.0.0   # Gradient boosting
+# lightgbm>=4.1.0  # Fast gradient boosting
+# optuna>=3.5.0    # Hyperparameter optimization
