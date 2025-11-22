@@ -335,9 +335,22 @@ def main():
     
     # Load data
     with open(args.data, 'r') as f:
-        training_data = json.load(f)
+        payload = json.load(f)
     
-    print(f"📚 Loaded {len(training_data)} training records")
+    # Unwrap metadata envelope
+    if isinstance(payload, dict) and 'data' in payload:
+        training_data = payload['data']
+        print(f"📦 Loaded export package:")
+        print(f"   Export date: {payload.get('metadata', {}).get('export_date', 'unknown')}")
+        print(f"   Data records: {len(training_data)}")
+    else:
+        # Fallback for legacy format (flat array)
+        training_data = payload if isinstance(payload, list) else []
+        print(f"📚 Loaded {len(training_data)} training records (legacy format)")
+    
+    if not training_data:
+        print("❌ No training data found in file")
+        sys.exit(1)
     
     # Train model
     predictor = DividendCutPredictor()

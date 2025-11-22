@@ -304,7 +304,6 @@ class DividendGrowthForecaster:
 
 def fetch_training_data_from_db() -> List[Dict]:
     """Fetch training data from Azure SQL Database"""
-    import pyodbc
     
     # Get connection details from environment
     server = os.environ.get('AZURE_SQL_SERVER')
@@ -315,26 +314,40 @@ def fetch_training_data_from_db() -> List[Dict]:
     if not all([server, database, username, password]):
         raise ValueError("Missing Azure SQL environment variables: AZURE_SQL_SERVER, AZURE_SQL_DATABASE, AZURE_SQL_USER, AZURE_SQL_PASSWORD")
     
-    # Connect to database
-    conn_str = f'DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password};Encrypt=yes;TrustServerCertificate=no'
-    
     print(f"📡 Connecting to Azure SQL: {server}/{database}")
-    conn = pyodbc.connect(conn_str)
-    cursor = conn.cursor()
+    
+    # Try pyodbc first, fall back to pymssql
+    conn = None
+    cursor = None
+    try:
+        import pyodbc
+        conn_str = f'DRIVER={{ODBC Driver 18 for SQL Server}};SERVER={server};DATABASE={database};UID={username};PWD={password};Encrypt=yes;TrustServerCertificate=no'
+        conn = pyodbc.connect(conn_str)
+        cursor = conn.cursor()
+        print("✅ Connected via pyodbc")
+    except Exception as e:
+        print(f"⚠️  pyodbc failed ({str(e)[:60]}...), trying pymssql...")
+        try:
+            import pymssql
+            conn = pymssql.connect(server=server, user=username, password=password, database=database)
+            cursor = conn.cursor()
+            print("✅ Connected via pymssql")
+        except Exception as e2:
+            raise RuntimeError(f"Failed to connect with both pyodbc and pymssql: {str(e2)}")
     
     # Fetch dividend history for training
     query = """
         SELECT TOP 10000
             symbol,
-            ex_dividend_date,
+            ex_date,
             amount,
             frequency,
             yield_rate
         FROM Canonical_Dividends
-        WHERE ex_dividend_date IS NOT NULL
+        WHERE ex_date IS NOT NULL
             AND amount IS NOT NULL
             AND amount > 0
-        ORDER BY symbol, ex_dividend_date DESC
+        ORDER BY symbol, ex_date DESC
     """
     
     cursor.execute(query)
@@ -345,7 +358,7 @@ def fetch_training_data_from_db() -> List[Dict]:
     for row in rows:
         training_data.append({
             'symbol': row.symbol,
-            'ex_dividend_date': row.ex_dividend_date.isoformat() if row.ex_dividend_date else None,
+            'ex_date': row.ex_date.isoformat() if row.ex_date else None,
             'amount': float(row.amount) if row.amount else 0,
             'frequency': row.frequency,
             'dividend_yield': float(row.yield_rate) if row.yield_rate else 0,

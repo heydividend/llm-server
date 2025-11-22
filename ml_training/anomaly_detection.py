@@ -693,7 +693,18 @@ def main():
     try:
         # Load input data
         with open(args.input, 'r') as f:
-            data = json.load(f)
+            payload = json.load(f)
+        
+        # Unwrap metadata envelope
+        if isinstance(payload, dict) and 'data' in payload:
+            data = payload['data']
+            print(f"📦 Loaded export package:")
+            print(f"   Export date: {payload.get('metadata', {}).get('export_date', 'unknown')}")
+            print(f"   Data records: {len(data)}")
+        else:
+            # Fallback for legacy format (flat array)
+            data = payload if isinstance(payload, list) else []
+            print(f"📚 Loaded {len(data)} records (legacy format)")
         
         if not data:
             print("❌ No data found in input file")
