@@ -35,7 +35,7 @@ jobs:
 
       - name: Install Python dependencies
         run: |
-          cd server/ml/training
+          cd server/ml_training
           pip install -r requirements.txt
           pip install azure-storage-blob pyodbc
           
@@ -54,7 +54,7 @@ jobs:
           AZURE_SQL_USER: ${{ secrets.AZURE_SQL_USER }}
           AZURE_SQL_PASSWORD: ${{ secrets.AZURE_SQL_PASSWORD }}
         run: |
-          cd server/ml/training
+          cd server/ml_training
           echo "🤖 Starting ML model training pipeline..."
           
           # Train all models
